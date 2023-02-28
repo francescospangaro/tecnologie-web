@@ -1,4 +1,4 @@
-package it.polimi.coso;
+package it.polimi.webapp;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

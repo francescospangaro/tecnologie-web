@@ -1,4 +1,4 @@
-package it.polimi.coso;
+package it.polimi.webapp;
 
 import org.junit.jupiter.api.Test;
 
