@@ -76,11 +76,16 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <!-- Unit testing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
+            </plugin>
+            <!-- Unit testing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M9</version>
             </plugin>
             <!-- Integration testing (WebServer container config is further down) -->
             <plugin>
