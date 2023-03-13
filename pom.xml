@@ -10,8 +10,8 @@
     <packaging>war</packaging>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
         <servlet.port>8080</servlet.port>
     </properties>
 
@@ -28,11 +28,35 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Web APIs -->
+        <!-- Web APIs with the exact versions supported by Tomcat -->
         <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-web-api</artifactId>
-            <version>10.0.0</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>2.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>3.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.security.auth.message</groupId>
+            <artifactId>javax.security.auth.message-api</artifactId>
+            <version>1.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- Annotations to handle nulls better -->
@@ -123,11 +147,11 @@
 
                 <configuration>
                     <container>
-                        <containerId>tomcat10x</containerId>
+                        <containerId>tomcat9x</containerId>
                         <artifactInstaller>
                             <groupId>org.apache.tomcat</groupId>
                             <artifactId>tomcat</artifactId>
-                            <version>10.1.5</version>
+                            <version>9.0.73</version>
                         </artifactInstaller>
                     </container>
 
