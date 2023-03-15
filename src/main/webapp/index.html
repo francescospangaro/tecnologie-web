@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Servlet programming home page</title>
+</head>
+<body>
+
+	<h2>Introduction to servlet programming:</h2>
+	<h3>Servlet mapping:</h3>
+	<p>Note that if you enable the default mapping "/" for servlet5
+		than you will have to invoke each URL directly using the address bar
+		in the browser, because the default mapping will override
+		/TIW-servletIntro/index.html (this page)</p>
+	<table>
+		<tbody>
+			<tr>
+				<td><a href="/TIW-servletIntro/foo/bar/index.html">/foo/bar/index.html
+				</a></td>
+				<td>servlet 1</td>
+				<td><a href="/TIW-servletIntro/foo/bar/index.do">/foo/bar/index.do
+				</a></td>
+				<td>servlet 1</td>
+				<td><a href="/TIW-servletIntro/baz">/baz </a></td>
+				<td>servlet 2</td>
+			</tr>
+			<tr>
+				<td><a href="/TIW-servletIntro/baz/index.html">/baz/index.html
+				</a></td>
+				<td>servlet 2</td>
+				<td><a href="/TIW-servletIntro/products">/products</a></td>
+				<td>servlet 3</td>
+				<td><a href="/TIW-servletIntro/products/index.html">/products/index.html</a></td>
+				<td>Error (Servlet5 if the "/" mapping is set)</td>
+			</tr>
+			<tr>
+				<td><a href="/TIW-servletIntro/products/cars.do">/products/cars.do</a></td>
+				<td>servlet 4</td>
+				<td><a href="/TIW-servletIntro/index.do">/index.do</a></td>
+				<td>servlet 4</td>
+				<td><a href="/TIW-servletIntro/catalog">/catalog</a></td>
+				<td colspan="3">Error (Servlet5 if the "/" mapping is set)</td>
+			</tr>
+		</tbody>
+	</table>
+	<hr>
+	<h3>Request information:</h3>
+	<a href="http://localhost:8080/TIW-servletIntro/RequestInfo">http://localhost:8080/TIW-servletIntro/RequestInfo</a>
+	<hr>
+	<h3>Access counter: shared thread unsafe version (?reset=true to
+		reset to 0):</h3>
+	<p>Restart Tomcat to load the servlet config parameter</p>
+	<a href="http://localhost:8080/TIW-servletIntro/UnsafeCounter">http://localhost:8080/TIW-servletIntro/UnsafeCounter</a>
+	<br>
+	<a
+		href="http://localhost:8080/TIW-servletIntro/UnsafeCounter?reset=true">http://localhost:8080/TIW-servletIntro/UnsafeCounter?reset=true</a>
+	<p>This does the same using WebMapping</p>
+	<a href="http://localhost:8080/TIW-servletIntro/UnsafeCounterMapping">http://localhost:8080/TIW-servletIntro/UnsafeCounterMapping</a>
+	<br>
+	<a
+		href="http://localhost:8080/TIW-servletIntro/UnsafeCounterMapping?reset=true">http://localhost:8080/TIW-servletIntro/UnsafeCounterMapping?reset=true</a>
+	<hr>
+	<h3>Cookie inspector:</h3>
+	<p>This example is better viewed with an external browser equipped
+		with EditThisCookie</p>
+	<a href="http://localhost:8080/TIW-servletIntro/CookieInspector">step
+		1: Check cookies
+		http://localhost:8080/TIW-servletIntro/CookieInspector</a>
+	<br>
+	<a
+		href="http://localhost:8080/TIW-servletIntro/CookieInspector?name=foo&value=bar">step
+		2: Set foo = bar
+		http://localhost:8080/TIW-servletIntro/CookieInspector?name=foo&amp;value=bar</a>
+	<br>
+	<a href="http://localhost:8080/TIW-servletIntro/CookieInspector">step
+		3: Check cookies
+		http://localhost:8080/TIW-servletIntro/CookieInspector</a>
+	<hr>
+	<h3>Session use, one counter per client:</h3>
+	<p>This example is better viewed with an external browser.</p>
+	<p>
+		Step 1 open a bowser window and call and click <br>
+		<a href="http://localhost:8080/TIW-servletIntro/SessionCounter">http://localhost:8080/TIW-servletIntro/SessionCounter</a>
+	</p>
+	<p>Step 2: open an incognito window and click on the same link again,
+		then you have two distinct clients with separate sessions</p>
+	<p>
+		Step 3: reload any number of times the pages to increment the counter. 
+	</p>
+		<p>
+		Step 4: to reset the counting, in one of the two windows click:
+		<a href="http://localhost:8080/TIW-servletIntro/SessionCounter?reset=true">http://localhost:8080/TIW-servletIntro/SessionCounter?reset=true</a>. At
+		the <strong> next </strong> request, the counter will restart.
+	</p>
+	<h3>Form upload:</h3>
+	<p>Load the form at the address below, insert an amount and submit.
+		Then reload the page showing the confirmation message and check the
+		warning message.</p>
+	<a href="http://localhost:8080/TIW-servletIntro/Forms/CCEntryForm.html">http://localhost:8080/TIW-servletIntro/Forms/CCEntryForm.html</a>
+	<br>
+	<p>Load the form at the address below, insert an amount and submit.
+		Then reload the page showing the confirmation message and check that
+		the warning message does not appear.</p>
+	<a
+		href="http://localhost:8080/TIW-servletIntro/Forms/CCEntryFormRedirect.html">
+		http://localhost:8080/TIW-servletIntro/Forms/CCEntryFormRedirect.html</a>
+	<br>
+
+</body>
+</html>
