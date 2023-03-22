@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Checkbox</title>
+</head>
+<body>
+	<h3>Registration to courses</h3>
+	<h4>This example simulates the inscription to courses</h4>
+	
+	<p>Select the courses to which you would like to register:</p>
+	 
+	<!-- The select tag has the possibility to also select multiple inputs multiple="multiple" 
+	  -- In this case, we call to /register that accepts multiple courses ids, 
+	  -- instead to /registerToCourse that accepts only 1 id      
+	 -->
+	<!-- <form action="register" method="post">
+		<select name="courses" multiple="multiple"> -->
+	 
+	<form action="registerToCourse" method="post">
+		<select name="course" >
+		    <option  value="1">TIW</option>
+			<option value="2">DB2</option>
+			<option value="3">AWT</option>
+	    </select>
+		<input type="submit" />
+	</form>
+	
+	<p> This is an static page so if you add new courses, they will be not automatically reflected. We will learn to do that in future lessons.</p>
+</body>
+</html>
