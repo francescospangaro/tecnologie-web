@@ -1,6 +1,5 @@
 package it.polimi.webapp;
 
-import it.polimi.webapp.Initializer;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
@@ -10,10 +9,13 @@ import org.thymeleaf.web.IWebApplication;
 import org.thymeleaf.web.IWebExchange;
 import org.thymeleaf.web.servlet.JavaxServletWebApplication;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.Writer;
 
@@ -24,21 +26,31 @@ public abstract class ThymeleafServlet extends HttpServlet {
 
     private ITemplateEngine templateEngine;
     private JavaxServletWebApplication application;
+    private DataSource dataSource;
 
     @Override
     @Initializer
     @MustBeInvokedByOverriders
-    public void init() {
+    public void init() throws ServletException {
         this.isDevelopmentMode = Boolean.parseBoolean(getServletContext().getInitParameter("developmentMode"));
 
         this.application = JavaxServletWebApplication.buildApplication(getServletContext());
         this.templateEngine = buildTemplateEngine(this.application);
+
+        try {
+            this.dataSource = (DataSource) new InitialContext().lookup("java:/comp/env/jdbc/AsteDB");
+        } catch (NamingException e) {
+            throw new ServletException("Failed to get Context", e);
+        }
+
+        if (this.dataSource == null)
+            throw new ServletException("Data source not found!");
     }
 
     @Override
     protected final void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         try {
-            final IWebExchange webExchange = this.application.buildExchange(request, response);
+            final IWebExchange webExchange = application.buildExchange(request, response);
 
             /*
              * Write the response headers
@@ -57,7 +69,7 @@ public abstract class ThymeleafServlet extends HttpServlet {
              * Execute the controller and process view template,
              * writing the results to the response writer.
              */
-            process(webExchange, this.templateEngine, writer);
+            process(webExchange, templateEngine, dataSource, writer);
         } catch (final Exception e) {
             try {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -68,7 +80,11 @@ public abstract class ThymeleafServlet extends HttpServlet {
         }
     }
 
-    protected abstract void process(IWebExchange webExchange, ITemplateEngine templateEngine, Writer writer) throws Exception;
+    protected abstract void process(IWebExchange webExchange,
+                                    ITemplateEngine templateEngine,
+                                    DataSource dataSource,
+                                    Writer writer)
+            throws Exception;
 
     private ITemplateEngine buildTemplateEngine(final IWebApplication application) {
         final WebApplicationTemplateResolver templateResolver = new WebApplicationTemplateResolver(application);
