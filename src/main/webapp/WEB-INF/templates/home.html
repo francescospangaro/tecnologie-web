@@ -3,35 +3,24 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Good Thymes Virtual Grocery</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<!--    <link rel="stylesheet" type="text/css" media="all" href="../../css/gtvg.css" th:href="@{/css/gtvg.css}" />-->
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 
 <body>
 
-<div>
-<!--    <img src="../../images/gtvglogo.png" alt="GTVG logo" title="GTVG logo"-->
-<!--         th:src="@{/images/gtvglogo.png}" th:alt-title="#{logo}" />-->
-</div>
+<p th:utext="#{home.welcome(${session.user})}">helo</p>
 
-<p th:utext="#{home.welcome(${session.user})}">Welcome to our grocery store, Sebastian!</p>
+<p th:text="#{home.date}"><span th:with="df=#{date.format}" th:text="${#calendars.format(today,df)}">testo testo</span></p>
 
-<p>
-    Today is: <span th:with="df=#{date.format}" th:text="${#calendars.format(today,df)}">13 February 2011</span>
-</p>
-
-<p>Please select an option</p>
+<p th:utext="#{home.menu}"></p>
 <ol>
-<!--    <li><a href="product/list.html" th:href="@{/product/list}">Product List</a></li>-->
-<!--    <li><a href="order/list.html" th:href="@{/order/list}">Order List</a></li>-->
-<!--    <li><a href="subscribe.html" th:href="@{/subscribe}">Subscribe to our Newsletter</a></li>-->
-<!--    <li><a href="userprofile.html" th:href="@{/userprofile}">See User Profile</a></li>-->
+    <li><a href="buy.html" th:href="@{/buy}" th:utext="#{home.buy}"></a></li>
+    <li><a href="sell.html" th:href="@{/sell}" th:utext="#{home.sell}"></a></li>
 </ol>
 
-<p>Now you are looking at a <span th:text="'working web application'">template file</span>.</p>
 
-<div>&copy; 2011 The Static Templates</div>
+<div>&copy; 2011 The Static Templates scammato</div>
 
 </body>
 
