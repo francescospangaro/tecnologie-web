@@ -17,6 +17,9 @@
         <param-value>true</param-value>
     </context-param>
 
+
+<!-- Servlets and Filters-->
+    <!-- Login -->
     <servlet>
         <servlet-name>LoginPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.LoginPage</servlet-class>
@@ -26,7 +29,6 @@
         <servlet-name>LoginController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.LoginController</servlet-class>
     </servlet>
-
 
     <filter>
         <filter-name>LoggedFilter</filter-name>
@@ -38,21 +40,54 @@
         <filter-class>it.polimi.webapp.filters.NotLoggedFilter</filter-class>
     </filter>
 
+    <!-- Home -->
     <servlet>
         <servlet-name>HomePage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.HomePage</servlet-class>
     </servlet>
 
+    <!-- Buy -->
     <servlet>
         <servlet-name>BuyPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.BuyPage</servlet-class>
     </servlet>
 
+    <!-- Sell -->
     <servlet>
         <servlet-name>SellPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
     </servlet>
 
+        <!-- Single articles -->
+    <servlet>
+        <servlet-name>ArticleInsertionPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.ArticleInsertionPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ArticleController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.ArticleController</servlet-class>
+    </servlet>
+
+        <!-- Single auctions -->
+    <servlet>
+        <servlet-name>AuctionInsertionPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.AuctionInsertionPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AuctionController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.AuctionController</servlet-class>
+    </servlet>
+
+    <!-- Logout -->
+    <servlet>
+        <servlet-name>LogoutController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.LogoutController</servlet-class>
+    </servlet>
+
+<!-- Mappings -->
+    <!-- Login -->
     <servlet-mapping>
         <servlet-name>LoginPage</servlet-name>
         <url-pattern>/login</url-pattern>
@@ -76,21 +111,53 @@
         <url-pattern>/sell</url-pattern>
     </filter-mapping>
 
+    <!-- Home -->
     <servlet-mapping>
         <servlet-name>HomePage</servlet-name>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <!-- Buy -->
     <servlet-mapping>
         <servlet-name>BuyPage</servlet-name>
         <url-pattern>/buy</url-pattern>
     </servlet-mapping>
 
+    <!-- Sell -->
     <servlet-mapping>
         <servlet-name>SellPage</servlet-name>
         <url-pattern>/sell</url-pattern>
     </servlet-mapping>
 
+        <!-- Single articles -->
+    <servlet-mapping>
+        <servlet-name>ArticleInsertionPage</servlet-name>
+        <url-pattern>/articleInsertion</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ArticleController</servlet-name>
+        <url-pattern>/insertArticle</url-pattern>
+    </servlet-mapping>
+
+        <!-- Single auctions -->
+    <servlet-mapping>
+        <servlet-name>AuctionInsertionPage</servlet-name>
+        <url-pattern>/auctionInsertion</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AuctionController</servlet-name>
+        <url-pattern>/insertAuction</url-pattern>
+    </servlet-mapping>
+
+    <!-- Logout -->
+    <servlet-mapping>
+        <servlet-name>LogoutController</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome -->
     <welcome-file-list>
         <welcome-file>login</welcome-file>
     </welcome-file-list>

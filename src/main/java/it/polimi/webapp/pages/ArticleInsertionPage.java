@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 import java.io.Writer;
 import java.util.Objects;
 
-public class SellPage extends ThymeleafServlet {
+public class ArticleInsertionPage extends ThymeleafServlet {
     @Override
     protected void process(IWebExchange webExchange,
                            ITemplateEngine templateEngine,
@@ -18,8 +18,9 @@ public class SellPage extends ThymeleafServlet {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
 
-        ctx.setVariable("goodInsertion", Objects.requireNonNullElse(webExchange.getAttributeValue("goodInsertion"), false));
+        ctx.setVariable("errorDataInserted", Objects.requireNonNullElse(webExchange.getAttributeValue("errorDataInserted"), false));
+        ctx.setVariable("errorQuery", Objects.requireNonNullElse(webExchange.getAttributeValue("errorQuery"), false));
 
-        templateEngine.process("sell", ctx, writer);
+        templateEngine.process("articleInsertion", ctx, writer);
     }
 }

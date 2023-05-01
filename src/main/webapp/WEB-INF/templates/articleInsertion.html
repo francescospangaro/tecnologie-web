@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+
+<form th:action="@{/insertArticle}" th:method="post">
+
+    <div>
+        <span th:if="${errorDataInserted}" th:utext="#{articleInsertion.errorDataInserted}"></span>
+    </div>
+    <div>
+        <span th:if="${errorQuery}" th:utext="#{articleInsertion.errorQuery}"></span>
+    </div>
+    <div>
+        <p th:utext="#{articleInsertion.name}"></p>
+        <label>
+            <input type="text" th:id="${articleName}" name="articleName"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{articleInsertion.description}"></p>
+        <label>
+            <textarea th:id="${articleDesc}" name="articleDesc"></textarea><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{articleInsertion.image}"></p>
+        <label>
+            <input type="file" th:id="${articleImage}" name="articleImage" alt="#{buy.imageAlt}"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{articleInsertion.price}"></p>
+        <label>
+            <input type="number" step="0.01" th:id="${articlePrice}" name="articlePrice"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{articleInsertion.submit}"></button>
+    </div>
+</form>
+<div>&copy; 2011 The Static Templates scammato</div>
+
+</body>
+
+</html>

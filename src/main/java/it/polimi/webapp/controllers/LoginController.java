@@ -42,15 +42,16 @@ public class LoginController extends HttpServlet {
             return;
         }
         try (var connection = dataSource.getConnection();
-             PreparedStatement selectUsers = connection.prepareStatement("SELECT nome, email, password FROM utente");
+             PreparedStatement selectUsers = connection.prepareStatement("SELECT idUtente, nome, email, password FROM utente");
              var results = selectUsers.executeQuery()
         ) {
             boolean found = false;
             while (results.next()) {
-                if (results.getString(2).equals(username) && results.getString(3).equals(password)) {
+                if (results.getString(3).equals(username) && results.getString(4).equals(password)) {
                     //found user, and password is correct
                     found = true;
-                    req.getSession(true).setAttribute("user", results.getString(1));
+                    req.getSession(true).setAttribute("userId", results.getInt(1));
+                    req.getSession().setAttribute("user", results.getString(2));
                     break;
                 }
             }

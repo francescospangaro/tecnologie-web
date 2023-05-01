@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+
+<form th:action="@{/insertAuction}" th:method="post">
+
+    <div>
+        <span th:if="${errorAuctionDataInserted}" th:utext="#{auctionInsertion.errorDataInserted}"></span>
+    </div>
+    <div>
+        <span th:if="${errorAuctionQuery}" th:utext="#{auctionInsertion.errorQuery}"></span>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{auctionInsertion.selectArticle}"></p>
+        <label>
+            <select name="selectedArticles" th:id="${selectedArticles}" multiple>
+                <option th:each="article : ${articles}" th:utext="${articles.getString(2)} + ${articles.getString(3)}" th:value="${articles.getString(1)}"></option>
+            </select>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{auctionInsertion.minimumOfferDifference}"></p>
+        <label>
+            <input type="number" step="0.01" th:id="${minimumOfferDifference}" name="minimumOfferDifference"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{auctionInsertion.expiryDate}"></p>
+        <label>
+            <input type="date" th:id="${auctionExpiration}" name="auctionExpiration"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{auctionInsertion.submit}"></button>
+    </div>
+</form>
+<div>&copy; 2011 The Static Templates scammato</div>
+
+</body>
+
+</html>

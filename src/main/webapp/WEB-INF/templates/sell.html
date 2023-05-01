@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <title>Casa d'aste "La Mafia"</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
-
 <body>
 
+<form th:action="@{/articleInsertion}" th:method="post">
+    <div>
+        <span th:if="${goodInsertion}" th:utext="#{sell.goodInsertion}"></span>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{sell.insertArticle}"></button>
+    </div>
+    <br>
+</form>
 
-<div>&copy; 2011 The Static Templates scammato</div>
-
+<form th:action="@{/auctionInsertion}" th:method="post">
+    <div>
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{sell.insertAuction}"></button>
+    </div>
+</form>
 </body>
-
 </html>
