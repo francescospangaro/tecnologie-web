@@ -7,8 +7,9 @@ import org.thymeleaf.web.IWebExchange;
 
 import javax.sql.DataSource;
 import java.io.Writer;
+import java.util.Objects;
 
-public class BuyPage extends ThymeleafServlet {
+public class LoginPage extends ThymeleafServlet {
     @Override
     protected void process(IWebExchange webExchange,
                            ITemplateEngine templateEngine,
@@ -16,6 +17,10 @@ public class BuyPage extends ThymeleafServlet {
                            Writer writer) {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
-        templateEngine.process("buy", ctx, writer);
+
+        ctx.setVariable("errorCred", Objects.requireNonNullElse(webExchange.getAttributeValue("errorCred"), false));
+        ctx.setVariable("errorNotFound", Objects.requireNonNullElse(webExchange.getAttributeValue("errorNotFound"), false));
+
+        templateEngine.process("login", ctx, writer);
     }
 }

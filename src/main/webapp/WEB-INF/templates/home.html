@@ -11,8 +11,9 @@
 
 <p th:utext="#{home.welcome(${session.user})}"></p>
 
-<p th:text="#{home.date}"><span th:with="df=#{date.format}" th:text="${#calendars.format(today,df)}"></span></p>
-
+<div>
+    <p th:with="df=#{date.format}" th:text="#{home.date(${#calendars.format(today,df)})}"></p>
+</div>
 <p th:utext="#{home.menu}"></p>
 <ol>
     <li><a href="buy.html" th:href="@{/buy}" th:utext="#{home.buy}"></a></li>

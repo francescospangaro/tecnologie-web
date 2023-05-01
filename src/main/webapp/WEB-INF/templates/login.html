@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+
+<form th:action="@{/userLogin}" th:method="post">
+
+    <div>
+        <span th:if="${errorCred}" th:utext="#{login.errorCred}"></span>
+    </div>
+    <div>
+        <span th:if="${errorNotFound}" th:utext="#{login.errorNotFound}"></span>
+    </div>
+    <div>
+        <p th:utext="#{login.user}"></p>
+        <label>
+            <input type="text" th:id="${user}" name="user"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <p th:utext="#{login.password}"></p>
+        <label>
+            <input type="password" th:id="${pass}" name="pass"><br>
+        </label>
+    </div>
+    <br>
+    <div>
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{login.submit}"></button>
+    </div>
+</form>
+</body>
+</html>

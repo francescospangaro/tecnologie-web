@@ -14,7 +14,6 @@ public class SellPage extends ThymeleafServlet {
                            ITemplateEngine templateEngine,
                            DataSource dataSource,
                            Writer writer) {
-        webExchange.getSession().setAttributeValue("user", "John");
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
         templateEngine.process("sell", ctx, writer);

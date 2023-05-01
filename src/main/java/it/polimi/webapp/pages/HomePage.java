@@ -15,7 +15,6 @@ public class HomePage extends ThymeleafServlet {
                            ITemplateEngine templateEngine,
                            DataSource dataSource,
                            Writer writer) {
-        webExchange.getSession().setAttributeValue("user", "John");
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
         ctx.setVariable("today", Calendar.getInstance());

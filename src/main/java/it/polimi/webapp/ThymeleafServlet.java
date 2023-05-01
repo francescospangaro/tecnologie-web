@@ -49,6 +49,16 @@ public abstract class ThymeleafServlet extends HttpServlet {
 
     @Override
     protected final void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        doProcess(request, response);
+    }
+
+    @Override
+    protected final void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        //this is to support request dispatcher forwarding (doesn't work with doPost if doProcess is only done in doGet)
+        doProcess(request, response);
+    }
+
+    protected void doProcess(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         try {
             final IWebExchange webExchange = application.buildExchange(request, response);
 

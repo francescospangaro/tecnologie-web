@@ -18,6 +18,27 @@
     </context-param>
 
     <servlet>
+        <servlet-name>LoginPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.LoginPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>LoginController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.LoginController</servlet-class>
+    </servlet>
+
+
+    <filter>
+        <filter-name>LoggedFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.LoggedFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>NotLoggedFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.NotLoggedFilter</filter-class>
+    </filter>
+
+    <servlet>
         <servlet-name>HomePage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.HomePage</servlet-class>
     </servlet>
@@ -31,6 +52,29 @@
         <servlet-name>SellPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>LoginPage</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>LoginController</servlet-name>
+        <url-pattern>/userLogin</url-pattern>
+    </servlet-mapping>
+
+    <filter-mapping>
+        <filter-name>LoggedFilter</filter-name>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/userLogin</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>NotLoggedFilter</filter-name>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/buy</url-pattern>
+        <url-pattern>/sell</url-pattern>
+    </filter-mapping>
 
     <servlet-mapping>
         <servlet-name>HomePage</servlet-name>
@@ -48,6 +92,6 @@
     </servlet-mapping>
 
     <welcome-file-list>
-        <welcome-file>home</welcome-file>
+        <welcome-file>login</welcome-file>
     </welcome-file-list>
 </web-app>
