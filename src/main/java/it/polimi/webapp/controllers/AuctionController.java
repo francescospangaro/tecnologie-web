@@ -10,8 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class AuctionController extends HttpServlet {
@@ -33,7 +36,67 @@ public class AuctionController extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // TODO: kinda self explanatory is it?
+        Integer userId = (Integer) req.getSession().getAttribute("userId");
+        Integer asta_idAsta = -1;
+        Integer articleId = Integer.parseInt(req.getParameter("selectedArticles"));
+        double minimumOfferDifference = Double.parseDouble(req.getParameter("minimumOfferDifference"));
+        LocalDate expiryDate = LocalDate.parse(req.getParameter("expiryDate"));
+        if(articleId == -1 || minimumOfferDifference == -1 || expiryDate.isBefore(LocalDate.now()) || minimumOfferDifference <= 0){
+            var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
+            req.setAttribute("errorDataInserted", true);
+            disp.forward(req, resp);
+            return;
+        }
+        try (var connection = dataSource.getConnection();
+        PreparedStatement insertAuction = connection.prepareStatement(
+                "INSERT INTO asta (rialzoMin, scadenza) VALUES (?, ?)")){
+            insertAuction.setDouble(1, minimumOfferDifference);
+            insertAuction.setDate(2, Date.valueOf(expiryDate));
+            var result = insertAuction.executeUpdate();
+            if (result == 0) {
+                //error in query execution
+                var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
+                req.setAttribute("errorQuery", true);
+                disp.forward(req, resp);
+                return;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (var connection = dataSource.getConnection();
+             PreparedStatement getAuction = connection.prepareStatement("SELECT idAsta FROM asta");
+             var results = getAuction.executeQuery()
+        ) {
+            while (results.next()) {
+                if (asta_idAsta<results.getInt(1)) {
+                    //get last auction (the biggest id is the last auction)
+                    asta_idAsta = results.getInt(1);
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        try (var connection = dataSource.getConnection();
+             PreparedStatement relate = connection.prepareStatement(
+                     "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
+        ) {
+            relate.setInt(1, articleId);
+            relate.setInt(2, asta_idAsta);
+            var result = relate.executeUpdate();
+            if (result == 0) {
+                //error in query execution
+                var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
+                req.setAttribute("errorQuery", true);
+                disp.forward(req, resp);
+                return;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        req.setAttribute("goodAuctionInsertion", true);
+        resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }
 
 

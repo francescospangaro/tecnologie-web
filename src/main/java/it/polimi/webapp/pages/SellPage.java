@@ -19,6 +19,7 @@ public class SellPage extends ThymeleafServlet {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
 
         ctx.setVariable("goodInsertion", Objects.requireNonNullElse(webExchange.getAttributeValue("goodInsertion"), false));
+        ctx.setVariable("goodAuctionInsertion", Objects.requireNonNullElse(webExchange.getAttributeValue("goodInsertion"), false));
 
         templateEngine.process("sell", ctx, writer);
     }

@@ -39,7 +39,7 @@ public class ArticleController extends HttpServlet {
         String articleImage = req.getParameter("articleImage");
         double articlePrice = -1;
         if(articleName == null || articleName.isEmpty() || articleDesc == null || articleDesc.isEmpty() || articleImage == null || articleImage.isEmpty()){
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
+            var disp = Objects.requireNonNull(req.getRequestDispatcher("/articleInsertion"), "Missing dispatcher");
             req.setAttribute("errorDataInserted", true);
             disp.forward(req, resp);
             return;
