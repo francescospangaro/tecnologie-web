@@ -22,9 +22,29 @@
         <servlet-class>it.polimi.webapp.pages.HomePage</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>BuyPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.BuyPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>SellPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>HomePage</servlet-name>
         <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>BuyPage</servlet-name>
+        <url-pattern>/buy</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SellPage</servlet-name>
+        <url-pattern>/sell</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>

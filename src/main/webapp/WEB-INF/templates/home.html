@@ -9,9 +9,9 @@
 
 <body>
 
-<p th:utext="#{home.welcome(${session.user})}">helo</p>
+<p th:utext="#{home.welcome(${session.user})}"></p>
 
-<p th:text="#{home.date}"><span th:with="df=#{date.format}" th:text="${#calendars.format(today,df)}">testo testo</span></p>
+<p th:text="#{home.date}"><span th:with="df=#{date.format}" th:text="${#calendars.format(today,df)}"></span></p>
 
 <p th:utext="#{home.menu}"></p>
 <ol>
