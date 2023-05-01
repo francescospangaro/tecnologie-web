@@ -1,5 +1,6 @@
 package it.polimi.webapp.pages;
 
+import it.polimi.webapp.ArticleObjectsList;
 import it.polimi.webapp.ThymeleafServlet;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -33,7 +34,8 @@ public class AuctionInsertionPage extends ThymeleafServlet {
             try (var result = preparedStatement.executeQuery()){
                 // TODO: need to check what happens if no articles are found
                 //  and maybe send an error message
-                ctx.setVariable("articles", Objects.requireNonNull(result));
+
+                ctx.setVariable("articles", new ArticleObjectsList().toArticleObjectsList(Objects.requireNonNull(result)));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

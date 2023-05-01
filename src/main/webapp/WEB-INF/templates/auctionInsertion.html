@@ -17,12 +17,11 @@
     <div>
         <span th:if="${errorAuctionQuery}" th:utext="#{auctionInsertion.errorQuery}"></span>
     </div>
-    <br>
     <div>
         <p th:utext="#{auctionInsertion.selectArticle}"></p>
         <label>
             <select name="selectedArticles" th:id="${selectedArticles}" multiple>
-                <option th:each="article : ${articles}" th:utext="${articles.getString(2)} + ${articles.getString(3)}" th:value="${articles.getString(1)}"></option>
+                <option th:each="article : ${articles}" th:utext="${article.getName()} + ${article.getDescription()}" th:value="${article.getCodArticle()}"></option>
             </select>
         </label>
     </div>
