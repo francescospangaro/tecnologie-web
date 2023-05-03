@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<div>
+    <span th:if="${errorQuery}" th:utext="#{closedAuction.errorQuery}"></span>
+</div>
+<div th:if="${!errorQuery}">
+    <tr>
+        <td th:each="article : ${closedAuction}" th:utext="${article.getIdAsta()} +
+         ${article.getName()} + ${article.getDescription()} + ${article.getPrice()} + ${article.getImage()}"
+            th:default="-1" th:value="${article.getCodArticle()}"></td>
+    </tr>
+</div>
+</body>
+</html>
