@@ -49,12 +49,12 @@ public record Auction(
 
     /** returns the number of days between login and expiration date */
     public long getRemainingDays(LocalDateTime now) {
-        return Duration.between(now, expiry).toDays();
+        return now.isAfter(expiry) ? 0 : Duration.between(now, expiry).toDays();
     }
 
     /** returns the number of hours between login and expiration date (< 24) */
     public int getRemainingHours(LocalDateTime now) {
-        return Duration.between(now, expiry).toHoursPart();
+        return now.isAfter(expiry) ? 0 :  Duration.between(now, expiry).toHoursPart();
     }
 
     public Auction withId(int id) {

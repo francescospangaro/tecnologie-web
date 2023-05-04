@@ -22,8 +22,7 @@
 
 <div th:with="days=${auction.base.getRemainingDays(session.loginTime)},
                   hours=${auction.base.getRemainingHours(session.loginTime)}"
-        th:if="${auction.isOpen} and (${days} == '0') and (${hours} == '0')">
-    <!-- TODO: check if the expiration date is passed before closing -->
+        th:if="${auction.isOpen} and ${days} eq '0' and ${hours} eq '0'">
     <form th:action="@{/closeAuction?id=${auction.base.id}}" th:method="delete">
         <button type="submit" class="btn btn-primary btn-block" th:text="#{auctionDetails.closeAuction}"></button>
     </form>
