@@ -1,7 +1,9 @@
 package it.polimi.webapp.pages;
 
-import it.polimi.webapp.ArticleObjectsList;
+import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.ThymeleafServlet;
+import it.polimi.webapp.dao.ArticleDao;
+import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.IWebExchange;
@@ -27,15 +29,13 @@ public class AuctionInsertionPage extends ThymeleafServlet {
         ctx.setVariable("errorAuctionQuery", Objects.requireNonNullElse(
                 webExchange.getAttributeValue("errorAuctionQuery"), false));
 
-        try (var connection = dataSource.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT codArticolo, nome, descrizione FROM articolo WHERE utente_idUtente = ?");
-        ) {
-            preparedStatement.setInt(1, (Integer) webExchange.getSession().getAttributeValue("userId"));
-            try (var result = preparedStatement.executeQuery()){
-                // TODO: need to check what happens if no articles are found
-                //  and maybe send an error message
-
-                ctx.setVariable("articles", new ArticleObjectsList().toArticleObjectsList(Objects.requireNonNull(result)));
+        try (var connection = dataSource.getConnection()){
+            var result = new ArticleDao(connection).findAllArticles(
+                    (Integer) webExchange.getSession().getAttributeValue("userId"));
+            if(result!=null){
+                ctx.setVariable("articles", result);
+            }else{
+                ctx.setVariable("errorQuery", true);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

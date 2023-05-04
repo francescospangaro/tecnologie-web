@@ -1,6 +1,9 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.Initializer;
+import it.polimi.webapp.beans.Article;
+import it.polimi.webapp.beans.Auction;
+import it.polimi.webapp.dao.AuctionDao;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -10,12 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -39,25 +39,52 @@ public class AuctionController extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Integer asta_idAsta = -1;
-        String[] stringArticleIds = req.getParameterValues("selectedArticles");
-        List<Integer> articleIds = new ArrayList<>(Arrays.stream(stringArticleIds)
-                .map(Integer::parseInt)
-                .toList());
-        double minimumOfferDifference = Double.parseDouble(req.getParameter("minimumOfferDifference"));
-        LocalDate expiryDate = LocalDate.parse(req.getParameter("expiryDate"));
-        if (articleIds.get(0) == -1 || minimumOfferDifference == -1 || expiryDate.isBefore(LocalDate.now()) || minimumOfferDifference <= 0) {
+
+        boolean wrongInsertedData = false;
+
+        List<Integer> articleIds = null;
+        try {
+            var stringArticleIds = req.getParameterValues("selectedArticles");
+             articleIds = stringArticleIds == null ? null : Arrays.stream(stringArticleIds)
+                     .map(Integer::parseInt)
+                     .toList();
+        } catch (NumberFormatException ex) {
+            wrongInsertedData = true;
+        }
+
+        double minimumOfferDifference = -1;
+        try {
+            minimumOfferDifference = Double.parseDouble(req.getParameter("minimumOfferDifference"));
+        } catch (NumberFormatException ex) {
+            wrongInsertedData = true;
+        }
+
+        LocalDate expiryDate = null;
+        try {
+            expiryDate = LocalDate.parse(req.getParameter("expiryDate"));
+        } catch (DateTimeParseException ex) {
+            wrongInsertedData = true;
+        }
+
+        wrongInsertedData = wrongInsertedData ||
+                articleIds == null || articleIds.isEmpty()
+                || minimumOfferDifference <= 0
+                || expiryDate == null || expiryDate.isBefore(LocalDate.now());
+
+        if (wrongInsertedData) {
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
             req.setAttribute("errorDataInserted", true);
             disp.forward(req, resp);
             return;
         }
-        try (var connection = dataSource.getConnection();
-             PreparedStatement insertAuction = connection.prepareStatement(
-                     "INSERT INTO asta (rialzoMin, scadenza) VALUES (?, ?)")) {
-            insertAuction.setDouble(1, minimumOfferDifference);
-            insertAuction.setDate(2, Date.valueOf(expiryDate));
-            var result = insertAuction.executeUpdate();
+
+        var auction = new Auction(
+                expiryDate,
+                articleIds.stream().map(Article::new).toList(),
+                minimumOfferDifference);
+
+        try (var connection = dataSource.getConnection()) {
+            int result = new AuctionDao(connection).insertAuction(auction);
             if (result == 0) {
                 //error in query execution
                 var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
@@ -69,38 +96,6 @@ public class AuctionController extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        try (var connection = dataSource.getConnection();
-             PreparedStatement getAuction = connection.prepareStatement("SELECT idAsta FROM asta");
-             var results = getAuction.executeQuery()
-        ) {
-            while (results.next()) {
-                if (asta_idAsta < results.getInt(1)) {
-                    //get last auction (the biggest id is the last added auction)
-                    asta_idAsta = results.getInt(1);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        for (Integer articleId : articleIds) {
-            try (var connection = dataSource.getConnection();
-                 PreparedStatement relate = connection.prepareStatement(
-                         "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
-            ) {
-                relate.setInt(1, articleId);
-                relate.setInt(2, asta_idAsta);
-                var result = relate.executeUpdate();
-                if (result == 0) {
-                    //error in query execution
-                    var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
-                    req.setAttribute("errorQuery", true);
-                    disp.forward(req, resp);
-                    return;
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
         req.setAttribute("goodAuctionInsertion", true);
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }
