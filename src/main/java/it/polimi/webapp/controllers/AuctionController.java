@@ -14,13 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class AuctionController extends HttpServlet {
+
     private DataSource dataSource;
 
     @Override
@@ -45,9 +47,9 @@ public class AuctionController extends HttpServlet {
         List<Integer> articleIds = null;
         try {
             var stringArticleIds = req.getParameterValues("selectedArticles");
-             articleIds = stringArticleIds == null ? null : Arrays.stream(stringArticleIds)
-                     .map(Integer::parseInt)
-                     .toList();
+            articleIds = stringArticleIds == null ? null : Arrays.stream(stringArticleIds)
+                    .map(Integer::parseInt)
+                    .toList();
         } catch (NumberFormatException ex) {
             wrongInsertedData = true;
         }
@@ -59,24 +61,29 @@ public class AuctionController extends HttpServlet {
             wrongInsertedData = true;
         }
 
-        LocalDate expiryDate = null;
+        LocalDateTime expiryDate = null;
         try {
-            expiryDate = LocalDate.parse(req.getParameter("expiryDate"));
+            var dateStr = req.getParameter("expiryDate");
+            expiryDate = dateStr != null ? LocalDateTime.parse(dateStr) : null;
         } catch (DateTimeParseException ex) {
             wrongInsertedData = true;
         }
 
-        wrongInsertedData = wrongInsertedData ||
-                articleIds == null || articleIds.isEmpty()
+        wrongInsertedData = wrongInsertedData
+                || articleIds == null || articleIds.isEmpty()
                 || minimumOfferDifference <= 0
-                || expiryDate == null || expiryDate.isBefore(LocalDate.now());
+                || expiryDate == null || expiryDate.isBefore(LocalDateTime.now());
 
         if (wrongInsertedData) {
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
-            req.setAttribute("errorDataInserted", true);
+            req.setAttribute("errorAuctionDataInserted", true);
             disp.forward(req, resp);
             return;
         }
+
+        // Make NullAway happy, 'cause it can't infer that these are affectively non-null
+        Objects.requireNonNull(expiryDate);
+        Objects.requireNonNull(articleIds);
 
         var auction = new Auction(
                 expiryDate,
@@ -88,7 +95,7 @@ public class AuctionController extends HttpServlet {
             if (result == 0) {
                 //error in query execution
                 var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
-                req.setAttribute("errorQuery", true);
+                req.setAttribute("errorAuctionQuery", true);
                 disp.forward(req, resp);
                 return;
             }
@@ -100,5 +107,26 @@ public class AuctionController extends HttpServlet {
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }
 
+    @Override
+    public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        int auctionId;
+        try {
+            auctionId = Integer.parseInt(req.getParameter("id"));
+        } catch (NumberFormatException ex) {
+            resp.sendError(404);
+            return;
+        }
 
+        try(var connection = dataSource.getConnection()) {
+            var res = new AuctionDao(connection).closeAuction(auctionId);
+            if(res == 0) {
+                resp.sendError(404);
+                return;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        resp.sendRedirect(getServletContext().getContextPath() + "/sell");
+    }
 }

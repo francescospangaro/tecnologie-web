@@ -6,6 +6,7 @@ public record Offer(
         int userId,
         int auctionId,
         double price,
+        String name,
         LocalDate date
 ) {
 }

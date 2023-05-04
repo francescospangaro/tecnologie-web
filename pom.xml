@@ -171,7 +171,7 @@
                         <properties>
                             <cargo.servlet.port>${servlet.port}</cargo.servlet.port>
                             <!-- Log level -->
-                            <cargo.logging>high</cargo.logging>
+<!--                            <cargo.logging>high</cargo.logging>-->
                         </properties>
                         <users>
                             <!-- Default user with access to the HTMl GUI -->

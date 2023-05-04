@@ -2,22 +2,28 @@ package it.polimi.webapp.beans;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public record Auction(
         int id,
-        LocalDate expiry,
+        LocalDateTime expiry,
         @Nullable List<Article> articles,
-        double minimumOfferDifference
+        double minimumOfferDifference,
+        double maxOffer
 ) {
 
-    public Auction(LocalDate expiry, List<Article> articles, double minimumOfferDifference) {
-        this(-1, expiry, articles, minimumOfferDifference);
+    public Auction(LocalDateTime expiry, List<Article> articles, double minimumOfferDifference) {
+        this(-1, expiry, articles, minimumOfferDifference, -1);
     }
 
-    public Auction(int id, LocalDate expiry, double minimumOfferDifference) {
-        this(id, expiry, null, minimumOfferDifference);
+    public Auction(int id, LocalDateTime expiry, double minimumOfferDifference) {
+        this(id, expiry, null, minimumOfferDifference, -1);
     }
 
     @Override
@@ -34,11 +40,28 @@ public record Auction(
         return articles;
     }
 
+    @Override
+    public double maxOffer() {
+        if(maxOffer == -1D)
+            throw new IllegalStateException("Auction was created without maxOffer");
+        return maxOffer;
+    }
+
+    /** returns the number of days between login and expiration date */
+    public long getRemainingDays(LocalDateTime now) {
+        return Duration.between(now, expiry).toDays();
+    }
+
+    /** returns the number of hours between login and expiration date (< 24) */
+    public int getRemainingHours(LocalDateTime now) {
+        return Duration.between(now, expiry).toHoursPart();
+    }
+
     public Auction withId(int id) {
-        return new Auction(id, expiry, articles, minimumOfferDifference);
+        return new Auction(id, expiry, articles, minimumOfferDifference, maxOffer);
     }
 
     public Auction withArticles(List<Article> articles) {
-        return new Auction(id, expiry, articles, minimumOfferDifference);
+        return new Auction(id, expiry, articles, minimumOfferDifference, maxOffer);
     }
 }

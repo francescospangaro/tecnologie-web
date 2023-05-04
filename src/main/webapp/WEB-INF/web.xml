@@ -58,7 +58,7 @@
         <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
     </servlet>
 
-        <!-- Single articles -->
+    <!-- Single articles -->
     <servlet>
         <servlet-name>ArticleInsertionPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.ArticleInsertionPage</servlet-class>
@@ -69,7 +69,7 @@
         <servlet-class>it.polimi.webapp.controllers.ArticleController</servlet-class>
     </servlet>
 
-        <!-- Single auctions -->
+    <!-- Single auctions -->
     <servlet>
         <servlet-name>AuctionInsertionPage</servlet-name>
         <servlet-class>it.polimi.webapp.pages.AuctionInsertionPage</servlet-class>
@@ -80,10 +80,10 @@
         <servlet-class>it.polimi.webapp.controllers.AuctionController</servlet-class>
     </servlet>
 
-        <!-- View closed auctions -->
+    <!-- View closed auctions -->
     <servlet>
-        <servlet-name>ClosedAuctionPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.ClosedAuctionPage</servlet-class>
+        <servlet-name>AuctionDetailsPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.AuctionDetailsPage</servlet-class>
     </servlet>
 
     <!-- Logout -->
@@ -157,10 +157,10 @@
         <url-pattern>/insertAuction</url-pattern>
     </servlet-mapping>
 
-        <!-- View closed auctions -->
+    <!-- View closed auctions -->
     <servlet-mapping>
-        <servlet-name>ClosedAuctionPage</servlet-name>
-        <url-pattern>/closedAuction</url-pattern>
+        <servlet-name>AuctionDetailsPage</servlet-name>
+        <url-pattern>/auctionDetails</url-pattern>
     </servlet-mapping>
 
     <!-- Logout -->

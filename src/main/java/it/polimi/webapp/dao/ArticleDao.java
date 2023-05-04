@@ -19,9 +19,16 @@ public class ArticleDao {
 
     public @Nullable List<Article> findAllArticles(int userId) throws SQLException {
         try (var query = connection.prepareStatement("""
-            SELECT codArticolo, nome, descrizione, immagine, prezzo, utente_idUtente
-            FROM articolo
+            SELECT a.codArticolo, a.nome, a.descrizione, a.immagine, a.prezzo, a.utente_idUtente
+            FROM articolo as a
             WHERE utente_idUtente = ?
+            AND a.codArticolo NOT IN (
+                SELECT a1.codArticolo
+                FROM articolo as a1, asta, astearticoli
+                WHERE a1.codArticolo = astearticoli.articolo_codArticolo
+                AND astearticoli.asta_idAsta = asta.idAsta
+                AND asta.chiusa = true
+            )
             """)) {
             query.setInt(1, userId);
 

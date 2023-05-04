@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<div>
+    <span th:if="${errorQuery}" th:utext="#{auctionDetails.errorQuery}"></span>
+</div>
+<div th:if="${!errorQuery}">
+    <h2 th:utext="#{auctionDetails.auctionNum(${auction.base.id})}"></h2>
+    <div th:each="article : ${auction.base.articles}"
+         th:utext="${article.codArticle} + ' ' +  ${article.name}"
+         th:value="${article.codArticle}"></div>
+    <div th:if="${auction.isOpen}"
+         th:with="days=${auction.base.getRemainingDays(session.loginTime)},
+                  hours=${auction.base.getRemainingHours(session.loginTime)}"
+         th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}"></div>
+</div>
+
+<div th:with="days=${auction.base.getRemainingDays(session.loginTime)},
+                  hours=${auction.base.getRemainingHours(session.loginTime)}"
+        th:if="${auction.isOpen} and (${days} == '0') and (${hours} == 0)">
+    <!-- TODO: check if the expiration date is passed before closing -->
+    <form th:action="@{/closeAuction?id=${auction.base.id}}" th:method="delete">
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{auctionDetails.closeAuction}"></button>
+    </form>
+</div>
+
+<div th:if="${auction.isClosed}">
+
+</div>
+
+</body>
+</html>

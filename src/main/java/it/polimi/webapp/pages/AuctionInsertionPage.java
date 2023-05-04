@@ -1,16 +1,13 @@
 package it.polimi.webapp.pages;
 
-import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.ThymeleafServlet;
 import it.polimi.webapp.dao.ArticleDao;
-import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.IWebExchange;
 
 import javax.sql.DataSource;
 import java.io.Writer;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
 

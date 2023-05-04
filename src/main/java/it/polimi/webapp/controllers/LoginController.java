@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class LoginController extends HttpServlet {
@@ -52,6 +53,7 @@ public class LoginController extends HttpServlet {
                     found = true;
                     req.getSession(true).setAttribute("userId", results.getInt(1));
                     req.getSession().setAttribute("user", results.getString(2));
+                    req.getSession().setAttribute("loginTime", LocalDateTime.now());
                     break;
                 }
             }

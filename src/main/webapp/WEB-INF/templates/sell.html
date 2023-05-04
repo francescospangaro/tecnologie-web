@@ -7,12 +7,39 @@
 </head>
 <body>
 
-<form th:action="@{/closedAuction}" th:method="post">
-    <div>
-        <button type="submit" class="btn btn-primary btn-block" th:text="#{sell.closedAuctions}"></button>
-    </div>
-    <br>
-</form>
+<div>
+    <span th:if="${errorClosedQuery}" th:utext="#{sell.errorQuery}"></span>
+</div>
+<div th:if="${!errorClosedQuery}">
+    <table>
+        <tr th:each="auction : ${closedAuction}">
+            <td><a th:href="@{'/auctionDetails?id=' + ${auction.id}}" th:utext="${auction.id}"></a></td>
+            <td th:each="article : ${auction.articles}"
+                th:utext="${article.codArticle} + ' ' +  ${article.name}"
+                th:value="${article.codArticle}"></td>
+            <td th:utext="${auction.maxOffer} + '€'"></td>
+            <!-- <td th:utext="#{sell.remainigTime(${auction.getRemainingDays(${session.loginTime})}, ${auction.getRemainingHours(${session.loginTime})})}"></td>-->
+        </tr>
+    </table>
+</div>
+
+<div>
+    <span th:if="${errorOpenQuery}" th:utext="#{sell.errorQuery}"></span>
+</div>
+<div th:if="${!errorOpenQuery}">
+    <table>
+        <tr th:each="auction : ${openAuction}">
+            <td><a th:href="@{'/auctionDetails?id=' + ${auction.id}}" th:utext="${auction.id}"></a></td>
+            <td th:each="article : ${auction.articles}"
+                th:utext="${article.codArticle} + ' ' +  ${article.name}"
+                th:value="${article.codArticle}"></td>
+            <td th:utext="${auction.maxOffer} + '€'"></td>
+            <td th:with="days=${auction.getRemainingDays(session.loginTime)},
+                         hours=${auction.getRemainingHours(session.loginTime)}"
+                th:utext="#{sell.remainigTime(${days}, ${hours})}"></td>
+        </tr>
+    </table>
+</div>
 
 <form th:action="@{/articleInsertion}" th:method="post">
     <div>

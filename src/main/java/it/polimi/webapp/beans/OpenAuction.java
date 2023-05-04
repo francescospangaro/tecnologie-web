@@ -1,9 +1,11 @@
 package it.polimi.webapp.beans;
 
+
+import java.util.List;
+
 public record OpenAuction(Auction base,
-                          double finalPrice,
-                          String buyerName,
-                          String buyerAddress) implements ExtendedAuction {
+                          List<Offer> offers
+) implements ExtendedAuction {
 
     @Override
     public boolean isClosed() {
