@@ -62,7 +62,9 @@ public class AuctionDao {
         }
     }
 
-    public @Nullable ExtendedAuction findAuctionById(int userId, int auctionId) throws SQLException {
+
+
+    public @Nullable ExtendedAuction findAuctionByIds(int userId, int auctionId) throws SQLException {
         Auction baseAuction = null;
         boolean closed = false;
 
@@ -106,6 +108,45 @@ public class AuctionDao {
                 : doPopulateOpenAuction(baseAuction);
     }
 
+    public @Nullable OpenAuction findAuctionByAuctionId(int auctionId) throws SQLException {
+        Auction baseAuction = null;
+        boolean closed = false;
+
+        try (var query = connection.prepareStatement("""
+                SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
+                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
+                FROM articolo, asta, astearticoli, utente
+                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
+                AND asta.idAsta=astearticoli.asta_idAsta
+                AND asta_idAsta = ?""")) {
+            query.setInt(1, auctionId);
+
+            try (var res = query.executeQuery()) {
+                List<Article> articles = new ArrayList<>();
+                while (res.next()) {
+                    if (baseAuction == null) {
+                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getDouble(2));
+                    }
+
+                    articles.add(new Article(
+                            res.getInt(3),
+                            res.getString(4),
+                            res.getString(5),
+                            res.getString(6),
+                            res.getDouble(7),
+                            -1));
+                }
+
+                if (baseAuction == null)
+                    return null;
+
+                baseAuction = baseAuction.withArticles(articles);
+            }
+        }
+
+        return doPopulateOpenAuction(baseAuction);
+    }
+
     private @Nullable ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.prezzoOfferto, utente.nome, utente.indirizzo
@@ -130,7 +171,7 @@ public class AuctionDao {
 
     private @Nullable OpenAuction doPopulateOpenAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
-                SELECT offerta.utente_idUtente, offerta.asta_idAsta, offerta.prezzoOfferto, utente.nome, offerta.dataOfferta
+                SELECT offerta.idOfferta, offerta.utente_idUtente, offerta.asta_idAsta, offerta.prezzoOfferto, utente.nome, offerta.dataOfferta
                 FROM utente, offerta, asta as a
                 WHERE offerta.asta_idAsta = ?
                 AND offerta.utente_idUtente = utente.idUtente
@@ -140,7 +181,7 @@ public class AuctionDao {
             try (var res = query.executeQuery()) {
                 List<Offer> offers = new ArrayList<>();
                 while (res.next())
-                    offers.add(new Offer(res.getInt(1), res.getInt(2), res.getDouble(3), res.getString(4), res.getDate(5).toLocalDate()));
+                    offers.add(new Offer(res.getInt(1), res.getInt(2), res.getInt(3), res.getDouble(4), res.getString(5), res.getTimestamp(6).toLocalDateTime()));
                 return new OpenAuction(base, offers);
             }
         }

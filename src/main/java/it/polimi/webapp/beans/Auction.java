@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +21,10 @@ public record Auction(
 
     public Auction(LocalDateTime expiry, List<Article> articles, double minimumOfferDifference) {
         this(-1, expiry, articles, minimumOfferDifference, -1);
+    }
+
+    public Auction(){
+        this(-1, LocalDateTime.MIN, new ArrayList<>(), 0D, -1);
     }
 
     public Auction(int id, LocalDateTime expiry, double minimumOfferDifference) {

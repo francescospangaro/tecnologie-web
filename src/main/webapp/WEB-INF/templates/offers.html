@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+
+<div>
+    <span th:if="${errorQuery}" th:utext="#{offers.errorQuery}"></span>
+</div>
+
+<div th:if="${!errorQuery}">
+    <h2 th:utext="#{offers.auctionNum(${auction.base.id})}"></h2>
+    <div th:each="article : ${auction.base.articles}"
+         th:utext="${article.codArticle} + ' ' +  ${article.name}"
+         th:value="${article.codArticle}"></div>
+<!--    TODO: learn why it prints the same offer multiple times-->
+    <div th:each="offer : ${auction.offers}"
+         th:utext="${offer.date} + ' ' +  ${offer.name}+ ' ' + ${offer.price}"
+         th:value="${offer.offerId}"></div><div th:with="days=${auction.base.getRemainingDays(session.loginTime)},
+                  hours=${auction.base.getRemainingHours(session.loginTime)}"
+         th:utext="#{offers.remainigTime(${days}, ${hours})}"></div>
+</div>
+
+
+
+<div>
+    <form th:action="@{/insertOffer}" th:method="post">
+        <input type="hidden" th:id="id" name="id" th:value="${auction.base.id}">
+        <input type="number" step="0.01" th:id="${offerValue}" name="offerValue">
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{offers.confirm}"></button>
+    </form>
+</div>
+
+</body>
+</html>

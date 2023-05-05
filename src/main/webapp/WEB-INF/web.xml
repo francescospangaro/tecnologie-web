@@ -52,6 +52,17 @@
         <servlet-class>it.polimi.webapp.pages.BuyPage</servlet-class>
     </servlet>
 
+        <!-- Offers -->
+    <servlet>
+        <servlet-name>OffersPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.OffersPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>OffersController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.OffersController</servlet-class>
+    </servlet>
+
     <!-- Sell -->
     <servlet>
         <servlet-name>SellPage</servlet-name>
@@ -138,6 +149,17 @@
     <servlet-mapping>
         <servlet-name>BuyPage</servlet-name>
         <url-pattern>/buy</url-pattern>
+    </servlet-mapping>
+
+        <!-- Offers -->
+    <servlet-mapping>
+        <servlet-name>OffersPage</servlet-name>
+        <url-pattern>/offers</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>OffersController</servlet-name>
+        <url-pattern>/insertOffer</url-pattern>
     </servlet-mapping>
 
     <!-- Sell -->
