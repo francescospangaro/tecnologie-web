@@ -50,7 +50,9 @@ public class CloseAuctionController extends HttpServlet {
         }
 
         try(var connection = dataSource.getConnection()) {
-            var res = new AuctionDao(connection).closeAuction(auctionId, (LocalDateTime) req.getSession().getAttribute("loginTime"), (Integer) req.getSession().getAttribute("userId"));
+            var res = new AuctionDao(connection).closeAuction(auctionId,
+                    (LocalDateTime) req.getSession().getAttribute("loginTime"),
+                    (Integer) req.getSession().getAttribute("userId"));
             if(res == 0) {
                 resp.sendError(404);
                 return;

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Casa d'aste "La Mafia"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+
+
+<div>
+    <form th:action="@{/buy}" th:method="get">
+        <input type="text" th:name="search" th:value="${searchTerm}">
+        <button type="submit" class="btn btn-primary btn-block" th:text="#{buy.confirmSearch}"></button>
+    </form>
+</div>
+
+<div>
+    <span th:if="${errorQuery}" th:utext="#{buy.errorQuery}"></span>
+</div>
+<div th:if="${!errorQuery}">
+    <table>
+        <tr th:each="auction : ${auctions}">
+            <td><a th:href="@{'/offers?id=' + ${auction.id}}" th:utext="${auction.id}"></a></td>
+            <td th:each="article : ${auction.articles}"
+                th:utext="${article.codArticle} + ' ' +  ${article.name}"
+                th:value="${article.codArticle}"></td>
+            <td th:utext="${auction.maxOffer} + '€'"></td>
+            <td th:with="days=${auction.getRemainingDays(session.loginTime)},
+                         hours=${auction.getRemainingHours(session.loginTime)}"
+                th:utext="#{buy.remainingTime(${days}, ${hours})}"></td>
+        </tr>
+    </table>
+</div>
+
+
+</body>
+</html>

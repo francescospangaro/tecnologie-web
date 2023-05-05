@@ -17,6 +17,14 @@ public record Article(int codArticle,
         this(-1, name, description, immagine, prezzo, idUtente);
     }
 
+    public Article(int codArticle,
+                   String name,
+                   String description,
+                   String immagine,
+                   double prezzo) {
+        this(codArticle, name, description, immagine, prezzo, -1);
+    }
+
     public Article(int codArticle) {
         this(codArticle, null, null, null, -1, -1);
     }

@@ -20,15 +20,26 @@
          th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}"></div>
 </div>
 
+<!-- TODO: add offers table -->
+<div th:if="${auction.isOpen}">
+    <table>
+
+    </table>
+</div>
+
+<!-- TODO: add buyer's  data -->
+<div th:if="${auction.isClosed()}">
+    <table>
+
+    </table>
+</div>
+
+
 <div th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}">
     <form th:action="@{/closeAuction}" method="post">
         <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
         <button type="submit" class="btn btn-primary btn-block" th:text="#{auctionDetails.closeAuction}"></button>
     </form>
-</div>
-
-<div th:if="${auction.isClosed}">
-
 </div>
 
 </body>

@@ -18,7 +18,9 @@
                 th:utext="${article.codArticle} + ' ' +  ${article.name}"
                 th:value="${article.codArticle}"></td>
             <td th:utext="${auction.maxOffer} + '€'"></td>
-            <!-- <td th:utext="#{sell.remainigTime(${auction.getRemainingDays(${session.loginTime})}, ${auction.getRemainingHours(${session.loginTime})})}"></td>-->
+            <td th:with="days=${auction.getRemainingDays(session.loginTime)},
+                         hours=${auction.getRemainingHours(session.loginTime)}"
+                th:utext="#{sell.remainingTime(${days}, ${hours})}"></td>
         </tr>
     </table>
 </div>
@@ -36,7 +38,7 @@
             <td th:utext="${auction.maxOffer} + '€'"></td>
             <td th:with="days=${auction.getRemainingDays(session.loginTime)},
                          hours=${auction.getRemainingHours(session.loginTime)}"
-                th:utext="#{sell.remainigTime(${days}, ${hours})}"></td>
+                th:utext="#{sell.remainingTime(${days}, ${hours})}"></td>
         </tr>
     </table>
 </div>

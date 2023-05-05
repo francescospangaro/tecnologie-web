@@ -121,7 +121,7 @@ public class AuctionDao {
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
-                if(res.next())
+                if (res.next())
                     return new ClosedAuction(base, res.getDouble(1), res.getString(2), res.getString(3));
                 return new ClosedAuction(base, 0, "none", "");
             }
@@ -213,13 +213,13 @@ public class AuctionDao {
         try (PreparedStatement close = connection.prepareStatement("""
                 UPDATE asta
                 SET chiusa = true
-                WHERE asta.idAsta = ? and asta.scadenza < ? 
+                WHERE asta.idAsta = ? and asta.scadenza < ?
                 and asta.idAsta in(
-                SELECT asta.idAsta 
-                from asta, utente, astearticoli, articolo
-                where astearticoli.asta_idAsta = asta.idAsta
-                and astearticoli.articolo_codArticolo = articolo.codArticolo
-                and articolo.utente_idUtente = ?)
+                    SELECT asta.idAsta
+                    from asta, utente, astearticoli, articolo
+                    where astearticoli.asta_idAsta = asta.idAsta
+                    and astearticoli.articolo_codArticolo = articolo.codArticolo
+                    and articolo.utente_idUtente = ?)
                 """)) {
             close.setInt(1, auctionId);
             close.setTimestamp(2, Timestamp.valueOf(loginTime));
@@ -229,4 +229,49 @@ public class AuctionDao {
     }
 
 
+    public List<Auction> findAuctionByWord(String search) {
+        try (var query = connection.prepareStatement("""
+                SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
+                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
+                FROM articolo, asta, astearticoli
+                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
+                AND asta.idAsta=astearticoli.asta_idAsta
+                AND asta.chiusa=false
+                AND asta.idAsta IN (
+                    SELECT astearticoli.asta_idAsta
+                    from astearticoli, articolo
+                    WHERE articolo_codArticolo = articolo.codArticolo
+                    AND (articolo.nome LIKE (?) 
+                        OR articolo.descrizione LIKE (?)))
+                ORDER BY asta.scadenza
+                """)) {
+            query.setString(1, "%"+search+"%");
+            query.setString(2, "%"+search+"%");
+
+            try (var res = query.executeQuery()) {
+                Map<Integer, Auction> auctions = new HashMap<>();
+                while (res.next()) {
+                    int id = res.getInt(1);
+                    var currAuction = auctions.get(id);
+                    if (currAuction == null)
+                        auctions.put(id, currAuction = new Auction(id,
+                                res.getTimestamp(2).toLocalDateTime(),
+                                new ArrayList<>(),
+                                res.getDouble(3),
+                                0.0));
+
+                    currAuction.articles().add(new Article(
+                            res.getInt(4),
+                            res.getString(5),
+                            res.getString(6),
+                            res.getString(7),
+                            res.getDouble(8)));
+                }
+
+                return List.copyOf(auctions.values());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
