@@ -80,6 +80,13 @@
         <servlet-class>it.polimi.webapp.controllers.AuctionController</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>CloseAuctionController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.CloseAuctionController</servlet-class>
+    </servlet>
+
+
+
     <!-- View closed auctions -->
     <servlet>
         <servlet-name>AuctionDetailsPage</servlet-name>
@@ -115,6 +122,10 @@
         <url-pattern>/home</url-pattern>
         <url-pattern>/buy</url-pattern>
         <url-pattern>/sell</url-pattern>
+        <url-pattern>/auctionDetails</url-pattern>
+        <url-pattern>/articleInsertion</url-pattern>
+        <url-pattern>/auctionInsertion</url-pattern>
+        <url-pattern>/closeAuction</url-pattern>
     </filter-mapping>
 
     <!-- Home -->
@@ -157,7 +168,12 @@
         <url-pattern>/insertAuction</url-pattern>
     </servlet-mapping>
 
-    <!-- View closed auctions -->
+    <servlet-mapping>
+        <servlet-name>CloseAuctionController</servlet-name>
+        <url-pattern>/closeAuction</url-pattern>
+    </servlet-mapping>
+
+    <!-- View auctions details -->
     <servlet-mapping>
         <servlet-name>AuctionDetailsPage</servlet-name>
         <url-pattern>/auctionDetails</url-pattern>

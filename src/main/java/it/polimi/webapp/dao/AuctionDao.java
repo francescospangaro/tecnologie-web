@@ -112,7 +112,7 @@ public class AuctionDao {
                 FROM utente, offerta, asta as a
                 WHERE offerta.asta_idAsta = ?
                 AND offerta.utente_idUtente = utente.idUtente
-                AND a.chiusa = true 
+                AND a.chiusa = true
                 AND offerta.prezzoOfferto IN (
                         select MAX(offerta.prezzoOfferto)
                         from offerta, asta as a1
@@ -121,7 +121,9 @@ public class AuctionDao {
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
-                return new ClosedAuction(base, res.getDouble(1), res.getString(2), res.getString(3));
+                if(res.next())
+                    return new ClosedAuction(base, res.getDouble(1), res.getString(2), res.getString(3));
+                return new ClosedAuction(base, 0, "none", "");
             }
         }
     }
@@ -167,7 +169,7 @@ public class AuctionDao {
             var articleIds = auction.articles().stream()
                     .map(Article::codArticle)
                     .toArray(Integer[]::new);
-            try (var query = connection.prepareStatement("""
+            /*try (var query = connection.prepareStatement("""
                     SELECT a1.codArticolo
                     FROM articolo as a1, asta, astearticoli
                     WHERE a1.codArticolo in ?
@@ -183,7 +185,7 @@ public class AuctionDao {
                         return 0;
                     }
                 }
-            }
+            }*/
 
             try (PreparedStatement relate = connection.prepareStatement(
                     "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
@@ -207,26 +209,24 @@ public class AuctionDao {
         }
     }
 
-    public int closeAuction(int auctionId) throws SQLException {
-        try (PreparedStatement check = connection.prepareStatement("""
-                SELECT asta.scadenza
-                from asta
-                WHERE asta.idAsta = ?
+    public int closeAuction(int auctionId, LocalDateTime loginTime, int userId) throws SQLException {
+        try (PreparedStatement close = connection.prepareStatement("""
+                UPDATE asta
+                SET chiusa = true
+                WHERE asta.idAsta = ? and asta.scadenza < ? 
+                and asta.idAsta in(
+                SELECT asta.idAsta 
+                from asta, utente, astearticoli, articolo
+                where astearticoli.asta_idAsta = asta.idAsta
+                and astearticoli.articolo_codArticolo = articolo.codArticolo
+                and articolo.utente_idUtente = ?)
                 """)) {
-            check.setInt(1, auctionId);
-            var checkRes = check.executeQuery();
-            if (checkRes.getTimestamp(1).before(Timestamp.valueOf(LocalDateTime.now()))) {
-                try (PreparedStatement close = connection.prepareStatement("""
-                        UPDATE asta
-                        SET chiusa = true
-                        WHERE asta.idAsta = ?
-                        """)) {
-                    close.setInt(1, auctionId);
-                    return close.executeUpdate();
-                }
-            }else{
-                return 0;
-            }
+            close.setInt(1, auctionId);
+            close.setTimestamp(2, Timestamp.valueOf(loginTime));
+            close.setInt(3, userId);
+            return close.executeUpdate();
         }
     }
+
+
 }

@@ -20,10 +20,9 @@
          th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}"></div>
 </div>
 
-<div th:with="days=${auction.base.getRemainingDays(session.loginTime)},
-                  hours=${auction.base.getRemainingHours(session.loginTime)}"
-        th:if="${auction.isOpen} and ${days} eq '0' and ${hours} eq '0'">
-    <form th:action="@{/closeAuction?id=${auction.base.id}}" th:method="delete">
+<div th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}">
+    <form th:action="@{/closeAuction}" method="post">
+        <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
         <button type="submit" class="btn btn-primary btn-block" th:text="#{auctionDetails.closeAuction}"></button>
     </form>
 </div>

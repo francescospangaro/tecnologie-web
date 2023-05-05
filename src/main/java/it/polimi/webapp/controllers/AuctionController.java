@@ -89,6 +89,9 @@ public class AuctionController extends HttpServlet {
                 expiryDate,
                 articleIds.stream().map(Article::new).toList(),
                 minimumOfferDifference);
+        // TODO: why does it insert the same article multiple times
+        //       instead of different ones ?
+        System.out.println("articleIds: " + articleIds);
 
         try (var connection = dataSource.getConnection()) {
             int result = new AuctionDao(connection).insertAuction(auction);
@@ -107,26 +110,4 @@ public class AuctionController extends HttpServlet {
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }
 
-    @Override
-    public void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int auctionId;
-        try {
-            auctionId = Integer.parseInt(req.getParameter("id"));
-        } catch (NumberFormatException ex) {
-            resp.sendError(404);
-            return;
-        }
-
-        try(var connection = dataSource.getConnection()) {
-            var res = new AuctionDao(connection).closeAuction(auctionId);
-            if(res == 0) {
-                resp.sendError(404);
-                return;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        resp.sendRedirect(getServletContext().getContextPath() + "/sell");
-    }
 }

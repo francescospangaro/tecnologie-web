@@ -57,6 +57,10 @@ public record Auction(
         return now.isAfter(expiry) ? 0 :  Duration.between(now, expiry).toHoursPart();
     }
 
+    public boolean isExpired(LocalDateTime now) {
+        return now.isAfter(expiry);
+    }
+
     public Auction withId(int id) {
         return new Auction(id, expiry, articles, minimumOfferDifference, maxOffer);
     }
