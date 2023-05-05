@@ -32,14 +32,13 @@ public class OffersPage extends ThymeleafServlet {
         if (auctionId != null) {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findAuctionByAuctionId(auctionId);
-                ctx.setVariable("auction", result);
+                ctx.setVariable("openAuction", result);
                 ctx.setVariable("errorQuery", false);
             } catch (SQLException e) {
-                System.out.println("pisello2");
                 ctx.setVariable("errorQuery", true);
             }
         } else {
-            ctx.setVariable("auction", new OpenAuction());
+            ctx.setVariable("openAuction", new OpenAuction());
         }
 
         templateEngine.process("offers", ctx, writer);

@@ -18,8 +18,10 @@ public class OffersDao {
                             SELECT offerta.prezzoOfferto
                             FROM offerta
                             WHERE offerta.prezzoOfferto >= ?
+                            AND offerta.asta_idAsta = ?
                 """)) {
             getOffers.setDouble(1, offer.price());
+            getOffers.setInt(2, offer.auctionId());
             try (var result = getOffers.executeQuery()) {
                 if (result.next()) {
                     connection.rollback();

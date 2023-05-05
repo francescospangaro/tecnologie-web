@@ -110,7 +110,6 @@ public class AuctionDao {
 
     public @Nullable OpenAuction findAuctionByAuctionId(int auctionId) throws SQLException {
         Auction baseAuction = null;
-        boolean closed = false;
 
         try (var query = connection.prepareStatement("""
                 SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
