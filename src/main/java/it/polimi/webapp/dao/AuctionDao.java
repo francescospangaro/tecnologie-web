@@ -252,18 +252,20 @@ public class AuctionDao {
     public int closeAuction(int auctionId, LocalDateTime loginTime, int userId) throws SQLException {
         try (PreparedStatement close = connection.prepareStatement("""
                 UPDATE asta
-                SET chiusa = true
-                WHERE asta.idAsta = ? and asta.scadenza < ?
-                and asta.idAsta in(
-                    SELECT asta.idAsta
-                    from asta, utente, astearticoli, articolo
-                    where astearticoli.asta_idAsta = asta.idAsta
+                INNER JOIN (
+                    SELECT a.idAsta as oldId
+                    from asta as a, utente, astearticoli, articolo
+                    where astearticoli.asta_idAsta = a.idAsta
                     and astearticoli.articolo_codArticolo = articolo.codArticolo
-                    and articolo.utente_idUtente = ?)
+                    and articolo.utente_idUtente = ?
+                ) as joinedAuctions
+                ON joinedAuctions.oldId = asta.idAsta
+                SET asta.chiusa = true
+                WHERE asta.idAsta = ? and asta.scadenza < ?
                 """)) {
-            close.setInt(1, auctionId);
-            close.setTimestamp(2, Timestamp.valueOf(loginTime));
-            close.setInt(3, userId);
+            close.setInt(1, userId);
+            close.setInt(2, auctionId);
+            close.setTimestamp(3, Timestamp.valueOf(loginTime));
             return close.executeUpdate();
         }
     }
