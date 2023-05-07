@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `casa_daste`.`articolo` (
   `codArticolo` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(45) NOT NULL,
   `descrizione` TEXT(200) NOT NULL,
-  `immagine` VARCHAR(45) NOT NULL,
+  `immagine` LONGBLOB NOT NULL,
   `prezzo` DECIMAL(10,2) UNSIGNED NOT NULL,
   `utente_idUtente` INT NOT NULL,
   PRIMARY KEY (`codArticolo`),

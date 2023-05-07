@@ -3,10 +3,12 @@ package it.polimi.webapp.dao;
 import it.polimi.webapp.beans.Article;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class ArticleDao {
@@ -40,8 +42,7 @@ public class ArticleDao {
                             res.getInt(1),
                             res.getString(2),
                             res.getString(3),
-                            //saves the server image path
-                            "C:/upload/" + res.getString(4),
+                            Base64.getEncoder().encodeToString(res.getBytes(4)),
                             res.getDouble(5),
                             res.getInt(6)));
 
@@ -54,14 +55,14 @@ public class ArticleDao {
         }
     }
 
-    public int insertArticle(Article article) throws SQLException {
+    public int insertArticle(Article article, InputStream imageStream) throws SQLException {
         try (PreparedStatement insertArticle = connection.prepareStatement("""
             INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
             VALUES (?, ?, ?, ?, ?)
             """)) {
             insertArticle.setString(1, article.name());
             insertArticle.setString(2, article.description());
-            insertArticle.setString(3, article.immagine());
+            insertArticle.setBlob(3, imageStream);
             insertArticle.setDouble(4, article.prezzo());
             insertArticle.setInt(5, article.idUtente());
             return insertArticle.executeUpdate();

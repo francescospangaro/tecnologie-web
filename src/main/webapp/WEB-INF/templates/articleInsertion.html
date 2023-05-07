@@ -13,7 +13,7 @@
 
 <body>
 
-<form th:action="@{/insertArticle}" th:method="post">
+<form th:action="@{/insertArticle}" th:method="post" enctype='multipart/form-data'>
 
     <div class="text-center">
         <span th:if="${errorDataInserted}" th:utext="#{articleInsertion.errorDataInserted}"></span>
