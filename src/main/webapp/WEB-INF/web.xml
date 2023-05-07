@@ -132,6 +132,7 @@
         <filter-name>NotLoggedFilter</filter-name>
         <url-pattern>/home</url-pattern>
         <url-pattern>/buy</url-pattern>
+        <url-pattern>/offers</url-pattern>
         <url-pattern>/sell</url-pattern>
         <url-pattern>/auctionDetails</url-pattern>
         <url-pattern>/articleInsertion</url-pattern>
