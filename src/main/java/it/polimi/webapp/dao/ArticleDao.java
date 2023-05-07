@@ -32,6 +32,7 @@ public class ArticleDao {
             """)) {
             query.setInt(1, userId);
 
+
             try (var res = query.executeQuery()) {
                 List<Article> result = new ArrayList<>();
                 while (res.next())
@@ -39,7 +40,8 @@ public class ArticleDao {
                             res.getInt(1),
                             res.getString(2),
                             res.getString(3),
-                            res.getString(4),
+                            //saves the server image path
+                            "C:/upload/" + res.getString(4),
                             res.getDouble(5),
                             res.getInt(6)));
 

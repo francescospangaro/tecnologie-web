@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -39,11 +40,15 @@ public class ArticleController extends HttpServlet {
         Integer userId = (Integer) req.getSession().getAttribute("userId");
         String articleName = req.getParameter("articleName");
         String articleDesc = req.getParameter("articleDesc");
-        String articleImage = req.getParameter("articleImage");
+        Part articleImage = req.getPart("articleImage");
+        String imageName = articleImage.getSubmittedFileName();
+
+        for(Part p : req.getParts())
+            p.write("C:/upload/" + imageName);
 
         boolean dataError = articleName == null || articleName.isEmpty()
                 || articleDesc == null || articleDesc.isEmpty()
-                || articleImage == null || articleImage.isEmpty();
+                || articleImage.getSize()==0;
 
         double articlePrice = -1;
         try {
@@ -59,7 +64,7 @@ public class ArticleController extends HttpServlet {
             return;
         }
 
-        var article = new Article(articleName, articleDesc, articleImage, articlePrice, userId);
+        var article = new Article(articleName, articleDesc, imageName, articlePrice, userId);
 
         try (var connection = dataSource.getConnection()) {
             int inserted = new ArticleDao(connection).insertArticle(article);
