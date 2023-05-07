@@ -17,7 +17,15 @@
         <span th:if="${errorQuery}" th:utext="#{offers.errorQuery}"></span>
     </div>
 
-    <div th:if="${!errorQuery}" class="text-center">
+    <div>
+        <span th:if="${errorMaxOffer}" th:utext="#{offers.errorMaxOffer}"></span>
+    </div>
+
+    <div>
+        <span th:if="${errorLowPrice}" th:utext="#{offers.errorLowPrice}"></span>
+    </div>
+
+    <div th:if="${!errorQuery && !errorMaxOffer && !errorLowPrice}" class="text-center">
         <h2 th:utext="#{offers.auctionNum(${openAuction.base.id})}"></h2>
         <div th:each="article : ${openAuction.base.articles}"
              th:utext="${article.codArticle} + ' ' +  ${article.name}"
