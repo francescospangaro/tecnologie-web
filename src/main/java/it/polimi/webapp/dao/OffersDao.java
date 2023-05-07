@@ -14,22 +14,6 @@ public class OffersDao {
     public int insertOffer(Offer offer) throws SQLException {
         connection.setAutoCommit(false);
         try (PreparedStatement getOffers = connection.prepareStatement("""
-                            SELECT offerta.prezzoOfferto
-                            FROM offerta, asta
-                            WHERE offerta.prezzoOfferto >= ?
-                            AND offerta.asta_idAsta = ?
-                """)) {
-            getOffers.setDouble(1, offer.price());
-            getOffers.setInt(2, offer.auctionId());
-            try (var result = getOffers.executeQuery()) {
-                if (result.next()) {
-                    connection.rollback();
-                    return 0;
-                }
-            }
-        }
-
-        try (PreparedStatement getOffers = connection.prepareStatement("""
                             SELECT asta.rialzoMin, o.prezzoOfferto
                             FROM asta, offerta as o
                             WHERE asta.idAsta = ?
