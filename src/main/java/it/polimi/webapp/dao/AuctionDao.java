@@ -272,19 +272,24 @@ public class AuctionDao {
 
     public List<Auction> findAuctionByWord(String search) {
         try (var query = connection.prepareStatement("""
-                SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
-                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
-                FROM articolo, asta, astearticoli
+                SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
+                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
+                FROM articolo, astearticoli, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                AND asta.idAsta=astearticoli.asta_idAsta
-                AND asta.chiusa=false
-                AND asta.idAsta IN (
+                AND a.idAsta=astearticoli.asta_idAsta
+                AND a.chiusa=false
+                AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
+                    select MAX(offerta.prezzoOfferto)
+                    from offerta, asta as a1
+                    WHERE a1.idAsta = a.idAsta
+                ))
+                AND a.idAsta IN (
                     SELECT astearticoli.asta_idAsta
                     from astearticoli, articolo
                     WHERE articolo_codArticolo = articolo.codArticolo
                     AND (articolo.nome LIKE (?) 
                         OR articolo.descrizione LIKE (?)))
-                ORDER BY asta.scadenza
+                ORDER BY a.scadenza
                 """)) {
             query.setString(1, "%"+search+"%");
             query.setString(2, "%"+search+"%");
@@ -299,7 +304,7 @@ public class AuctionDao {
                                 res.getTimestamp(2).toLocalDateTime(),
                                 new ArrayList<>(),
                                 res.getDouble(3),
-                                0.0));
+                                res.getDouble(9)));
 
                     currAuction.articles().add(new Article(
                             res.getInt(4),
