@@ -11,9 +11,18 @@ public class OffersDao {
         this.connection = connection;
     }
 
+    /**
+     * First query checks if the incoming offer is
+     * a higher price than the max registered for the same auction
+     * and checks if the difference in price is >= than minPriceIncrease
+     * <p>
+     * Second query checks is only run if the first one returns nothing,
+     * meaning that for that auction there are no registered offers, then checks
+     * if the incoming offer is >= than the sum of the articles' prices for that auction
+     */
     public int insertOffer(Offer offer) throws SQLException {
         connection.setAutoCommit(false);
-        try (PreparedStatement getOffers = connection.prepareStatement("""
+        try (PreparedStatement firstCheck = connection.prepareStatement("""
                             SELECT asta.rialzoMin, o.prezzoOfferto
                             FROM asta, offerta as o
                             WHERE asta.idAsta = ?
@@ -24,17 +33,43 @@ public class OffersDao {
                                 WHERE o1.idOfferta = o.idOfferta
                             )
                 """)) {
-            getOffers.setInt(1, offer.auctionId());
-            try (var result = getOffers.executeQuery()) {
+            firstCheck.setInt(1, offer.auctionId());
+            try (var result = firstCheck.executeQuery()) {
                 if (result.next()) {
                     if (offer.price() - result.getDouble(2) < result.getDouble(1)) {
+                        //The next offer is not high enough to surpass the minPriceIncrease threshold
                         connection.rollback();
                         return 0;
+                    }
+                    // no error, goes on without interruption
+                } else {
+                    try (PreparedStatement secondCheck = connection.prepareStatement("""
+                                        SELECT SUM(articolo.prezzo)
+                                        FROM articolo, astearticoli as a
+                                        WHERE articolo.codArticolo = a.articolo_codArticolo
+                                        AND a.asta_idAsta = ?
+                            """)) {
+                        secondCheck.setInt(1, offer.auctionId());
+                        try (var res = secondCheck.executeQuery()) {
+                            if (res.next()) {
+                                if (offer.price() < res.getDouble(1)) {
+                                    //The offer is not higher than the sum of the articles' value
+                                    connection.rollback();
+                                    return 0;
+                                }
+                                // no error, goes on without interruption
+                            } else {
+                                //DB error
+                                connection.rollback();
+                                return 0;
+                            }
+                        }
                     }
                 }
             }
         }
 
+        // new offer is inserted
         try (PreparedStatement insertOffer = connection.prepareStatement(
                 "INSERT INTO offerta (prezzoOfferto, dataOfferta, utente_idUtente, asta_idAsta) VALUES (?, ?, ?, ?)")) {
             insertOffer.setDouble(1, offer.price());
@@ -47,6 +82,7 @@ public class OffersDao {
             connection.commit();
             return 1;
         } catch (Throwable t) {
+            // DB error
             connection.rollback();
             throw t;
         } finally {
