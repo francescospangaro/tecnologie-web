@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `casa_daste`.`articolo` (
   `nome` VARCHAR(45) NOT NULL,
   `descrizione` TEXT(200) NOT NULL,
   `immagine` VARCHAR(45) NOT NULL,
-  `prezzo` DECIMAL(10,10) UNSIGNED NOT NULL,
+  `prezzo` DECIMAL(10,2) UNSIGNED NOT NULL,
   `utente_idUtente` INT NOT NULL,
   PRIMARY KEY (`codArticolo`),
   INDEX `fk_articolo_utente1_idx` (`utente_idUtente` ASC) VISIBLE,
@@ -54,8 +54,9 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `casa_daste`.`asta` (
   `idAsta` INT NOT NULL AUTO_INCREMENT,
-  `rialzoMin` DECIMAL(10,10) NOT NULL,
+  `rialzoMin` DECIMAL(10,2) NOT NULL,
   `scadenza` DATETIME NOT NULL,
+  `chiusa` BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY (`idAsta`))
 ENGINE = InnoDB;
 
@@ -65,7 +66,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `casa_daste`.`offerta` (
   `idOfferta` INT NOT NULL AUTO_INCREMENT,
-  `prezzoOfferto` DECIMAL(10,10) NOT NULL,
+  `prezzoOfferto` DECIMAL(10,2) NOT NULL,
   `dataOfferta` DATETIME NOT NULL,
   `utente_idUtente` INT NOT NULL,
   `asta_idAsta` INT NOT NULL,
