@@ -123,6 +123,7 @@
         <url-pattern>/home</url-pattern>
         <url-pattern>/buy</url-pattern>
         <url-pattern>/offers</url-pattern>
+        <url-pattern>/insertOffer</url-pattern>
         <url-pattern>/sell</url-pattern>
         <url-pattern>/auctionDetails</url-pattern>
         <url-pattern>/closeAuction</url-pattern>
