@@ -53,8 +53,8 @@ public class ArticleController extends BaseController {
         }
 
         if(dataError) {
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/articleInsertion"), "Missing dispatcher");
-            req.setAttribute("errorDataInserted", true);
+            var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
+            req.setAttribute("errorArticleDataInserted", true);
             disp.forward(req, resp);
             return;
         }
@@ -65,8 +65,8 @@ public class ArticleController extends BaseController {
             int inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
             if (inserted == 0) {
                 // error in query execution
-                var disp = Objects.requireNonNull(req.getRequestDispatcher("/articleInsertion"), "Missing dispatcher");
-                req.setAttribute("errorQuery", true);
+                var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
+                req.setAttribute("errorArticleQuery", true);
                 disp.forward(req, resp);
                 return;
             }

@@ -71,21 +71,11 @@
 
     <!-- Single articles -->
     <servlet>
-        <servlet-name>ArticleInsertionPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.ArticleInsertionPage</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>ArticleController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.ArticleController</servlet-class>
     </servlet>
 
     <!-- Single auctions -->
-    <servlet>
-        <servlet-name>AuctionInsertionPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.AuctionInsertionPage</servlet-class>
-    </servlet>
-
     <servlet>
         <servlet-name>AuctionController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.AuctionController</servlet-class>
@@ -135,8 +125,6 @@
         <url-pattern>/offers</url-pattern>
         <url-pattern>/sell</url-pattern>
         <url-pattern>/auctionDetails</url-pattern>
-        <url-pattern>/articleInsertion</url-pattern>
-        <url-pattern>/auctionInsertion</url-pattern>
         <url-pattern>/closeAuction</url-pattern>
     </filter-mapping>
 
@@ -171,21 +159,11 @@
 
         <!-- Single articles -->
     <servlet-mapping>
-        <servlet-name>ArticleInsertionPage</servlet-name>
-        <url-pattern>/articleInsertion</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>ArticleController</servlet-name>
         <url-pattern>/insertArticle</url-pattern>
     </servlet-mapping>
 
         <!-- Single auctions -->
-    <servlet-mapping>
-        <servlet-name>AuctionInsertionPage</servlet-name>
-        <url-pattern>/auctionInsertion</url-pattern>
-    </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>AuctionController</servlet-name>
         <url-pattern>/insertAuction</url-pattern>

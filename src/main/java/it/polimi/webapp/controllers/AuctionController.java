@@ -54,7 +54,7 @@ public class AuctionController extends BaseController {
                 || expiryDate == null || expiryDate.isBefore(LocalDateTime.now());
 
         if (wrongInsertedData) {
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
+            var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
             req.setAttribute("errorAuctionDataInserted", true);
             disp.forward(req, resp);
             return;
@@ -73,7 +73,7 @@ public class AuctionController extends BaseController {
             int result = new AuctionDao(connection).insertAuction(auction);
             if (result == 0) {
                 //error in query execution
-                var disp = Objects.requireNonNull(req.getRequestDispatcher("/auctionInsertion"), "Missing dispatcher");
+                var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
                 req.setAttribute("errorAuctionQuery", true);
                 disp.forward(req, resp);
                 return;

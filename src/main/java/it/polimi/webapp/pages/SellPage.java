@@ -1,6 +1,7 @@
 package it.polimi.webapp.pages;
 
 import it.polimi.webapp.ThymeleafServlet;
+import it.polimi.webapp.dao.ArticleDao;
 import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -38,6 +39,23 @@ public class SellPage extends ThymeleafServlet {
                 ctx.setVariable("openAuction", openAuction);
             } else {
                 ctx.setVariable("errorOpenQuery", true);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        ctx.setVariable("errorArticleDataInserted", Objects.requireNonNullElse(webExchange.getAttributeValue("errorArticleDataInserted"), false));
+        ctx.setVariable("errorArticleQuery", Objects.requireNonNullElse(webExchange.getAttributeValue("errorArticleQuery"), false));
+        ctx.setVariable("errorAuctionDataInserted", Objects.requireNonNullElse(webExchange.getAttributeValue("errorAuctionDataInserted"), false));
+        ctx.setVariable("errorAuctionQuery", Objects.requireNonNullElse(webExchange.getAttributeValue("errorAuctionQuery"), false));
+
+        try (var connection = dataSource.getConnection()) {
+            var result = new ArticleDao(connection).findAllArticles(
+                    (Integer) webExchange.getSession().getAttributeValue("userId"));
+            if (result != null) {
+                ctx.setVariable("articles", result);
+            } else {
+                ctx.setVariable("errorArticlesQuery", true);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
