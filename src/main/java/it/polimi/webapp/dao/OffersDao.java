@@ -39,12 +39,11 @@ public class OffersDao {
                                 FROM offerta as o1
                                 WHERE o1.idOfferta = o.idOfferta
                             )
-                            
                 """)) {
             getOffers.setInt(1, offer.auctionId());
             try (var result = getOffers.executeQuery()) {
                 if (result.next()) {
-                    if(result.getDouble(2)-offer.price()<result.getDouble(1)){
+                    if (offer.price() - result.getDouble(2) < result.getDouble(1)) {
                         connection.rollback();
                         return 0;
                     }
