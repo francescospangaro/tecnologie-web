@@ -16,9 +16,14 @@ public class LoginDao {
         this.connection = connection;
     }
 
+    /**
+     * Looks for the user with that id
+     * if found the password is then checked locally
+     * if not found returns an error
+     */
     public List<String> findUser(String userName, String password) throws SQLException {
         try (var query = connection.prepareStatement("""
-                SELECT idUtente, nome, email, password 
+                SELECT idUtente, nome, email, password
                 FROM utente
                 WHERE email = ?
                 """)) {

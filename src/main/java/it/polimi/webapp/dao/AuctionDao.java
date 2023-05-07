@@ -62,6 +62,12 @@ public class AuctionDao {
         }
     }
 
+
+    /**
+     * Method returns the auction opened by the logged user,
+     * then returns an auction object created by checking
+     * if said auction is either open or closed
+     */
     public @Nullable ExtendedAuction findAuctionByIds(int userId, int auctionId) throws SQLException {
         Auction baseAuction = null;
         boolean closed = false;
@@ -106,44 +112,6 @@ public class AuctionDao {
                 : doPopulateOpenAuction(baseAuction);
     }
 
-    public @Nullable OpenAuction findOpenAuctionById(int auctionId) throws SQLException {
-        Auction baseAuction = null;
-
-        try (var query = connection.prepareStatement("""
-                SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
-                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
-                FROM articolo, asta, astearticoli, utente
-                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                AND asta.idAsta=astearticoli.asta_idAsta
-                AND asta_idAsta = ?""")) {
-            query.setInt(1, auctionId);
-
-            try (var res = query.executeQuery()) {
-                List<Article> articles = new ArrayList<>();
-                while (res.next()) {
-                    if (baseAuction == null) {
-                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getDouble(2));
-                    }
-
-                    articles.add(new Article(
-                            res.getInt(3),
-                            res.getString(4),
-                            res.getString(5),
-                            res.getString(6),
-                            res.getDouble(7),
-                            -1));
-                }
-
-                if (baseAuction == null)
-                    return null;
-
-                baseAuction = baseAuction.withArticles(articles);
-            }
-        }
-
-        return doPopulateOpenAuction(baseAuction);
-    }
-
     private @Nullable ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.prezzoOfferto, utente.nome, utente.indirizzo
@@ -185,6 +153,51 @@ public class AuctionDao {
         }
     }
 
+    /**
+     * Returns ONLY the open auctions that have the specified ID
+     */
+    public @Nullable OpenAuction findOpenAuctionById(int auctionId) throws SQLException {
+        Auction baseAuction = null;
+
+        try (var query = connection.prepareStatement("""
+                SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
+                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
+                FROM articolo, asta, astearticoli, utente
+                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
+                AND asta.idAsta=astearticoli.asta_idAsta
+                AND asta_idAsta = ?""")) {
+            query.setInt(1, auctionId);
+
+            try (var res = query.executeQuery()) {
+                List<Article> articles = new ArrayList<>();
+                while (res.next()) {
+                    if (baseAuction == null) {
+                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getDouble(2));
+                    }
+
+                    articles.add(new Article(
+                            res.getInt(3),
+                            res.getString(4),
+                            res.getString(5),
+                            res.getString(6),
+                            res.getDouble(7),
+                            -1));
+                }
+
+                if (baseAuction == null)
+                    return null;
+
+                baseAuction = baseAuction.withArticles(articles);
+            }
+        }
+
+        return doPopulateOpenAuction(baseAuction);
+    }
+
+    /**
+     * Inserts an auction in the DB, also connects the auction to its articles
+     * with the table astearticoli
+     */
     public int insertAuction(Auction auction) throws SQLException {
         connection.setAutoCommit(false);
         try {
@@ -208,23 +221,6 @@ public class AuctionDao {
             var articleIds = auction.articles().stream()
                     .map(Article::codArticle)
                     .toArray(Integer[]::new);
-            /*try (var query = connection.prepareStatement("""
-                    SELECT a1.codArticolo
-                    FROM articolo as a1, asta, astearticoli
-                    WHERE a1.codArticolo in ?
-                    AND a1.codArticolo = astearticoli.articolo_codArticolo
-                    AND astearticoli.asta_idAsta = asta.idAsta
-                    AND asta.chiusa = true
-                    """)) {
-                query.setArray(1, connection.createArrayOf("int", articleIds));
-
-                try (var res = query.executeQuery()) {
-                    if (res.next()) {
-                        connection.rollback();
-                        return 0;
-                    }
-                }
-            }*/
 
             try (PreparedStatement relate = connection.prepareStatement(
                     "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
