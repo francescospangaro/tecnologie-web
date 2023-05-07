@@ -31,7 +31,7 @@ public class OffersPage extends ThymeleafServlet {
 
         if (auctionId != null) {
             try (var connection = dataSource.getConnection()) {
-                var result = new AuctionDao(connection).findAuctionByAuctionId(auctionId);
+                var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
                 ctx.setVariable("openAuction", result);
                 ctx.setVariable("errorQuery", false);
             } catch (SQLException e) {

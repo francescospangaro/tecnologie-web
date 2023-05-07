@@ -20,6 +20,7 @@
 package it.polimi.webapp.it;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.HttpURLConnection;
@@ -32,6 +33,7 @@ public class HelloServletIT {
 
     /** Call the servlet page */
     @Test
+    @Disabled // It cannot be fixed as we don't have any db to connect to on gh actions
     public void callIndexPage() throws Exception {
         URL url = new URL(BASE_URL);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

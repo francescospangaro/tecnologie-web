@@ -1,9 +1,7 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.Initializer;
-import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.Offer;
-import it.polimi.webapp.dao.ArticleDao;
 import it.polimi.webapp.dao.OffersDao;
 
 import javax.naming.InitialContext;
@@ -82,6 +80,6 @@ public class OffersController extends HttpServlet {
 
         req.setAttribute("errorQuery", false);
         req.setAttribute("goodInsertion", true);
-        resp.sendRedirect(getServletContext().getContextPath() + "/buy");
+        resp.sendRedirect(getServletContext().getContextPath() + "/offers?id=" + auctionId);
     }
 }
