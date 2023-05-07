@@ -12,11 +12,10 @@ public class OffersDao {
     }
 
     public int insertOffer(Offer offer) throws SQLException {
-//        TODO: check why it inserts an offer only if the offer table is already populated
         connection.setAutoCommit(false);
         try (PreparedStatement getOffers = connection.prepareStatement("""
                             SELECT offerta.prezzoOfferto
-                            FROM offerta
+                            FROM offerta, asta
                             WHERE offerta.prezzoOfferto >= ?
                             AND offerta.asta_idAsta = ?
                 """)) {
@@ -29,6 +28,30 @@ public class OffersDao {
                 }
             }
         }
+
+        try (PreparedStatement getOffers = connection.prepareStatement("""
+                            SELECT asta.rialzoMin, o.prezzoOfferto
+                            FROM asta, offerta as o
+                            WHERE asta.idAsta = ?
+                            AND o.asta_idAsta = asta.idAsta
+                            AND o.prezzoOfferto IN (
+                                SELECT MAX(o1.prezzoOfferto)
+                                FROM offerta as o1
+                                WHERE o1.idOfferta = o.idOfferta
+                            )
+                            
+                """)) {
+            getOffers.setInt(1, offer.auctionId());
+            try (var result = getOffers.executeQuery()) {
+                if (result.next()) {
+                    if(result.getDouble(2)-offer.price()<result.getDouble(1)){
+                        connection.rollback();
+                        return 0;
+                    }
+                }
+            }
+        }
+
         try (PreparedStatement insertOffer = connection.prepareStatement(
                 "INSERT INTO offerta (prezzoOfferto, dataOfferta, utente_idUtente, asta_idAsta) VALUES (?, ?, ?, ?)")) {
             insertOffer.setDouble(1, offer.price());
