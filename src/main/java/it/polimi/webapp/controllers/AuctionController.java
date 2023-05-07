@@ -89,9 +89,6 @@ public class AuctionController extends HttpServlet {
                 expiryDate,
                 articleIds.stream().map(Article::new).toList(),
                 minimumOfferDifference);
-        // TODO: why does it insert the same article multiple times
-        //       instead of different ones ?
-        System.out.println("articleIds: " + articleIds);
 
         try (var connection = dataSource.getConnection()) {
             int result = new AuctionDao(connection).insertAuction(auction);
