@@ -5,7 +5,8 @@
     <title>Casa d'aste "La Mafia"</title>
 
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
@@ -24,31 +25,34 @@
          th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}"></div>
 </div>
 
-<!-- TODO: add offers table -->
-<div th:if="${auction.isOpen}" class="text-center">
-    <table class="table center">
+<div class="container mt-4">
+    <!-- TODO: add offers table -->
+    <div th:if="${auction.isOpen}" class="text-center">
+        <table class="table center">
 
-    </table>
+        </table>
+    </div>
+
+    <!-- TODO: add buyer's  data -->
+    <div th:if="${auction.isClosed()}" class="text-center">
+        <table class="table center">
+
+        </table>
+    </div>
+
+
+    <div th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}" class="text-center">
+        <form th:action="@{/closeAuction}" method="post">
+            <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
+            <button type="submit" class="btn btn-outline-primary" th:text="#{auctionDetails.closeAuction}"></button>
+        </form>
+    </div>
 </div>
-
-<!-- TODO: add buyer's  data -->
-<div th:if="${auction.isClosed()}" class="text-center">
-    <table class="table center">
-
-    </table>
-</div>
-
-
-<div th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}" class="text-center">
-    <form th:action="@{/closeAuction}" method="post">
-        <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
-        <button type="submit" class="btn btn-outline-primary" th:text="#{auctionDetails.closeAuction}"></button>
-    </form>
-</div>
-
 
 <!--All of bootstrap's scripts-->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
 
 </body>
 </html>
