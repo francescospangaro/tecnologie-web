@@ -23,12 +23,6 @@
              th:utext="${article.codArticle} + ' ' +  ${article.name}"
              th:value="${article.codArticle}"></div>
 
-        <!-- TODO: it prints the offers multiplied by the # of auctions in the DB
-                    EG:
-                        7 auctions: 1 has 3 offers, 2 has 1 offer, the others have none
-                            by clicking on 1, 21 offers will appear (the three, but 7 times over)
-                            by clicking on 2, 7 offers will appear (the only one for auction 2, but 7 times over)
-                            by clicking on 3...7, no offers appear -->
         <div class="text-center" th:each="offer : ${openAuction.offers}"
              th:utext="${offer.date} + ' ' +  ${offer.name}+ ' ' + ${offer.price}"
              th:value="${offer.offerId}"></div>
