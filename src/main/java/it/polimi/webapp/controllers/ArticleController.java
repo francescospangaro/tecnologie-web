@@ -1,45 +1,25 @@
 package it.polimi.webapp.controllers;
 
-import it.polimi.webapp.Initializer;
+import it.polimi.webapp.BaseController;
 import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.dao.ArticleDao;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Objects;
 
-
 @MultipartConfig(
         maxFileSize = 1024 * 1024 * 10,      // 10 MB
         maxRequestSize = 1024 * 1024 * 100   // 100 MB
 )
-public class ArticleController extends HttpServlet {
-
-    private DataSource dataSource;
-
-    @Override
-    @Initializer
-    public void init() throws ServletException {
-        //connects to the database
-        try {
-            this.dataSource = (DataSource) new InitialContext().lookup("java:/comp/env/jdbc/AsteDB");
-        } catch (NamingException e) {
-            throw new ServletException("Failed to get Context", e);
-        }
-
-        if (this.dataSource == null)
-            throw new ServletException("Data source not found!");
-    }
+public class ArticleController extends BaseController {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

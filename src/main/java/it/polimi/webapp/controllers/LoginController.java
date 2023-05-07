@@ -1,38 +1,18 @@
 package it.polimi.webapp.controllers;
 
-import it.polimi.webapp.Initializer;
+import it.polimi.webapp.BaseController;
 import it.polimi.webapp.dao.LoginDao;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-public class LoginController extends HttpServlet {
-    private DataSource dataSource;
-
-    @Override
-    @Initializer
-    public void init() throws ServletException {
-        try {
-            this.dataSource = (DataSource) new InitialContext().lookup("java:/comp/env/jdbc/AsteDB");
-        } catch (NamingException e) {
-            throw new ServletException("Failed to get Context", e);
-        }
-
-        if (this.dataSource == null)
-            throw new ServletException("Data source not found!");
-    }
-
+public class LoginController extends BaseController {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
