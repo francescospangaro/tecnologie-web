@@ -207,15 +207,16 @@ public class AuctionDao {
      */
     public @Nullable OpenAuction findOpenAuctionById(int auctionId) throws SQLException {
         Auction baseAuction = null;
-
         try (var query = connection.prepareStatement("""
                 SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
                     articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
                 FROM articolo, asta, astearticoli
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
+                AND asta.scadenza > ?
                 AND asta.idAsta=astearticoli.asta_idAsta
                 AND asta_idAsta = ?""")) {
-            query.setInt(1, auctionId);
+            query.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            query.setInt(2, auctionId);
 
             try (var res = query.executeQuery()) {
                 List<Article> articles = new ArrayList<>();

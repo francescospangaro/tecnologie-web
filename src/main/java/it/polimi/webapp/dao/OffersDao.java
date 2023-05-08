@@ -3,6 +3,7 @@ package it.polimi.webapp.dao;
 import it.polimi.webapp.beans.*;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 
 public class OffersDao {
     private final Connection connection;
@@ -39,7 +40,7 @@ public class OffersDao {
 
             boolean foundElement;
             try (PreparedStatement firstCheck = connection.prepareStatement("""
-                    SELECT asta.rialzoMin, o.prezzoOfferto
+                    SELECT asta.rialzoMin, o.prezzoOfferto, asta.chiusa, asta.scadenza
                     FROM asta, offerta as o
                     WHERE asta.idAsta = ?
                     AND o.asta_idAsta = asta.idAsta
@@ -52,8 +53,12 @@ public class OffersDao {
                 firstCheck.setInt(1, offer.auctionId());
                 try (var result = firstCheck.executeQuery()) {
                     foundElement = result.next();
-                    if (foundElement && offer.price() - result.getDouble(2) < result.getDouble(1)) {
+                    if (foundElement && (offer.price() - result.getDouble(2) < result.getDouble(1)||
+                                         result.getBoolean(3)||
+                                         result.getTimestamp(4).toLocalDateTime().isBefore(LocalDateTime.now()))) {
                         //The next offer is not high enough to surpass the minPriceIncrease threshold
+                        //The buyer is trying to put an offer in a closed auction
+                        //The buyer is trying to put an offer in an expired auction
                         connection.rollback();
                         return InsertionResult.LOWER_THAN_MAX;
                     }
@@ -62,8 +67,8 @@ public class OffersDao {
 
             if (!foundElement) {
                 try (PreparedStatement secondCheck = connection.prepareStatement("""
-                        SELECT SUM(articolo.prezzo)
-                        FROM articolo, astearticoli as a
+                        SELECT SUM(articolo.prezzo), asta.chiusa, asta.scadenza
+                        FROM articolo, astearticoli as a, asta join astearticoli a2 on asta.idAsta = a2.asta_idAsta
                         WHERE articolo.codArticolo = a.articolo_codArticolo
                         AND a.asta_idAsta = ?
                         """)) {
@@ -76,8 +81,11 @@ public class OffersDao {
                             return InsertionResult.DB_ERROR;
                         }
 
-                        if (offer.price() < res.getDouble(1)) {
+                        if (offer.price() < res.getDouble(1) || res.getBoolean(2)||
+                            res.getTimestamp(3).toLocalDateTime().isBefore(LocalDateTime.now())) {
                             //The offer is not higher than the sum of the articles' value
+                            //The buyer is trying to put an offer in a closed auction
+                            //The buyer is trying to put an offer in an expired auction
                             connection.rollback();
                             return InsertionResult.LOWER_THAN_ARTICLE;
                         }
