@@ -110,8 +110,6 @@ public class AuctionDao {
     }
 
     public @Nullable ClosedAuction findUserBoughtAuctions(int userId) throws SQLException {
-        Auction baseAuction = null;
-        ClosedAuction closedAuction;
         try(var query = connection.prepareStatement("""
                 SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
                        articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto, utente.nome, utente.indirizzo
@@ -131,12 +129,18 @@ public class AuctionDao {
             query.setInt(1, userId);
 
             try (var res = query.executeQuery()) {
+                ClosedAuction closedAuction = null;
                 List<Article> articles = new ArrayList<>();
                 while (res.next()) {
-                    if (baseAuction == null) {
-                        baseAuction = new Auction(res.getInt(1),
-                                res.getTimestamp(2).toLocalDateTime(),
-                                res.getDouble(3));
+                    if (closedAuction == null) {
+                        closedAuction = new ClosedAuction(
+                                new Auction(
+                                        res.getInt(1),
+                                        res.getTimestamp(2).toLocalDateTime(),
+                                        res.getDouble(3)),
+                                res.getDouble(9),
+                                res.getString(10),
+                                res.getString(11));
                     }
 
                     articles.add(new Article(
@@ -148,15 +152,10 @@ public class AuctionDao {
                             userId));
                 }
 
-                if (baseAuction == null)
+                if (closedAuction == null)
                     return null;
 
-                baseAuction = baseAuction.withArticles(articles);
-                closedAuction = new ClosedAuction(baseAuction,
-                        res.getDouble(9),
-                        res.getString(10),
-                        res.getString(11));
-                return closedAuction;
+                return closedAuction.withBase(closedAuction.base().withArticles(articles));
             }
         }
     }

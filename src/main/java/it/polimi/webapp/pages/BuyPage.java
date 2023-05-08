@@ -24,18 +24,22 @@ public class BuyPage extends ThymeleafServlet {
         String search = webExchange.getRequest().getParameterValue("search");
         ctx.setVariable("searchTerm", search != null ? search : "");
 
-        if (search != null && !search.equals("")) {
-            try (var connection = dataSource.getConnection()) {
+        try (var connection = dataSource.getConnection()) {
+            if (search != null && !search.equals("")) {
                 var result = new AuctionDao(connection).findAuctionByWord(search);
                 ctx.setVariable("auctions", result);
-                var boughtAuctions = new AuctionDao(connection).findUserBoughtAuctions((Integer) webExchange.getSession().getAttributeValue("userId"));
-                ctx.setVariable("boughtAuctions", boughtAuctions);
-                ctx.setVariable("errorQuery", false);
-            } catch (SQLException e) {
-                ctx.setVariable("errorQuery", true);
+            } else {
+                ctx.setVariable("auctions", Collections.emptyList());
             }
-        } else {
-            ctx.setVariable("auctions", Collections.emptyList());
+
+            var boughtAuctions = new AuctionDao(connection)
+                    .findUserBoughtAuctions((Integer) webExchange.getSession().getAttributeValue("userId"));
+            ctx.setVariable("boughtAuctions", boughtAuctions);
+
+            ctx.setVariable("errorQuery", false);
+        } catch (SQLException e) {
+            ctx.setVariable("errorQuery", true);
+            e.printStackTrace();
         }
 
         templateEngine.process("buy", ctx, writer);
