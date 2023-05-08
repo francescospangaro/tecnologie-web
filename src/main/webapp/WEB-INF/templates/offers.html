@@ -37,10 +37,7 @@
         <div th:with="days=${openAuction.base.getRemainingDays(session.loginTime)},
                   hours=${openAuction.base.getRemainingHours(session.loginTime)}"
              th:utext="#{offers.remainigTime(${days}, ${hours})}"></div>
-    </div>
 
-
-    <div class="text-center">
         <form th:action="@{/insertOffer}" th:method="post">
             <input type="hidden" th:id="id" name="id" th:value="${openAuction.base.id}">
             <input type="number" step="0.01" th:id="${offerValue}" name="offerValue">
