@@ -46,26 +46,18 @@ public class OffersController extends BaseController {
         var offer = new Offer(userId, auctionId, offerPrice, dateTime);
 
         try (var connection = dataSource.getConnection()) {
-            int inserted = new OffersDao(connection).insertOffer(offer);
-            switch(inserted){
-                case -2 -> {
-                    var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
-                    req.setAttribute("errorMaxOffer", true);
-                    disp.forward(req, resp);
-                    return;
-                }
-                case -1 -> {
-                    var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
-                    req.setAttribute("errorLowPrice", true);
-                    disp.forward(req, resp);
-                    return;
-                }
-                case 0 -> {
-                    var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
-                    req.setAttribute("errorQuery", true);
-                    disp.forward(req, resp);
-                    return;
-                }
+            var inserted = new OffersDao(connection).insertOffer(offer);
+            if(inserted != OffersDao.InsertionResult.DONE) {
+                var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
+                req.setAttribute(
+                        inserted == OffersDao.InsertionResult.LOWER_THAN_MAX ?
+                                "errorMaxOffer"
+                                : (inserted == OffersDao.InsertionResult.LOWER_THAN_ARTICLE ?
+                                "errorLowPrice" :
+                                "errorQuery"),
+                        true);
+                disp.forward(req, resp);
+                return;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
