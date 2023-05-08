@@ -1,7 +1,6 @@
 package it.polimi.webapp.pages;
 
 import it.polimi.webapp.ThymeleafServlet;
-import it.polimi.webapp.beans.OpenAuction;
 import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -34,7 +33,10 @@ public class OffersPage extends ThymeleafServlet {
         if (auctionId != null) {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
-                ctx.setVariable("openAuction", result);
+                if(result != null)
+                    ctx.setVariable("openAuction", result);
+                else
+                    ctx.setVariable("errorQuery", true);
             } catch (SQLException e) {
                 ctx.setVariable("errorQuery", true);
             }
