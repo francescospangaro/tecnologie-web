@@ -274,7 +274,7 @@ public class AuctionDao {
                 AND a.chiusa=false
                 AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
                     select MAX(offerta.prezzoOfferto)
-                    from offerta, asta as a1
+                    from offerta JOIN asta as a1 ON offerta.asta_idAsta = a1.idAsta
                     WHERE a1.idAsta = a.idAsta
                 ))
                 AND a.idAsta IN (
