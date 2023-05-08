@@ -38,9 +38,28 @@ public class OffersDao {
                 lockItems.executeUpdate();
             }
 
+            try (PreparedStatement checkClosedOrExpired = connection.prepareStatement("""
+                    SELECT asta.idAsta
+                    FROM asta
+                    WHERE asta.idAsta = ?
+                    AND (asta.chiusa = 1 OR asta.scadenza <= ?)
+                    """)) {
+                checkClosedOrExpired.setInt(1, offer.auctionId());
+                checkClosedOrExpired.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+
+                try (var result = checkClosedOrExpired.executeQuery()) {
+                    if(result.next()) {
+                        // The buyer is trying to put an offer in a closed auction
+                        // The buyer is trying to put an offer in an expired auction
+                        connection.rollback();
+                        return InsertionResult.DB_ERROR;
+                    }
+                }
+            }
+
             boolean foundElement;
             try (PreparedStatement firstCheck = connection.prepareStatement("""
-                    SELECT asta.rialzoMin, o.prezzoOfferto, asta.chiusa, asta.scadenza
+                    SELECT asta.rialzoMin, o.prezzoOfferto
                     FROM asta, offerta as o
                     WHERE asta.idAsta = ?
                     AND o.asta_idAsta = asta.idAsta
@@ -53,12 +72,8 @@ public class OffersDao {
                 firstCheck.setInt(1, offer.auctionId());
                 try (var result = firstCheck.executeQuery()) {
                     foundElement = result.next();
-                    if (foundElement && (offer.price() - result.getDouble(2) < result.getDouble(1)||
-                                         result.getBoolean(3)||
-                                         result.getTimestamp(4).toLocalDateTime().isBefore(LocalDateTime.now()))) {
+                    if (foundElement && offer.price() - result.getDouble(2) < result.getDouble(1)) {
                         //The next offer is not high enough to surpass the minPriceIncrease threshold
-                        //The buyer is trying to put an offer in a closed auction
-                        //The buyer is trying to put an offer in an expired auction
                         connection.rollback();
                         return InsertionResult.LOWER_THAN_MAX;
                     }
@@ -67,8 +82,8 @@ public class OffersDao {
 
             if (!foundElement) {
                 try (PreparedStatement secondCheck = connection.prepareStatement("""
-                        SELECT SUM(articolo.prezzo), asta.chiusa, asta.scadenza
-                        FROM articolo, astearticoli as a, asta join astearticoli a2 on asta.idAsta = a2.asta_idAsta
+                        SELECT SUM(articolo.prezzo)
+                        FROM articolo, astearticoli as a
                         WHERE articolo.codArticolo = a.articolo_codArticolo
                         AND a.asta_idAsta = ?
                         """)) {
@@ -81,8 +96,7 @@ public class OffersDao {
                             return InsertionResult.DB_ERROR;
                         }
 
-                        if (offer.price() < res.getDouble(1) || res.getBoolean(2)||
-                            res.getTimestamp(3).toLocalDateTime().isBefore(LocalDateTime.now())) {
+                        if (offer.price() < res.getDouble(1)) {
                             //The offer is not higher than the sum of the articles' value
                             //The buyer is trying to put an offer in a closed auction
                             //The buyer is trying to put an offer in an expired auction
