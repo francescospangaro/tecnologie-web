@@ -139,6 +139,7 @@ public class AuctionDao {
                 AND asta.idAsta = offerta.asta_idAsta
                 AND offerta.utente_idUtente = utente.idUtente
                 AND asta.chiusa = false
+                ORDER BY offerta.dataOfferta DESC
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
