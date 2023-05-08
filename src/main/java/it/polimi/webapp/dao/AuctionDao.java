@@ -34,7 +34,7 @@ public class AuctionDao {
             query.setInt(2, closed ? 1 : 0);
 
             try (var res = query.executeQuery()) {
-                Map<Integer, Auction> auctions = new HashMap<>();
+                Map<Integer, Auction> auctions = new LinkedHashMap<>(); // Keep the order given by the query
                 while (res.next()) {
                     int id = res.getInt(1);
                     var currAuction = auctions.get(id);
@@ -289,7 +289,7 @@ public class AuctionDao {
             query.setString(2, "%"+search+"%");
 
             try (var res = query.executeQuery()) {
-                Map<Integer, Auction> auctions = new HashMap<>();
+                Map<Integer, Auction> auctions = new LinkedHashMap<>(); // keep the db order
                 while (res.next()) {
                     int id = res.getInt(1);
                     var currAuction = auctions.get(id);
