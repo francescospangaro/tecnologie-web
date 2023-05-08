@@ -228,8 +228,8 @@ public class AuctionDao {
                     articles.add(new Article(
                             res.getInt(3),
                             res.getString(4),
-                            Base64.getEncoder().encodeToString(res.getBytes(5)),
-                            res.getString(6),
+                            res.getString(5),
+                            Base64.getEncoder().encodeToString(res.getBytes(6)),
                             res.getDouble(7),
                             -1));
                 }
