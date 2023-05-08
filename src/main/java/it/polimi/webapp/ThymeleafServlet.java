@@ -83,8 +83,8 @@ public abstract class ThymeleafServlet extends HttpServlet {
         } catch (final Exception e) {
             try {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            } catch (final IOException ignored) {
-                // Just ignore this
+            } catch (final Throwable ex) {
+                e.addSuppressed(ex);
             }
             throw new ServletException(e);
         }
