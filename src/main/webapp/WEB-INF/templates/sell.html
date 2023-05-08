@@ -30,14 +30,14 @@
                     <label for="articleName" th:utext="#{articleInsertion.name}" class="col col-form-label">Insert
                         article name</label>
                     <div class="col-8">
-                        <input type="text" id="articleName" name="articleName" class="form-control">
+                        <input type="text" id="articleName" name="articleName" class="form-control" th:value="${articleName}">
                     </div>
                 </div>
                 <div class="row mt-1">
                     <label for="articleDesc" th:utext="#{articleInsertion.description}" class="col col-form-label">Insert
                         an article description</label>
                     <div class="col-8">
-                        <textarea id="articleDesc" name="articleDesc" class="form-control"></textarea>
+                        <textarea id="articleDesc" name="articleDesc" class="form-control" th:value="${articleDescription}"></textarea>
                     </div>
                 </div>
                 <div class="row mt-1">
@@ -53,7 +53,7 @@
                     <div class="col-8">
                         <div class="input-group">
                             <span class="input-group-text">€</span>
-                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control">
+                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control" th:value="${articlePrice}">
                         </div>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                            class="col col-form-label">Insert minimum price rise</label>
                     <div class="col-8">
                         <input type="number" step="1" id="minimumOfferDifference" name="minimumOfferDifference"
-                               class="form-control">
+                               class="form-control" th:value="${auctionPrice}">
                     </div>
                 </div>
 
@@ -106,7 +106,7 @@
                         expiry
                         date</label>
                     <div class="col-8">
-                        <input type="datetime-local" id="auctionExpiration" name="expiryDate" class="form-control">
+                        <input type="datetime-local" id="auctionExpiration" name="expiryDate" class="form-control" th:value="${auctionTime}">
                     </div>
                 </div>
 

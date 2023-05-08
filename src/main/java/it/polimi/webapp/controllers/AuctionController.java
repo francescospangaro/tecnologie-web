@@ -27,7 +27,7 @@ public class AuctionController extends BaseController {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        boolean wrongInsertedData = false;
+        boolean wrongInsertedData = false, numError = false;
 
         List<Integer> articleIds = null;
         try {
@@ -43,6 +43,7 @@ public class AuctionController extends BaseController {
         try {
             minimumOfferDifference = Integer.parseInt(req.getParameter("minimumOfferDifference"));
         } catch (NumberFormatException ex) {
+            numError = true;
             wrongInsertedData = true;
         }
 
@@ -60,6 +61,10 @@ public class AuctionController extends BaseController {
                 || expiryDate == null || expiryDate.isBefore(LocalDateTime.now());
 
         if (wrongInsertedData) {
+            if(!numError)
+                req.setAttribute("auctionPrice", minimumOfferDifference);
+            if(expiryDate != null)
+                req.setAttribute("auctionTime", expiryDate);
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
             req.setAttribute("errorAuctionDataInserted", true);
             disp.forward(req, resp);
@@ -88,6 +93,8 @@ public class AuctionController extends BaseController {
             throw new RuntimeException(e);
         }
 
+        req.setAttribute("auctionPrice", "");
+        req.setAttribute("auctionTime", "");
         req.setAttribute("goodAuctionInsertion", true);
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }

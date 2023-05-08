@@ -21,6 +21,9 @@ public class LoginController extends BaseController {
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/login"), "Missing dispatcher");
             req.setAttribute("errorCred", true);
+            assert username != null;
+            if(!username.isEmpty())
+                req.setAttribute("loginUsername", username);
             disp.forward(req, resp);
             return;
         }
@@ -31,10 +34,12 @@ public class LoginController extends BaseController {
             if (userData.get(0).equals("")) {
                 var dispatcher = Objects.requireNonNull(req.getRequestDispatcher("/login"), "Missing dispatcher");
                 req.setAttribute("errorNotFound", true);
+                req.setAttribute("loginUsername", username);
                 dispatcher.forward(req, resp);
                 return;
             }
             //found user, and password is correct
+            req.setAttribute("loginUsername", "");
             req.getSession(true).setAttribute("userId", Integer.parseInt(userData.get(0)));
             req.getSession().setAttribute("user", userData.get(1));
             req.getSession().setAttribute("loginTime", LocalDateTime.now());

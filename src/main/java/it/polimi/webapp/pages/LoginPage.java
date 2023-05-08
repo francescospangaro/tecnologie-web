@@ -19,6 +19,7 @@ public class LoginPage extends ThymeleafServlet {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
 
         ctx.setVariable("errorCred", Objects.requireNonNullElse(webExchange.getAttributeValue("errorCred"), false));
+        ctx.setVariable("loginUsername", webExchange.getAttributeValue("loginUsername"));
         ctx.setVariable("errorNotFound", Objects.requireNonNullElse(webExchange.getAttributeValue("errorNotFound"), false));
 
         templateEngine.process("login", ctx, writer);

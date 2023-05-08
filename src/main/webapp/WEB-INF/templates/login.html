@@ -23,7 +23,7 @@
         <div class="text-center">
             <p th:utext="#{login.user}">Insert your username:</p>
             <label>
-                <input type="text" class="form-control" th:placeholder="#{login.userPlace}" th:id="${user}" name="user"><br>
+                <input type="text" class="form-control" th:placeholder="#{login.userPlace}" th:id="${user}" name="user" th:value="${loginUsername}"><br>
             </label>
         </div>
         <br>

@@ -44,15 +44,24 @@ public class ArticleController extends BaseController {
                             || articleDesc == null || articleDesc.isEmpty()
                             || Objects.requireNonNull(articleImage).getSize() == 0 || imageStream == null
                             || (imageStream.available()==0) || !Objects.requireNonNull(mimeType).startsWith("image/");
+        boolean numError = false;
 
         double articlePrice = -1;
         try {
             articlePrice = Double.parseDouble(req.getParameter("articlePrice"));
         } catch (NumberFormatException e){
+            numError = true;
             dataError = true;
         }
 
         if(dataError) {
+            if(!numError)
+                req.setAttribute("articlePrice", articlePrice);
+            if(!(articleName == null || articleName.isEmpty()))
+                req.setAttribute("articleName", articleName);
+            if(!(articleDesc == null || articleDesc.isEmpty()))
+                req.setAttribute("articleDescription", articleDesc);
+
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
             req.setAttribute("errorArticleDataInserted", true);
             disp.forward(req, resp);
@@ -74,6 +83,9 @@ public class ArticleController extends BaseController {
             throw new RuntimeException(e);
         }
 
+        req.setAttribute("articlePrice", "");
+        req.setAttribute("articleName", "");
+        req.setAttribute("articleDescription", "");
         req.setAttribute("goodInsertion", true);
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }

@@ -48,6 +48,12 @@ public class SellPage extends ThymeleafServlet {
         ctx.setVariable("errorArticleQuery", Objects.requireNonNullElse(webExchange.getAttributeValue("errorArticleQuery"), false));
         ctx.setVariable("errorAuctionDataInserted", Objects.requireNonNullElse(webExchange.getAttributeValue("errorAuctionDataInserted"), false));
         ctx.setVariable("errorAuctionQuery", Objects.requireNonNullElse(webExchange.getAttributeValue("errorAuctionQuery"), false));
+        ctx.setVariable("articleName", webExchange.getAttributeValue("articleName"));
+        ctx.setVariable("articleDescription", webExchange.getAttributeValue("articleDescription"));
+        ctx.setVariable("articlePrice", webExchange.getAttributeValue("articlePrice"));
+        ctx.setVariable("auctionPrice", webExchange.getAttributeValue("auctionPrice"));
+        ctx.setVariable("auctionTime", webExchange.getAttributeValue("auctionTime"));
+
 
         try (var connection = dataSource.getConnection()) {
             var result = new ArticleDao(connection).findAllArticles(

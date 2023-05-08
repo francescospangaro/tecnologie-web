@@ -22,6 +22,7 @@ public class OffersPage extends ThymeleafServlet {
         ctx.setVariable("errorMaxOffer", webExchange.getAttributeValue("errorMaxOffer"));
         ctx.setVariable("errorLowPrice", webExchange.getAttributeValue("errorLowPrice"));
         ctx.setVariable("errorQuery", webExchange.getAttributeValue("errorQuery"));
+        ctx.setVariable("offerPlaceholder", webExchange.getAttributeValue("offerPlaceholder"));
 
         Integer auctionId = null;
         try {

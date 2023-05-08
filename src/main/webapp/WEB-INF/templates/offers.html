@@ -82,7 +82,7 @@
                     <input type="hidden" th:id="id" name="id" th:value="${openAuction.base.id}">
                     <div class="input-group g-0">
                         <span class="input-group-text">€</span>
-                        <input type="number" step="0.01" id="offerValue" name="offerValue" class="form-control">
+                        <input type="number" step="0.01" id="offerValue" name="offerValue" class="form-control" th:value="${offerPlaceholder}">
                         <button type="submit" class="btn btn-primary" th:text="#{offers.confirm}">
                             Place offer
                         </button>

@@ -21,7 +21,7 @@ public class OffersController extends BaseController {
         LocalDateTime dateTime = LocalDateTime.parse(req.getSession().getAttribute("loginTime").toString());
         int auctionId = -1;
 
-        boolean dataError = false;
+        boolean dataError = false, dataNum = false;
 
         try {
             auctionId = Integer.parseInt(req.getParameter("id"));
@@ -34,11 +34,14 @@ public class OffersController extends BaseController {
             offerPrice = Double.parseDouble(req.getParameter("offerValue"));
         } catch (NumberFormatException e){
             dataError = true;
+            dataNum  = true;
         }
 
         if(dataError) {
             var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
             req.setAttribute("errorQuery", true);
+            if(dataNum)
+                req.setAttribute("offerPlaceholder", offerPrice);
             disp.forward(req, resp);
             return;
         }
@@ -63,6 +66,7 @@ public class OffersController extends BaseController {
             throw new RuntimeException(e);
         }
 
+        req.setAttribute("offerPlaceholder", "");
         req.setAttribute("errorMaxOffer", false);
         req.setAttribute("errorLowOffer", false);
         req.setAttribute("errorQuery", false);
