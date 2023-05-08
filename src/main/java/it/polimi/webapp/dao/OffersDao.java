@@ -21,8 +21,22 @@ public class OffersDao {
      * if the incoming offer is >= than the sum of the articles' prices for that auction
      */
     public InsertionResult insertOffer(Offer offer) throws SQLException {
+        var isolationLevel = connection.getTransactionIsolation();
         connection.setAutoCommit(false);
+        connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         try {
+            // Touch with an update all items of this auction, so that we will hold a transaction lock on those
+            // If anybody else tries to do the same thing (so basically this method is called concurrently)
+            // he will have to wait for us to be done with our transaction
+            try (PreparedStatement lockItems = connection.prepareStatement("""
+                    UPDATE astearticoli
+                    SET astearticoli.articolo_codArticolo = astearticoli.articolo_codArticolo
+                    WHERE astearticoli.asta_idAsta = ?
+                    """)) {
+                lockItems.setInt(1, offer.auctionId());
+                lockItems.executeUpdate();
+            }
+
             boolean foundElement;
             try (PreparedStatement firstCheck = connection.prepareStatement("""
                     SELECT asta.rialzoMin, o.prezzoOfferto
@@ -93,6 +107,7 @@ public class OffersDao {
             throw t;
         } finally {
             connection.setAutoCommit(true);
+            connection.setTransactionIsolation(isolationLevel);
         }
     }
 
