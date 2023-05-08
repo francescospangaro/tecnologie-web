@@ -28,6 +28,8 @@ public class BuyPage extends ThymeleafServlet {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findAuctionByWord(search);
                 ctx.setVariable("auctions", result);
+                var boughtAuctions = new AuctionDao(connection).findUserBoughtAuctions((Integer) webExchange.getSession().getAttributeValue("userId"));
+                ctx.setVariable("boughtAuctions", boughtAuctions);
                 ctx.setVariable("errorQuery", false);
             } catch (SQLException e) {
                 ctx.setVariable("errorQuery", true);

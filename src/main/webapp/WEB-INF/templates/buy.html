@@ -69,6 +69,48 @@
     </div>
 </div>
 
+<br><br><br>
+<div class="container mt-4">
+    <table class="table table-striped table-hover table-bordered center">
+        <thead>
+        <tr>
+            <td th:utext="#{buy.auctionNumTitle}">#</td>
+            <td th:utext="#{buy.actionMaxOfferTitle}">Max offer</td>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="auction : ${boughtAuctions}">
+            <tr>
+                <td><a th:href="@{'/auctionDetails?id=' + ${auction.id}}" th:utext="${auction.id}"
+                       href="#">1</a></td>
+                <td th:utext="${auction.maxOffer} + '€'">60€</td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table class="table center">
+                        <thead>
+                        <tr>
+                            <td th:utext="#{buy.articleNumTitle}">Code</td>
+                            <td th:utext="#{buy.auctionNameTitle}">Article</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="article : ${auction.articles}">
+                            <tr>
+                                <td th:utext="${article.codArticle}">1</td>
+                                <td th:utext="${article.name}">Motosega</td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </th:block>
+        </tbody>
+    </table>
+</div>
+
+
 <!--All of bootstrap's scripts-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"

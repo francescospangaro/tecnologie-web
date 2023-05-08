@@ -109,6 +109,58 @@ public class AuctionDao {
                 : doPopulateOpenAuction(baseAuction);
     }
 
+    public @Nullable ClosedAuction findUserBoughtAuctions(int userId) throws SQLException {
+        Auction baseAuction = null;
+        ClosedAuction closedAuction;
+        try(var query = connection.prepareStatement("""
+                SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
+                       articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto, utente.nome, utente.indirizzo
+                FROM articolo
+                         join astearticoli on articolo.codArticolo = astearticoli.articolo_codArticolo
+                         join asta on asta.idAsta = astearticoli.asta_idAsta
+                         join offerta on offerta.asta_idAsta = asta.idAsta
+                         join utente on utente.idUtente = offerta.utente_idUtente
+                WHERE offerta.utente_idUtente = ?
+                  AND asta.chiusa = 1
+                  AND offerta.prezzoOfferto IN (
+                    SELECT MAX(o.prezzoOfferto)
+                    FROM offerta as o join asta on o.asta_idAsta = asta.idAsta
+                    WHERE o.utente_idUtente = offerta.utente_idUtente
+                )
+                """)){
+            query.setInt(1, userId);
+
+            try (var res = query.executeQuery()) {
+                List<Article> articles = new ArrayList<>();
+                while (res.next()) {
+                    if (baseAuction == null) {
+                        baseAuction = new Auction(res.getInt(1),
+                                res.getTimestamp(2).toLocalDateTime(),
+                                res.getDouble(3));
+                    }
+
+                    articles.add(new Article(
+                            res.getInt(4),
+                            res.getString(5),
+                            res.getString(6),
+                            Base64.getEncoder().encodeToString(res.getBytes(7)),
+                            res.getDouble(8),
+                            userId));
+                }
+
+                if (baseAuction == null)
+                    return null;
+
+                baseAuction = baseAuction.withArticles(articles);
+                closedAuction = new ClosedAuction(baseAuction,
+                        res.getDouble(9),
+                        res.getString(10),
+                        res.getString(11));
+                return closedAuction;
+            }
+        }
+    }
+
     private @Nullable ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.prezzoOfferto, utente.nome, utente.indirizzo
@@ -263,8 +315,8 @@ public class AuctionDao {
         }
     }
 
-
     public List<Auction> findAuctionByWord(String search) {
+        Timestamp requestTime = Timestamp.valueOf(LocalDateTime.now());
         try (var query = connection.prepareStatement("""
                 SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
                     articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
@@ -272,6 +324,7 @@ public class AuctionDao {
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
                 AND a.idAsta=astearticoli.asta_idAsta
                 AND a.chiusa=false
+                AND a.scadenza > ?
                 AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
                     select MAX(offerta.prezzoOfferto)
                     from offerta JOIN asta as a1 ON offerta.asta_idAsta = a1.idAsta
@@ -285,8 +338,9 @@ public class AuctionDao {
                         OR articolo.descrizione LIKE (?)))
                 ORDER BY a.scadenza
                 """)) {
-            query.setString(1, "%"+search+"%");
+            query.setTimestamp(1, requestTime);
             query.setString(2, "%"+search+"%");
+            query.setString(3, "%"+search+"%");
 
             try (var res = query.executeQuery()) {
                 Map<Integer, Auction> auctions = new LinkedHashMap<>(); // keep the db order
