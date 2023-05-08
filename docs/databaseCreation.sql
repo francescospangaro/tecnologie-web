@@ -54,7 +54,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `casa_daste`.`asta` (
   `idAsta` INT NOT NULL AUTO_INCREMENT,
-  `rialzoMin` DECIMAL(10,2) NOT NULL,
+  `rialzoMin` DECIMAL(8,0) NOT NULL,
   `scadenza` DATETIME NOT NULL,
   `chiusa` BOOLEAN NOT NULL DEFAULT false,
   PRIMARY KEY (`idAsta`))

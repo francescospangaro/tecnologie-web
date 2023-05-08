@@ -42,7 +42,7 @@ public class AuctionDao {
                         auctions.put(id, currAuction = new Auction(id,
                                 res.getTimestamp(2).toLocalDateTime(),
                                 new ArrayList<>(),
-                                res.getDouble(3),
+                                res.getInt(3),
                                 res.getDouble(9)));
 
                     currAuction.articles().add(new Article(
@@ -84,7 +84,7 @@ public class AuctionDao {
                 List<Article> articles = new ArrayList<>();
                 while (res.next()) {
                     if (baseAuction == null) {
-                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getDouble(2));
+                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getInt(2));
                         closed = res.getBoolean(3);
                     }
 
@@ -137,7 +137,7 @@ public class AuctionDao {
                                 new Auction(
                                         res.getInt(1),
                                         res.getTimestamp(2).toLocalDateTime(),
-                                        res.getDouble(3)),
+                                        res.getInt(3)),
                                 res.getDouble(9),
                                 res.getString(10),
                                 res.getString(11));
@@ -222,7 +222,7 @@ public class AuctionDao {
                 List<Article> articles = new ArrayList<>();
                 while (res.next()) {
                     if (baseAuction == null) {
-                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getDouble(2));
+                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getInt(2));
                     }
 
                     articles.add(new Article(
@@ -254,7 +254,7 @@ public class AuctionDao {
             try (PreparedStatement insertAuction = connection.prepareStatement(
                     "INSERT INTO asta (rialzoMin, scadenza) VALUES (?, ?)",
                     Statement.RETURN_GENERATED_KEYS)) {
-                insertAuction.setDouble(1, auction.minimumOfferDifference());
+                insertAuction.setInt(1, auction.minimumOfferDifference());
                 insertAuction.setTimestamp(2, Timestamp.valueOf(auction.expiry()));
                 int res = insertAuction.executeUpdate();
                 if (res == 0)
@@ -351,7 +351,7 @@ public class AuctionDao {
                         auctions.put(id, currAuction = new Auction(id,
                                 res.getTimestamp(2).toLocalDateTime(),
                                 new ArrayList<>(),
-                                res.getDouble(3),
+                                res.getInt(3),
                                 res.getDouble(9)));
 
                     currAuction.articles().add(new Article(

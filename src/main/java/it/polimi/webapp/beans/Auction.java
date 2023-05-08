@@ -15,19 +15,19 @@ public record Auction(
         int id,
         LocalDateTime expiry,
         @Nullable List<Article> articles,
-        double minimumOfferDifference,
+        int minimumOfferDifference,
         double maxOffer
 ) {
 
-    public Auction(LocalDateTime expiry, List<Article> articles, double minimumOfferDifference) {
+    public Auction(LocalDateTime expiry, List<Article> articles, int minimumOfferDifference) {
         this(-1, expiry, articles, minimumOfferDifference, -1);
     }
 
     public Auction(){
-        this(-1, LocalDateTime.MIN, new ArrayList<>(), 0D, -1);
+        this(-1, LocalDateTime.MIN, new ArrayList<>(), 0, -1);
     }
 
-    public Auction(int id, LocalDateTime expiry, double minimumOfferDifference) {
+    public Auction(int id, LocalDateTime expiry, int minimumOfferDifference) {
         this(id, expiry, null, minimumOfferDifference, -1);
     }
 

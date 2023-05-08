@@ -39,9 +39,9 @@ public class AuctionController extends BaseController {
             wrongInsertedData = true;
         }
 
-        double minimumOfferDifference = -1;
+        int minimumOfferDifference = -1;
         try {
-            minimumOfferDifference = Double.parseDouble(req.getParameter("minimumOfferDifference"));
+            minimumOfferDifference = Integer.parseInt(req.getParameter("minimumOfferDifference"));
         } catch (NumberFormatException ex) {
             wrongInsertedData = true;
         }
