@@ -30,7 +30,7 @@ public class OffersDao {
                             AND o.prezzoOfferto IN (
                                 SELECT MAX(o1.prezzoOfferto)
                                 FROM offerta as o1
-                                WHERE o1.idOfferta = o.idOfferta
+                                WHERE o1.asta_idAsta = o.asta_idAsta
                             )
                 """)) {
             firstCheck.setInt(1, offer.auctionId());
@@ -39,6 +39,7 @@ public class OffersDao {
                     if (offer.price() - result.getDouble(2) < result.getDouble(1)) {
                         //The next offer is not high enough to surpass the minPriceIncrease threshold
                         connection.rollback();
+                        System.out.println("Magia1");
                         return -2;
                     }
                     // no error, goes on without interruption
@@ -55,12 +56,14 @@ public class OffersDao {
                                 if (offer.price() < res.getDouble(1)) {
                                     //The offer is not higher than the sum of the articles' value
                                     connection.rollback();
+                                    System.out.println("Magia2");
                                     return -1;
                                 }
                                 // no error, goes on without interruption
                             } else {
                                 //DB error
                                 connection.rollback();
+                                System.out.println("Magia3");
                                 return 0;
                             }
                         }

@@ -6,6 +6,7 @@ import it.polimi.webapp.beans.Auction;
 import it.polimi.webapp.dao.AuctionDao;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,6 +17,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+
+@MultipartConfig(
+        maxFileSize = 1024 * 1024 * 10,      // 10 MB
+        maxRequestSize = 1024 * 1024 * 100   // 100 MB
+)
 public class AuctionController extends BaseController {
 
     @Override

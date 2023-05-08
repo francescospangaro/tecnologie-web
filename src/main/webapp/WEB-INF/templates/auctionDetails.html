@@ -16,9 +16,13 @@
 </div>
 <div th:if="${!errorQuery}" class="text-center">
     <h2 th:utext="#{auctionDetails.auctionNum(${auction.base.id})}"></h2>
-    <div th:each="article : ${auction.base.articles}"
-         th:utext="${article.codArticle} + ' ' +  ${article.name}"
-         th:value="${article.codArticle}"></div>
+    <div th:each="article : ${auction.base.articles}">
+        <div th:utext="${article.codArticle} + ' ' + ${article.name} + ' ' + ${article.description}"
+             th:value="${article.codArticle}">
+        </div>
+        <img style='display:block; width:300px;height:300px;' id='base64image'
+             th:src="@{'data:image/jpeg;base64,' + ${ article.immagine}}" class="center"/>
+    </div>
     <div th:if="${auction.isOpen}"
          th:with="days=${auction.base.getRemainingDays(session.loginTime)},
                   hours=${auction.base.getRemainingHours(session.loginTime)}"
@@ -27,17 +31,14 @@
 
 <div class="container mt-4">
     <!-- TODO: add offers table -->
-    <div th:if="${auction.isOpen}" class="text-center">
-        <table class="table center">
-
-        </table>
+    <div th:if="${auction.isOpen}" class="text-center" th:each="offer : ${auction.offers}"
+         th:utext="${offer.date} + ' ' +  ${offer.name}+ ' ' + ${offer.price}"
+         th:value="${offer.offerId}">
     </div>
 
     <!-- TODO: add buyer's  data -->
-    <div th:if="${auction.isClosed()}" class="text-center">
-        <table class="table center">
-
-        </table>
+    <div th:if="${auction.isClosed()}" class="text-center"
+         th:utext="${auction.finalPrice} + ' ' + ${auction.buyerName} + ' ' + ${auction.buyerAddress}">
     </div>
 
 

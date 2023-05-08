@@ -5,10 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AuctionDao {
     private final Connection connection;
@@ -22,7 +19,7 @@ public class AuctionDao {
         try (var query = connection.prepareStatement("""
                 SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
                     articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
-                FROM articolo, astearticoli, utente, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
+                FROM articolo, astearticoli, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
                 AND a.idAsta=astearticoli.asta_idAsta
                 AND articolo.utente_idUtente=?
@@ -52,7 +49,7 @@ public class AuctionDao {
                             res.getInt(4),
                             res.getString(5),
                             res.getString(6),
-                            res.getString(7),
+                            Base64.getEncoder().encodeToString(res.getBytes(7)),
                             res.getDouble(8),
                             userId));
                 }
@@ -75,7 +72,7 @@ public class AuctionDao {
         try (var query = connection.prepareStatement("""
                 SELECT asta.scadenza, asta.rialzoMin, asta.chiusa, articolo.codArticolo,
                     articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
-                FROM articolo, asta, astearticoli, utente
+                FROM articolo, asta, astearticoli
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
                 AND asta.idAsta=astearticoli.asta_idAsta
                 AND articolo.utente_idUtente=?
@@ -95,7 +92,7 @@ public class AuctionDao {
                             res.getInt(4),
                             res.getString(5),
                             res.getString(6),
-                            res.getString(7),
+                            Base64.getEncoder().encodeToString(res.getBytes(7)),
                             res.getDouble(8),
                             userId));
                 }
@@ -162,7 +159,7 @@ public class AuctionDao {
         try (var query = connection.prepareStatement("""
                 SELECT asta.scadenza, asta.rialzoMin, articolo.codArticolo,
                     articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
-                FROM articolo, asta, astearticoli, utente
+                FROM articolo, asta, astearticoli
                 WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
                 AND asta.idAsta=astearticoli.asta_idAsta
                 AND asta_idAsta = ?""")) {
@@ -178,7 +175,7 @@ public class AuctionDao {
                     articles.add(new Article(
                             res.getInt(3),
                             res.getString(4),
-                            res.getString(5),
+                            Base64.getEncoder().encodeToString(res.getBytes(5)),
                             res.getString(6),
                             res.getDouble(7),
                             -1));
@@ -249,7 +246,7 @@ public class AuctionDao {
                 UPDATE asta
                 INNER JOIN (
                     SELECT a.idAsta as oldId
-                    from asta as a, utente, astearticoli, articolo
+                    from asta as a, astearticoli, articolo
                     where astearticoli.asta_idAsta = a.idAsta
                     and astearticoli.articolo_codArticolo = articolo.codArticolo
                     and articolo.utente_idUtente = ?
@@ -306,7 +303,7 @@ public class AuctionDao {
                             res.getInt(4),
                             res.getString(5),
                             res.getString(6),
-                            res.getString(7),
+                            Base64.getEncoder().encodeToString(res.getBytes(7)),
                             res.getDouble(8)));
                 }
 

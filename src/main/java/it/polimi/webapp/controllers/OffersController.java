@@ -50,18 +50,21 @@ public class OffersController extends BaseController {
             switch(inserted){
                 case -2 -> {
                     var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
+                    System.out.println("Magia1");
                     req.setAttribute("errorMaxOffer", true);
                     disp.forward(req, resp);
                     return;
                 }
                 case -1 -> {
                     var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
+                    System.out.println("Magia2");
                     req.setAttribute("errorLowOffer", true);
                     disp.forward(req, resp);
                     return;
                 }
                 case 0 -> {
                     var disp = Objects.requireNonNull(req.getRequestDispatcher("/offers"), "Missing dispatcher");
+                    System.out.println("Magia3");
                     req.setAttribute("errorQuery", true);
                     disp.forward(req, resp);
                     return;

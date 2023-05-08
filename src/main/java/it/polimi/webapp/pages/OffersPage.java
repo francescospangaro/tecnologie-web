@@ -23,9 +23,9 @@ public class OffersPage extends ThymeleafServlet {
         Integer auctionId = null;
         try {
             auctionId = Integer.parseInt(webExchange.getRequest().getParameterValue("id"));
-            ctx.setVariable("errorMaxOffer", false);
-            ctx.setVariable("errorLowPrice", false);
-            ctx.setVariable("errorQuery", false);
+            ctx.setVariable("errorMaxOffer", webExchange.getAttributeValue("errorMaxOffer"));
+            ctx.setVariable("errorLowPrice", webExchange.getAttributeValue("errorLowPrice"));
+            ctx.setVariable("errorQuery", webExchange.getAttributeValue("errorQuery"));
         } catch (NumberFormatException e) {
             System.out.println(webExchange.getRequest().getParameterValue("id"));
             ctx.setVariable("errorQuery", true);
@@ -35,9 +35,9 @@ public class OffersPage extends ThymeleafServlet {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
                 ctx.setVariable("openAuction", result);
-                ctx.setVariable("errorMaxOffer", false);
-                ctx.setVariable("errorLowPrice", false);
-                ctx.setVariable("errorQuery", false);
+                ctx.setVariable("errorMaxOffer", webExchange.getAttributeValue("errorMaxOffer"));
+                ctx.setVariable("errorLowPrice", webExchange.getAttributeValue("errorLowPrice"));
+                ctx.setVariable("errorQuery", webExchange.getAttributeValue("errorQuery"));
             } catch (SQLException e) {
                 ctx.setVariable("errorQuery", true);
             }
