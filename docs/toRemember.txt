@@ -1,0 +1,23 @@
+Placeholders for errors (needed to repopulate the forms after errors occur)
+
+Error in logging in:
+    loginUsername
+    (will NOT save password)
+
+Error in placing offer:
+    offerPlaceholder
+
+Error while searching for an auction:
+    searchTerm
+
+Error in creating auction:
+        auctionPrice
+        auctionTime
+
+Error in creating article:
+        articleName
+        articleDescription
+        articlePrice
+
+(I could've created auctions and articles objects,
+will maybe do it in the future)

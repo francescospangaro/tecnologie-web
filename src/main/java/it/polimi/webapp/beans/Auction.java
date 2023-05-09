@@ -31,6 +31,10 @@ public record Auction(
         this(id, expiry, null, minimumOfferDifference, -1);
     }
 
+    public Auction(Auction toCopy, double maxOffer){
+        this(toCopy.id, toCopy.expiry, toCopy.articles, toCopy.minimumOfferDifference, maxOffer);
+    }
+
     @Override
     public int id() {
         if(id == -1)

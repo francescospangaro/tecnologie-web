@@ -28,21 +28,25 @@ public class OffersPage extends ThymeleafServlet {
         try {
             auctionId = Integer.parseInt(webExchange.getRequest().getParameterValue("id"));
         } catch (NumberFormatException e) {
+            System.out.println("Magia1");
             ctx.setVariable("errorQuery", true);
         }
 
         if (auctionId != null) {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
-                if(result != null)
+                if (result != null)
                     ctx.setVariable("openAuction", result);
-                else
+                else {
+                    System.out.println("Magia2");
                     ctx.setVariable("errorQuery", true);
+                }
             } catch (SQLException e) {
+                System.out.println("Magia3");
+                e.printStackTrace();
                 ctx.setVariable("errorQuery", true);
             }
         }
-
         templateEngine.process("offers", ctx, writer);
     }
 }

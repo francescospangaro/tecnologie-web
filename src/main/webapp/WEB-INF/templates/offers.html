@@ -27,6 +27,9 @@
 
     <div th:if="${!errorQuery}">
         <h2 th:utext="#{offers.auctionNum(${openAuction.base.id})}" class="row">Auction #1</h2>
+        <h4 th:utext="#{offers.maxPrice}+ ' ' + ${openAuction.base.maxOffer} + '€ '
+            + #{offers.offerDifference} + ' ' +${openAuction.base.minimumOfferDifference} + '€'">
+                Max price: 12€ Min offer difference: 1€</h4>
         <div class="row">
             <div class="col">
                 <div class="card mb-3" th:each="article : ${openAuction.base.articles}">
