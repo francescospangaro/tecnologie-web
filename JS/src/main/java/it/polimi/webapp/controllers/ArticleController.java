@@ -2,11 +2,13 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.beans.Article;
+import it.polimi.webapp.beans.ParsingError;
+import it.polimi.webapp.beans.InsertionSuccessful;
 import it.polimi.webapp.dao.ArticleDao;
+import it.polimi.webapp.dao.AuctionDao;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -44,49 +46,51 @@ public class ArticleController extends BaseController {
                             || articleDesc == null || articleDesc.isEmpty()
                             || Objects.requireNonNull(articleImage).getSize() == 0 || imageStream == null
                             || (imageStream.available()==0) || !Objects.requireNonNull(mimeType).startsWith("image/");
-        boolean numError = false;
 
         double articlePrice = -1;
         try {
             articlePrice = Double.parseDouble(req.getParameter("articlePrice"));
         } catch (NumberFormatException e){
-            numError = true;
             dataError = true;
         }
 
         if(dataError) {
-            if(!numError)
-                req.setAttribute("articlePrice", articlePrice);
-            if(!(articleName == null || articleName.isEmpty()))
-                req.setAttribute("articleName", articleName);
-            if(!(articleDesc == null || articleDesc.isEmpty()))
-                req.setAttribute("articleDescription", articleDesc);
-
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
-            req.setAttribute("errorArticleDataInserted", true);
-            disp.forward(req, resp);
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorArticleDataInserted"), resp.getWriter());
             return;
         }
 
         var article = new Article(articleName, articleDesc, Objects.requireNonNull(imageName), articlePrice, userId);
 
+        Integer inserted;
+
         try (var connection = dataSource.getConnection()) {
-            int inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
-            if (inserted == 0) {
+            inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
+            if (inserted == null) {
                 // error in query execution
-                var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
-                req.setAttribute("errorArticleQuery", true);
-                disp.forward(req, resp);
+                resp.setContentType("application/json");
+                gson.toJson(new ParsingError("errorArticleQuery"), resp.getWriter());
                 return;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        req.setAttribute("articlePrice", "");
-        req.setAttribute("articleName", "");
-        req.setAttribute("articleDescription", "");
-        req.setAttribute("goodInsertion", true);
-        resp.sendRedirect(getServletContext().getContextPath() + "/sell");
+        resp.setContentType("application/json");
+        gson.toJson(new InsertionSuccessful(inserted), resp.getWriter());
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try (var connection = dataSource.getConnection()) {
+            var result = new ArticleDao(connection).findAllArticles(
+                    (Integer) req.getSession().getAttribute("userId"));
+            resp.setContentType("application/json");
+            //print articles
+            gson.toJson(Objects.requireNonNullElseGet(result,
+                    () -> new ParsingError("errorArticlesQuery")), resp.getWriter());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

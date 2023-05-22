@@ -21,19 +21,18 @@ public class ArticleDao {
 
     public @Nullable List<Article> findAllArticles(int userId) throws SQLException {
         try (var query = connection.prepareStatement("""
-            SELECT a.codArticolo, a.nome, a.descrizione, a.immagine, a.prezzo, a.utente_idUtente
-            FROM articolo as a
-            WHERE utente_idUtente = ?
-            AND a.codArticolo NOT IN (
-                SELECT a1.codArticolo
-                FROM articolo as a1, asta, astearticoli
-                WHERE a1.codArticolo = astearticoli.articolo_codArticolo
-                AND astearticoli.asta_idAsta = asta.idAsta
-                AND asta.chiusa = true
-            )
-            """)) {
+                SELECT a.codArticolo, a.nome, a.descrizione, a.immagine, a.prezzo, a.utente_idUtente
+                FROM articolo as a
+                WHERE utente_idUtente = ?
+                AND a.codArticolo NOT IN (
+                    SELECT a1.codArticolo
+                    FROM articolo as a1, asta, astearticoli
+                    WHERE a1.codArticolo = astearticoli.articolo_codArticolo
+                    AND astearticoli.asta_idAsta = asta.idAsta
+                    AND asta.chiusa = true
+                )
+                """)) {
             query.setInt(1, userId);
-
 
             try (var res = query.executeQuery()) {
                 List<Article> result = new ArrayList<>();
@@ -55,17 +54,25 @@ public class ArticleDao {
         }
     }
 
-    public int insertArticle(Article article, InputStream imageStream) throws SQLException {
+    public @Nullable Integer insertArticle(Article article, InputStream imageStream) throws SQLException {
         try (PreparedStatement insertArticle = connection.prepareStatement("""
-            INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
-            VALUES (?, ?, ?, ?, ?)
-            """)) {
+                INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
+                VALUES (?, ?, ?, ?, ?)
+                """)) {
             insertArticle.setString(1, article.name());
             insertArticle.setString(2, article.description());
             insertArticle.setBlob(3, imageStream);
             insertArticle.setDouble(4, article.prezzo());
             insertArticle.setInt(5, article.idUtente());
-            return insertArticle.executeUpdate();
+
+            if (insertArticle.executeUpdate() != 1)
+                return null;
+
+            try (var generatedKeys = insertArticle.getGeneratedKeys()) {
+                if (!generatedKeys.next())
+                    throw new SQLException("Creating auction failed, no ID obtained.");
+                return generatedKeys.getInt(1);
+            }
         }
     }
 }

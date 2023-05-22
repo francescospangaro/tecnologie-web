@@ -8,8 +8,7 @@ import java.io.IOException;
 public class LogoutController extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         req.getSession().invalidate();
-        resp.sendRedirect(getServletContext().getContextPath() + "/login");
     }
 }

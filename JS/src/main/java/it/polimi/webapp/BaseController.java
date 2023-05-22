@@ -1,5 +1,6 @@
 package it.polimi.webapp;
 
+import com.google.gson.Gson;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import javax.naming.InitialContext;
@@ -11,6 +12,8 @@ import javax.sql.DataSource;
 public abstract class BaseController extends HttpServlet {
 
     protected DataSource dataSource;
+
+    protected final Gson gson = new Gson();
 
     @Override
     @Initializer

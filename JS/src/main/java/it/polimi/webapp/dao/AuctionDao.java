@@ -274,7 +274,7 @@ public class AuctionDao {
      * Inserts an auction in the DB, also connects the auction to its articles
      * with the table astearticoli
      */
-    public int insertAuction(Auction auction) throws SQLException {
+    public @Nullable Integer insertAuction(Auction auction) throws SQLException {
         connection.setAutoCommit(false);
         try {
             try (PreparedStatement insertAuction = connection.prepareStatement(
@@ -284,7 +284,7 @@ public class AuctionDao {
                 insertAuction.setTimestamp(2, Timestamp.valueOf(auction.expiry()));
                 int res = insertAuction.executeUpdate();
                 if (res == 0)
-                    return 0;
+                    return null;
 
                 try (var generatedKeys = insertAuction.getGeneratedKeys()) {
                     if (!generatedKeys.next())
@@ -310,8 +310,9 @@ public class AuctionDao {
                 relate.executeBatch();
             }
 
+
             connection.commit();
-            return 1;
+            return auction.id();
         } catch (Throwable t) {
             connection.rollback();
             throw t;

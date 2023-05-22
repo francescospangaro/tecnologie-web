@@ -1,6 +1,7 @@
 package it.polimi.webapp.dao;
 
 import it.polimi.webapp.beans.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ public class OffersDao {
      * meaning that for that auction there are no registered offers, then checks
      * if the incoming offer is >= than the sum of the articles' prices for that auction
      */
-    public InsertionResult insertOffer(Offer offer) throws SQLException {
+    public InsertionReturn insertOffer(Offer offer) throws SQLException {
         var isolationLevel = connection.getTransactionIsolation();
         connection.setAutoCommit(false);
         connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
@@ -52,7 +53,7 @@ public class OffersDao {
                         // The buyer is trying to put an offer in a closed auction
                         // The buyer is trying to put an offer in an expired auction
                         connection.rollback();
-                        return InsertionResult.DB_ERROR;
+                        return new InsertionReturn(TypeError.DB_ERROR, null);
                     }
                 }
             }
@@ -75,7 +76,7 @@ public class OffersDao {
                     if (foundElement && offer.price() - result.getDouble(2) < result.getDouble(1)) {
                         //The next offer is not high enough to surpass the minPriceIncrease threshold
                         connection.rollback();
-                        return InsertionResult.LOWER_THAN_MAX;
+                        return new InsertionReturn(TypeError.LOWER_THAN_MAX, null);
                     }
                 }
             }
@@ -93,7 +94,7 @@ public class OffersDao {
                         if (!res.next()) {
                             //DB error
                             connection.rollback();
-                            return InsertionResult.DB_ERROR;
+                            return new InsertionReturn(TypeError.DB_ERROR, null);
                         }
 
                         if (offer.price() < res.getDouble(1)) {
@@ -101,7 +102,7 @@ public class OffersDao {
                             //The buyer is trying to put an offer in a closed auction
                             //The buyer is trying to put an offer in an expired auction
                             connection.rollback();
-                            return InsertionResult.LOWER_THAN_ARTICLE;
+                            return new InsertionReturn(TypeError.LOWER_THAN_ARTICLE, null);
                         }
                     }
                 }
@@ -117,11 +118,11 @@ public class OffersDao {
                 int res = insertOffer.executeUpdate();
                 if (res == 0) {
                     connection.rollback();
-                    return InsertionResult.DB_ERROR;
+                    return new InsertionReturn(TypeError.DB_ERROR, null);
                 }
 
                 connection.commit();
-                return InsertionResult.DONE;
+                return new InsertionReturn(TypeError.DONE, insertOffer.getGeneratedKeys().getInt(1));
             }
         } catch (Throwable t) {
             // DB error
@@ -133,7 +134,18 @@ public class OffersDao {
         }
     }
 
-    public enum InsertionResult {
+    public enum TypeError {
         LOWER_THAN_MAX, LOWER_THAN_ARTICLE, DB_ERROR, DONE
+    }
+
+    public record InsertionReturn(TypeError type, @Nullable Integer id){
+        public TypeError type() {
+            return type;
+        }
+
+        @Override
+        public @Nullable Integer id() {
+            return id;
+        }
     }
 }
