@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <style>
+        ul {
+            text-align: center;
+            list-style-position: inside;
+        }
+    </style>
+    <title>Casa d'aste "La Mafia"</title>
+
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+
+<div class="container mt-4">
+    <p th:utext="#{home.welcome(${session.user})}" class="text-center"></p>
+
+    <div class="text-center">
+        <p th:with="df=#{date.format}" th:text="#{home.date(${#calendars.format(today,df)})}"></p>
+    </div>
+    <p th:utext="#{home.menu}" class="text-center"></p>
+    <div>
+        <ul>
+            <li><a href="buy" th:href="@{/buy}" th:utext="#{home.buy}"></a></li>
+            <li><a href="sell" th:href="@{/sell}" th:utext="#{home.sell}"></a></li>
+            <li><a href="login" th:href="@{/logout}" th:utext="#{home.logout}"></a></li>
+        </ul>
+    </div>
+</div>
+
+<!--All of bootstrap's scripts-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

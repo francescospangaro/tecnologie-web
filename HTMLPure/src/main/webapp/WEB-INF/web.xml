@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="4.0" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                    http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+    <display-name>Casa d'Aste</display-name>
+
+    <resource-ref>
+        <description>DB Connection</description>
+        <res-ref-name>jdbc/AsteDB</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
+    <context-param>
+        <param-name>developmentMode</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+
+<!-- Servlets and Filters-->
+    <!-- Login -->
+    <servlet>
+        <servlet-name>LoginPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.LoginPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>LoginController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.LoginController</servlet-class>
+    </servlet>
+
+    <filter>
+        <filter-name>LoggedFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.LoggedFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>NotLoggedFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.NotLoggedFilter</filter-class>
+    </filter>
+
+    <!-- Home -->
+    <servlet>
+        <servlet-name>HomePage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.HomePage</servlet-class>
+    </servlet>
+
+    <!-- Buy -->
+    <servlet>
+        <servlet-name>BuyPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.BuyPage</servlet-class>
+    </servlet>
+
+        <!-- Offers -->
+    <servlet>
+        <servlet-name>OffersPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.OffersPage</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>OffersController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.OffersController</servlet-class>
+    </servlet>
+
+    <!-- Sell -->
+    <servlet>
+        <servlet-name>SellPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
+    </servlet>
+
+    <!-- Single articles -->
+    <servlet>
+        <servlet-name>ArticleController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.ArticleController</servlet-class>
+    </servlet>
+
+    <!-- Single auctions -->
+    <servlet>
+        <servlet-name>AuctionController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.auction.AuctionController</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>CloseAuctionController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.auction.ClosedAuctionController</servlet-class>
+    </servlet>
+
+
+
+    <!-- View closed auctions -->
+    <servlet>
+        <servlet-name>AuctionDetailsPage</servlet-name>
+        <servlet-class>it.polimi.webapp.pages.AuctionDetailsPage</servlet-class>
+    </servlet>
+
+    <!-- Logout -->
+    <servlet>
+        <servlet-name>LogoutController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.LogoutController</servlet-class>
+    </servlet>
+
+<!-- Mappings -->
+    <!-- Login -->
+    <servlet-mapping>
+        <servlet-name>LoginPage</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>LoginController</servlet-name>
+        <url-pattern>/userLogin</url-pattern>
+    </servlet-mapping>
+
+    <filter-mapping>
+        <filter-name>LoggedFilter</filter-name>
+        <url-pattern>/login</url-pattern>
+        <url-pattern>/userLogin</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>NotLoggedFilter</filter-name>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/buy</url-pattern>
+        <url-pattern>/offers</url-pattern>
+        <url-pattern>/insertOffer</url-pattern>
+        <url-pattern>/sell</url-pattern>
+        <url-pattern>/auctionDetails</url-pattern>
+        <url-pattern>/closeAuction</url-pattern>
+    </filter-mapping>
+
+    <!-- Home -->
+    <servlet-mapping>
+        <servlet-name>HomePage</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <!-- Buy -->
+    <servlet-mapping>
+        <servlet-name>BuyPage</servlet-name>
+        <url-pattern>/buy</url-pattern>
+    </servlet-mapping>
+
+        <!-- Offers -->
+    <servlet-mapping>
+        <servlet-name>OffersPage</servlet-name>
+        <url-pattern>/offers</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>OffersController</servlet-name>
+        <url-pattern>/insertOffer</url-pattern>
+    </servlet-mapping>
+
+    <!-- Sell -->
+    <servlet-mapping>
+        <servlet-name>SellPage</servlet-name>
+        <url-pattern>/sell</url-pattern>
+    </servlet-mapping>
+
+        <!-- Single articles -->
+    <servlet-mapping>
+        <servlet-name>ArticleController</servlet-name>
+        <url-pattern>/insertArticle</url-pattern>
+    </servlet-mapping>
+
+        <!-- Single auctions -->
+    <servlet-mapping>
+        <servlet-name>AuctionController</servlet-name>
+        <url-pattern>/insertAuction</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CloseAuctionController</servlet-name>
+        <url-pattern>/closeAuction</url-pattern>
+    </servlet-mapping>
+
+    <!-- View auctions details -->
+    <servlet-mapping>
+        <servlet-name>AuctionDetailsPage</servlet-name>
+        <url-pattern>/auctionDetails</url-pattern>
+    </servlet-mapping>
+
+    <!-- Logout -->
+    <servlet-mapping>
+        <servlet-name>LogoutController</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome -->
+    <welcome-file-list>
+        <welcome-file>login</welcome-file>
+    </welcome-file-list>
+</web-app>
