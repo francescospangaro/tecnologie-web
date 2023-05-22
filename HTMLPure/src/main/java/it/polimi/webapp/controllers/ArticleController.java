@@ -6,7 +6,7 @@ import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.ArticleDao;
-import it.polimi.webapp.pages.SellPage;
+import it.polimi.webapp.pages.Pages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,9 @@ public class ArticleController extends BaseController {
         InputStream imageStream = HttpServlets.getImageOrNull(req, "articleImage");
 
         if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || imageStream == null) {
-            SellPage.forwardWith(req, resp, new SellPageArgs(
+            Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_DATA_FORMAT,
-                    new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)));
+                    new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)), req, resp);
             return;
         }
 
@@ -55,9 +55,9 @@ public class ArticleController extends BaseController {
         }
 
         if (queryError) {
-            SellPage.forwardWith(req, resp, new SellPageArgs(
+            Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_QUERY,
-                    new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)));
+                    new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)), req, resp);
             return;
         }
 

@@ -1,36 +1,20 @@
 package it.polimi.webapp;
 
 import it.polimi.webapp.beans.User;
-import it.polimi.webapp.pages.SellPage;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class HttpServlets {
 
     private HttpServlets() {
-    }
-
-    public static <T extends HttpServlet> RequestDispatcher getDispatcherFor(ServletContext ctx, Class<? extends T> clazz) {
-        var registration = ctx.getServletRegistrations().values().stream()
-                .filter(s -> s.getClassName().equals(SellPage.class.getName()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Servlet " + clazz + " is not configured"));
-        return Objects.requireNonNull(
-                ctx.getNamedDispatcher(registration.getName()),
-                "Couldn't find dispatcher for class " + clazz + " named " + registration.getName());
     }
 
     public static String getParameterOr(HttpServletRequest req, String name, String fallback) {

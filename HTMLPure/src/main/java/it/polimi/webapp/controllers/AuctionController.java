@@ -7,21 +7,18 @@ import it.polimi.webapp.beans.Auction;
 import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.AuctionDao;
-import it.polimi.webapp.pages.SellPage;
+import it.polimi.webapp.pages.Pages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class AuctionController extends BaseController {
 
@@ -44,9 +41,9 @@ public class AuctionController extends BaseController {
         LocalDateTime expiryDate = HttpServlets.getParameterOr(req, "expiryDate", (LocalDateTime) null);
 
         if (articleIds.isEmpty() || minimumOfferDifference == null || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
-            SellPage.forwardWith(req, resp, new SellPageArgs(
+            Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_DATA_FORMAT,
-                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
+                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)), req, resp);
             return;
         }
 
@@ -64,10 +61,10 @@ public class AuctionController extends BaseController {
             queryError = true;
         }
 
-        if(queryError) {
-            SellPage.forwardWith(req, resp, new SellPageArgs(
+        if (queryError) {
+            Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_QUERY,
-                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
+                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)), req, resp);
             return;
         }
 
