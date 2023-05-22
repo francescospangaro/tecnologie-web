@@ -1,0 +1,27 @@
+@startuml
+participant CloseAuctionController as servlet
+participant AuctionDao
+participant HttpServletRequest as req
+participant HttpServletResponse as resp
+participant SellPage
+
+note over servlet
+    POST /closeAuction
+    id -> id
+end note
+
+-> servlet ++ : doPost
+
+servlet -> req ++ : getSession().getAttribute("user")
+req -> servlet -- : session
+
+alt invalid id parameter
+    servlet -> resp : sendError(404)
+else
+    servlet -> AuctionDao ++ : closeAuction(auctionId, session.loginTime(), session.id())
+    servlet <- AuctionDao --
+
+    servlet -> SellPage --++ : REDIRECT /sell
+end
+
+@enduml

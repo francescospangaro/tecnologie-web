@@ -1,0 +1,44 @@
+@startuml
+participant BuyPage as servlet
+participant AuctionDao
+participant ArticleDao
+participant WebContext as ctx
+participant ITemplateEngine as templateEngine
+
+note over servlet
+    GET /sell
+end note
+
+-> servlet ++ : doGet
+
+servlet -> ctx ++ : getSession().getAttributeValue("user")
+ctx -> servlet -- : session
+
+servlet -> AuctionDao ++ : findAuctions(session.id(), closed: true)
+servlet <- AuctionDao -- : closedAuctions
+
+alt closed auctions query error
+    servlet -> ctx : setVariable("errorClosedQuery", true);
+else
+    servlet -> ctx : setVariable("closedAuction", closedAuction)
+
+    servlet -> AuctionDao ++ : findAuctions(session.id(), closed: false)
+    servlet <- AuctionDao -- : openAuctions
+    alt open auctions query error
+        servlet -> ctx : setVariable("errorOpenQuery", true);
+    else
+        servlet -> ctx : setVariable("openAuction", openAuctions)
+
+        servlet -> ArticleDao ++ : findAllArticles(session.id())
+        servlet <- ArticleDao -- : articles
+        alt articles query error
+            servlet -> ctx : setVariable("errorArticlesQuery", true);
+        else
+            servlet -> ctx : setVariable("articles", articles)
+        end
+    end
+end
+
+servlet -> templateEngine --++ : process("sell", ctx)
+
+@enduml

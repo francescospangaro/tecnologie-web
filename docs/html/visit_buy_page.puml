@@ -1,0 +1,30 @@
+@startuml
+participant BuyPage as servlet
+participant AuctionDao
+participant WebContext as ctx
+participant ITemplateEngine as templateEngine
+
+note over servlet
+    GET /buy
+end note
+
+-> servlet ++ : doGet
+
+servlet -> ctx ++ : getSession().getAttributeValue("user")
+ctx -> servlet -- : session
+
+servlet -> AuctionDao ++ : findUserBoughtAuctions(session.id())
+servlet <- AuctionDao -- : boughtAuctions
+
+alt auctions query error
+    servlet -> ctx : setVariable("errorQuery", true);
+else
+    servlet -> ctx : setVariable("boughtAuctions", boughtAuctions)
+end
+
+servlet -> ctx : setVariable("searchTerm", "")
+servlet -> ctx : setVariable("auctions", Collections.emptyList())
+
+servlet -> templateEngine --++ : process("buy", ctx)
+
+@enduml
