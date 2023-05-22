@@ -4,6 +4,7 @@ import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.Auction;
+import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.AuctionDao;
 import it.polimi.webapp.pages.SellPage;
@@ -44,7 +45,7 @@ public class AuctionController extends BaseController {
 
         if (articleIds.isEmpty() || minimumOfferDifference == null || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
             SellPage.forwardWith(req, resp, new SellPageArgs(
-                    SellPageArgs.InsertionState.ERROR_DATA_FORMAT,
+                    InsertionState.ERROR_DATA_FORMAT,
                     new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
             return;
         }
@@ -65,7 +66,7 @@ public class AuctionController extends BaseController {
 
         if(queryError) {
             SellPage.forwardWith(req, resp, new SellPageArgs(
-                    SellPageArgs.InsertionState.ERROR_QUERY,
+                    InsertionState.ERROR_QUERY,
                     new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
             return;
         }

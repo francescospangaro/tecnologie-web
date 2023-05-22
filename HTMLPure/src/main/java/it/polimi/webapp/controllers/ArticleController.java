@@ -3,6 +3,7 @@ package it.polimi.webapp.controllers;
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.Article;
+import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.ArticleDao;
 import it.polimi.webapp.pages.SellPage;
@@ -37,7 +38,7 @@ public class ArticleController extends BaseController {
 
         if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || imageStream == null) {
             SellPage.forwardWith(req, resp, new SellPageArgs(
-                    SellPageArgs.InsertionState.ERROR_DATA_FORMAT,
+                    InsertionState.ERROR_DATA_FORMAT,
                     new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)));
             return;
         }
@@ -55,7 +56,7 @@ public class ArticleController extends BaseController {
 
         if (queryError) {
             SellPage.forwardWith(req, resp, new SellPageArgs(
-                    SellPageArgs.InsertionState.ERROR_QUERY,
+                    InsertionState.ERROR_QUERY,
                     new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)));
             return;
         }
