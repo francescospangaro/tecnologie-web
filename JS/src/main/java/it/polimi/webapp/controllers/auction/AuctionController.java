@@ -76,6 +76,8 @@ public class AuctionController extends BaseController {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var session = HttpServlets.requireSession(req);
+
         if (req.getParameter("id") != null) {
             int auctionId;
             try {
@@ -86,8 +88,7 @@ public class AuctionController extends BaseController {
                 return;
             }
             try (var connection = dataSource.getConnection()) {
-                var result = new AuctionDao(connection).findAuctionByIds(
-                        (Integer) req.getSession().getAttribute("userId"), auctionId);
+                var result = new AuctionDao(connection).findAuctionByIds(session.id(), auctionId);
                 resp.setContentType("application/json");
                 //print auction by ids
                 gson.toJson(Objects.requireNonNullElseGet(result,
@@ -97,8 +98,7 @@ public class AuctionController extends BaseController {
             }
         } else {
             try (var connection = dataSource.getConnection()) {
-                var boughtAuctions = new AuctionDao(connection)
-                        .findUserBoughtAuctions((Integer) req.getSession().getAttribute("userId"));
+                var boughtAuctions = new AuctionDao(connection).findUserBoughtAuctions(session.id());
                 resp.setContentType("application/json");
                 //print auction by user id
                 gson.toJson(Objects.requireNonNullElseGet(boughtAuctions,

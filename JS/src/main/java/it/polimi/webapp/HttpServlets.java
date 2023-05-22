@@ -1,6 +1,5 @@
 package it.polimi.webapp;
 
-import it.polimi.webapp.beans.User;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,20 +79,20 @@ public class HttpServlets {
         return imageStream;
     }
 
-    public static User requireSession(HttpServletRequest req) {
+    public static UserSession requireSession(HttpServletRequest req) {
         var session = getSession(req);
         if(session == null)
-            throw new IllegalStateException("User accessed a protected page without logging in");
+            throw new IllegalStateException("UserSession accessed a protected page without logging in");
         return session;
     }
 
-    public static @Nullable User getSession(HttpServletRequest req) {
+    public static @Nullable UserSession getSession(HttpServletRequest req) {
         var session = req.getSession(false);
         if(session == null)
             return null;
 
-        var sessionObj = session.getAttribute("user");
-        if(!(sessionObj instanceof User u))
+        var sessionObj = session.getAttribute("UserSession");
+        if(!(sessionObj instanceof UserSession u))
             return null;
 
         return u;

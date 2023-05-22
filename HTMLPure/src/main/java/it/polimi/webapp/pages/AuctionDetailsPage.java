@@ -1,5 +1,6 @@
 package it.polimi.webapp.pages;
 
+import it.polimi.webapp.IWebExchanges;
 import it.polimi.webapp.ThymeleafServlet;
 import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
@@ -18,6 +19,7 @@ public class AuctionDetailsPage extends ThymeleafServlet {
                            Writer writer) {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
+        var session = IWebExchanges.requireSession(webExchange);
 
         int auctionId = -1;
         try {
@@ -28,8 +30,7 @@ public class AuctionDetailsPage extends ThymeleafServlet {
 
         if(auctionId != -1) {
             try (var connection = dataSource.getConnection()) {
-                var result = new AuctionDao(connection).findAuctionByIds(
-                        (Integer) webExchange.getSession().getAttributeValue("userId"), auctionId);
+                var result = new AuctionDao(connection).findAuctionByIds(session.id(), auctionId);
                 if (result != null) {
                     ctx.setVariable("auction", result);
                 } else {

@@ -1,6 +1,7 @@
 package it.polimi.webapp.controllers.auction;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
 
@@ -15,6 +16,8 @@ public class ClosedAuctionController extends BaseController {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var session = HttpServlets.requireSession(req);
+
         int auctionId;
         try {
             auctionId = Integer.parseInt(req.getParameter("id"));
@@ -25,9 +28,7 @@ public class ClosedAuctionController extends BaseController {
         }
 
         try(var connection = dataSource.getConnection()) {
-            var res = new AuctionDao(connection).closeAuction(auctionId,
-                    (LocalDateTime) req.getSession().getAttribute("loginTime"),
-                    (Integer) req.getSession().getAttribute("userId"));
+            var res = new AuctionDao(connection).closeAuction(auctionId, session.loginTime(), session.id());
             if(res == 0) {
                 resp.setContentType("application/json");
                 gson.toJson(new ParsingError("notFound"), resp.getWriter());
@@ -43,9 +44,10 @@ public class ClosedAuctionController extends BaseController {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var session = HttpServlets.requireSession(req);
+
         try (var connection = dataSource.getConnection()) {
-            var closedAuction = new AuctionDao(connection).findAuctions(
-                    (Integer) req.getSession().getAttribute("userId"), true);
+            var closedAuction = new AuctionDao(connection).findAuctions(session.id(), true);
             resp.setContentType("application/json");
             //print closed auctions
             gson.toJson(Objects.requireNonNullElseGet(closedAuction,

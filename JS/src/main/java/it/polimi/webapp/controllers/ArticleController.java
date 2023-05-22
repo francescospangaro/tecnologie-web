@@ -68,9 +68,9 @@ public class ArticleController extends BaseController {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var session = HttpServlets.requireSession(req);
         try (var connection = dataSource.getConnection()) {
-            var result = new ArticleDao(connection).findAllArticles(
-                    (Integer) req.getSession().getAttribute("userId"));
+            var result = new ArticleDao(connection).findAllArticles(session.id());
             resp.setContentType("application/json");
             //print articles
             gson.toJson(Objects.requireNonNullElseGet(result,

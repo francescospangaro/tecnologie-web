@@ -1,6 +1,5 @@
 package it.polimi.webapp;
 
-import it.polimi.webapp.beans.User;
 import org.jetbrains.annotations.Nullable;
 import org.thymeleaf.web.IWebExchange;
 
@@ -18,19 +17,19 @@ public class IWebExchanges {
         return fallback.getClass().isInstance(val) ? (T) val : fallback;
     }
 
-    public static User requireSession(IWebExchange webExchange) {
+    public static UserSession requireSession(IWebExchange webExchange) {
         var session = getSession(webExchange);
         if(session == null)
-            throw new IllegalStateException("User accessed a protected page without logging in");
+            throw new IllegalStateException("UserSession accessed a protected page without logging in");
         return session;
     }
 
-    public static @Nullable User getSession(IWebExchange webExchange) {
+    public static @Nullable UserSession getSession(IWebExchange webExchange) {
         if(!webExchange.hasSession())
             return null;
 
-        var session = webExchange.getSession().getAttributeValue("user");
-        if(!(session instanceof User u))
+        var session = webExchange.getSession().getAttributeValue("UserSession");
+        if(!(session instanceof UserSession u))
             return null;
 
         return u;

@@ -1,6 +1,7 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.Offer;
 import it.polimi.webapp.dao.OffersDao;
 
@@ -17,8 +18,7 @@ public class OffersController extends BaseController {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        Integer userId = (Integer) req.getSession().getAttribute("userId");
-        LocalDateTime dateTime = LocalDateTime.parse(req.getSession().getAttribute("loginTime").toString());
+        var session = HttpServlets.requireSession(req);
         int auctionId = -1;
 
         boolean dataError = false, dataNum = false;
@@ -46,7 +46,7 @@ public class OffersController extends BaseController {
             return;
         }
 
-        var offer = new Offer(userId, auctionId, offerPrice, dateTime);
+        var offer = new Offer(session.id(), auctionId, offerPrice, session.loginTime());
 
         try (var connection = dataSource.getConnection()) {
             var inserted = new OffersDao(connection).insertOffer(offer);

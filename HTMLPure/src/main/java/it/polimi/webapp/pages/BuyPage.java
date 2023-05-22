@@ -1,5 +1,6 @@
 package it.polimi.webapp.pages;
 
+import it.polimi.webapp.IWebExchanges;
 import it.polimi.webapp.ThymeleafServlet;
 import it.polimi.webapp.dao.AuctionDao;
 import org.thymeleaf.ITemplateEngine;
@@ -20,6 +21,7 @@ public class BuyPage extends ThymeleafServlet {
                            Writer writer) {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
+        var session = IWebExchanges.requireSession(webExchange);
 
         String search = webExchange.getRequest().getParameterValue("search");
         ctx.setVariable("searchTerm", search != null ? search : "");
@@ -32,8 +34,7 @@ public class BuyPage extends ThymeleafServlet {
                 ctx.setVariable("auctions", Collections.emptyList());
             }
 
-            var boughtAuctions = new AuctionDao(connection)
-                    .findUserBoughtAuctions((Integer) webExchange.getSession().getAttributeValue("userId"));
+            var boughtAuctions = new AuctionDao(connection).findUserBoughtAuctions(session.id());
             ctx.setVariable("boughtAuctions", boughtAuctions);
 
             ctx.setVariable("errorQuery", false);
