@@ -212,4 +212,34 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Start a container with debug arguments if requested -->
+        <profile>
+            <id>debug-cargo</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>debug-cargo</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.cargo</groupId>
+                        <artifactId>cargo-maven3-plugin</artifactId>
+                        <configuration>
+                            <configuration>
+                                <properties>
+                                    <cargo.start.jvmargs>
+                                        -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+                                    </cargo.start.jvmargs>
+                                </properties>
+                            </configuration>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
