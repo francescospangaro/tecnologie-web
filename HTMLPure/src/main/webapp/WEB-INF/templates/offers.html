@@ -13,15 +13,15 @@
 <body>
 
 <div class="container mt-4">
-    <div th:if="${errorQuery}" class="text-center shadow row">
+    <div th:if="${errorQuery || offersArgs.offerInsertion.isDbError}" class="text-center shadow row">
         <span th:utext="#{offers.errorQuery}">There was an error resolving your request</span>
     </div>
 
-    <div th:if="${errorMaxOffer}" class="text-center shadow row">
+    <div th:if="${offersArgs.offerInsertion.isMaxOfferError}" class="text-center shadow row">
         <span th:utext="#{offers.errorMaxOffer}">Offer is lower than actual max offer</span>
     </div>
 
-    <div th:if="${errorLowPrice}" class="text-center shadow row">
+    <div th:if="${offersArgs.offerInsertion.isLowPriceError}" class="text-center shadow row">
         <span th:utext="#{offers.errorLowPrice}">Offer is lower than sum of articles' value</span>
     </div>
 
@@ -57,8 +57,8 @@
 
             <div class="col">
                 <div class="row"
-                     th:with="days=${openAuction.base.getRemainingDays(session.loginTime)},
-                              hours=${openAuction.base.getRemainingHours(session.loginTime)}"
+                     th:with="days=${openAuction.base.getRemainingDays(session.user.loginTime)},
+                              hours=${openAuction.base.getRemainingHours(session.user.loginTime)}"
                      th:utext="#{offers.remainigTime(${days}, ${hours})}">Expires in 0d, 1h
                 </div>
 
@@ -85,7 +85,7 @@
                     <input type="hidden" th:id="id" name="id" th:value="${openAuction.base.id}">
                     <div class="input-group g-0">
                         <span class="input-group-text">€</span>
-                        <input type="number" step="0.01" id="offerValue" name="offerValue" class="form-control" th:value="${offerPlaceholder}">
+                        <input type="number" step="0.01" id="offerValue" name="offerValue" class="form-control" th:value="${offersArgs.offerPrice}">
                         <button type="submit" class="btn btn-primary" th:text="#{offers.confirm}">
                             Place offer
                         </button>

@@ -1,6 +1,8 @@
 package it.polimi.webapp.pages;
 
 import it.polimi.webapp.IWebExchanges;
+import it.polimi.webapp.beans.LoginPageArgs;
+import it.polimi.webapp.beans.OffersPageArgs;
 import it.polimi.webapp.beans.SellPageArgs;
 import org.thymeleaf.web.IWebExchange;
 
@@ -18,6 +20,8 @@ public class Pages {
     private static final String ARGS_ATTR_NAME = "$$__args__$$";
 
     public static Page<SellPageArgs> SELL_PAGE = new Page<>("/sell", SellPageArgs::new);
+    public static Page<LoginPageArgs> LOGIN_PAGE = new Page<>("/login", LoginPageArgs::new);
+    public static Page<OffersPageArgs> OFFERS_PAGE = new Page<>("/offers", OffersPageArgs::new);
 
     public static <T> void forwardTo(Page<T> page, T args, ServletRequest req, ServletResponse res) throws ServletException, IOException {
         var dispatcher = Objects.requireNonNull(

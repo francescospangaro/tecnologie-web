@@ -1,8 +1,11 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,15 +18,21 @@ import java.util.Objects;
 
 public class SearchController extends BaseController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var search = HttpServlets.getParameterOr(req, "search", "");
         try (var connection = dataSource.getConnection()) {
-            var result = new AuctionDao(connection).findAuctionByWord(req.getParameter("search"));
+            var result = new AuctionDao(connection).findAuctionByWord(search);
             resp.setContentType("application/json");
             //print auction by ids
             gson.toJson(result, resp.getWriter());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to findAuctionByWord({})", search, e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
         }
     }
 

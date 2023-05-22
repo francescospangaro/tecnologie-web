@@ -7,6 +7,8 @@ import it.polimi.webapp.beans.Offer;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
 import it.polimi.webapp.dao.OffersDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,27 +20,15 @@ import java.util.Objects;
 
 public class OffersController extends BaseController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OffersController.class);
+
     @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
-        int auctionId = -1;
+        var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
+        var offerPrice = HttpServlets.getParameterOr(req, "offerValue", (Integer) null);
 
-        boolean dataError = false;
-
-        try {
-            auctionId = Integer.parseInt(req.getParameter("id"));
-        } catch (NumberFormatException e) {
-            dataError = true;
-        }
-
-        double offerPrice = -1;
-        try {
-            offerPrice = Double.parseDouble(req.getParameter("offerValue"));
-        } catch (NumberFormatException e) {
-            dataError = true;
-        }
-
-        if (dataError) {
+        if (auctionId == null || offerPrice == null) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
             return;
@@ -60,7 +50,11 @@ public class OffersController extends BaseController {
                 return;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to findAuctions({}, closed: false)", session.id(), e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
+            return;
         }
 
         resp.setContentType("application/json");
@@ -70,26 +64,24 @@ public class OffersController extends BaseController {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (req.getParameter("id") != null) {
-            int auctionId;
-            try {
-                auctionId = Integer.parseInt(req.getParameter("id"));
-            } catch (NumberFormatException e) {
-                resp.setContentType("application/json");
-                gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
-                return;
-            }
-            try (var connection = dataSource.getConnection()) {
-                var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
-                resp.setContentType("application/json");
-                //print auction by ids
-                gson.toJson(Objects.requireNonNullElseGet(result,
-                        () -> new ParsingError("errorQuery")), resp.getWriter());
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
+        var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
+        if (auctionId == null) {
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
+            return;
+        }
 
+        try (var connection = dataSource.getConnection()) {
+            var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
+            resp.setContentType("application/json");
+            //print auction by ids
+            gson.toJson(Objects.requireNonNullElseGet(result,
+                    () -> new ParsingError("errorQuery")), resp.getWriter());
+        } catch (SQLException e) {
+            LOGGER.error("Failed to findOpenAuctionById({})", auctionId, e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
         }
     }
 }

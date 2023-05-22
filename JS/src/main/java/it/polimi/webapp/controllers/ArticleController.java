@@ -76,7 +76,10 @@ public class ArticleController extends BaseController {
             gson.toJson(Objects.requireNonNullElseGet(result,
                     () -> new ParsingError("errorArticlesQuery")), resp.getWriter());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to findAllArticles({})", session.id(), e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorArticlesQuery"), resp.getWriter());
         }
     }
 }

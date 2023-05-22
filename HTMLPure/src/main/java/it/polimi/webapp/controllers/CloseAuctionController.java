@@ -14,11 +14,9 @@ public class CloseAuctionController extends BaseController {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
+        var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
 
-        int auctionId;
-        try {
-            auctionId = Integer.parseInt(req.getParameter("id"));
-        } catch (NumberFormatException ex) {
+        if (auctionId == null) {
             resp.sendError(404);
             return;
         }

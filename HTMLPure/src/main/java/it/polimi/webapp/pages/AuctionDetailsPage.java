@@ -3,6 +3,8 @@ package it.polimi.webapp.pages;
 import it.polimi.webapp.IWebExchanges;
 import it.polimi.webapp.ThymeleafServlet;
 import it.polimi.webapp.dao.AuctionDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.IWebExchange;
@@ -12,6 +14,9 @@ import java.io.Writer;
 import java.sql.SQLException;
 
 public class AuctionDetailsPage extends ThymeleafServlet {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuctionDetailsPage.class);
+
     @Override
     protected void process(IWebExchange webExchange,
                            ITemplateEngine templateEngine,
@@ -21,14 +26,10 @@ public class AuctionDetailsPage extends ThymeleafServlet {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
         var session = IWebExchanges.requireSession(webExchange);
 
-        int auctionId = -1;
-        try {
-            auctionId = Integer.parseInt(webExchange.getRequest().getParameterValue("id"));
-        } catch (NumberFormatException ex) {
+        var auctionId = IWebExchanges.getAttributeOr(webExchange, "id", (Integer) null);
+        if (auctionId == null) {
             ctx.setVariable("errorQuery", true);
-        }
-
-        if(auctionId != -1) {
+        } else {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findAuctionByIds(session.id(), auctionId);
                 if (result != null) {
@@ -37,7 +38,8 @@ public class AuctionDetailsPage extends ThymeleafServlet {
                     ctx.setVariable("errorQuery", true);
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Failed to findAuctionByIds({}, {})", session.id(), auctionId, e);
+                ctx.setVariable("errorQuery", true);
             }
         }
 

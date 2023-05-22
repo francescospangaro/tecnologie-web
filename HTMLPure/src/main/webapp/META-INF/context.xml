@@ -7,7 +7,7 @@
               maxWaitMillis="10000"
               url="jdbc:mysql://localhost:3306/casa_daste?serverTimezone=UTC"
               username="root"
-              password="Francesc0"
+              password=""
               driverClassName="com.mysql.cj.jdbc.Driver"
               factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"/>
 </Context>

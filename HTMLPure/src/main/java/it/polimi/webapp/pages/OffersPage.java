@@ -1,7 +1,10 @@
 package it.polimi.webapp.pages;
 
+import it.polimi.webapp.IWebExchanges;
 import it.polimi.webapp.ThymeleafServlet;
 import it.polimi.webapp.dao.AuctionDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.web.IWebExchange;
@@ -11,6 +14,9 @@ import java.io.Writer;
 import java.sql.SQLException;
 
 public class OffersPage extends ThymeleafServlet {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OffersPage.class);
+
     @Override
     protected void process(IWebExchange webExchange,
                            ITemplateEngine templateEngine,
@@ -18,35 +24,26 @@ public class OffersPage extends ThymeleafServlet {
                            Writer writer) {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
+        var args = Pages.getArgs(Pages.OFFERS_PAGE, webExchange);
+        ctx.setVariable("offersArgs", args);
 
-        ctx.setVariable("errorMaxOffer", webExchange.getAttributeValue("errorMaxOffer"));
-        ctx.setVariable("errorLowPrice", webExchange.getAttributeValue("errorLowPrice"));
-        ctx.setVariable("errorQuery", webExchange.getAttributeValue("errorQuery"));
-        ctx.setVariable("offerPlaceholder", webExchange.getAttributeValue("offerPlaceholder"));
-
-        Integer auctionId = null;
-        try {
-            auctionId = Integer.parseInt(webExchange.getRequest().getParameterValue("id"));
-        } catch (NumberFormatException e) {
-            System.out.println("Magia1");
+        Integer auctionId = IWebExchanges.getAttributeOr(webExchange, "id", args.auctionId());
+        if (auctionId == null) {
             ctx.setVariable("errorQuery", true);
-        }
-
-        if (auctionId != null) {
+        } else {
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findOpenAuctionById(auctionId);
                 if (result != null)
                     ctx.setVariable("openAuction", result);
                 else {
-                    System.out.println("Magia2");
                     ctx.setVariable("errorQuery", true);
                 }
             } catch (SQLException e) {
-                System.out.println("Magia3");
-                e.printStackTrace();
+                LOGGER.error("Failed to findOpenAuctionById({})", auctionId, e);
                 ctx.setVariable("errorQuery", true);
             }
         }
+
         templateEngine.process("offers", ctx, writer);
     }
 }

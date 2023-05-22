@@ -15,22 +15,23 @@
 <form th:action="@{/userLogin}" th:method="post">
     <div class="container mt-4">
         <div class="text-center">
-            <span th:if="${errorCred}" th:utext="#{login.errorCred}">Null username or password</span>
+            <span th:if="${loginArgs.errorCred}" th:utext="#{login.errorCred}">Null username or password</span>
         </div>
         <div class="text-center">
-            <span th:if="${errorNotFound}" th:utext="#{login.errorNotFound}">No matches!</span>
+            <span th:if="${loginArgs.errorNotFound}" th:utext="#{login.errorNotFound}">No matches!</span>
         </div>
         <div class="text-center">
             <p th:utext="#{login.user}">Insert your username:</p>
             <label>
-                <input type="text" class="form-control" th:placeholder="#{login.userPlace}" th:id="${user}" name="user" th:value="${loginUsername}"><br>
+                <input type="text" class="form-control" th:placeholder="#{login.userPlace}" id="user" name="user"
+                       th:value="${loginArgs.username}"><br>
             </label>
         </div>
         <br>
         <div class="text-center">
             <p th:utext="#{login.password}">Insert your password:</p>
             <label>
-                <input type="password" class="form-control" th:placeholder="#{login.passPlace}" th:id="${pass}"
+                <input type="password" class="form-control" th:placeholder="#{login.passPlace}" id="pass"
                        name="pass"><br>
             </label>
         </div>

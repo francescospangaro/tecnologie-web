@@ -134,6 +134,22 @@ public class OffersDao {
     }
 
     public enum InsertionResult {
-        LOWER_THAN_MAX, LOWER_THAN_ARTICLE, DB_ERROR, DONE
+        LOWER_THAN_MAX, LOWER_THAN_ARTICLE, DB_ERROR, DONE;
+
+        public boolean isNoError() {
+            return this == DONE;
+        }
+
+        public boolean isDbError() {
+            return this == DB_ERROR;
+        }
+
+        public boolean isMaxOfferError() {
+            return this == LOWER_THAN_MAX;
+        }
+
+        public boolean isLowPriceError() {
+            return this == LOWER_THAN_ARTICLE;
+        }
     }
 }

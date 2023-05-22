@@ -7,7 +7,6 @@ import org.thymeleaf.web.IWebExchange;
 
 import javax.sql.DataSource;
 import java.io.Writer;
-import java.util.Objects;
 
 public class LoginPage extends ThymeleafServlet {
     @Override
@@ -17,10 +16,8 @@ public class LoginPage extends ThymeleafServlet {
                            Writer writer) {
 
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
-
-        ctx.setVariable("errorCred", Objects.requireNonNullElse(webExchange.getAttributeValue("errorCred"), false));
-        ctx.setVariable("loginUsername", webExchange.getAttributeValue("loginUsername"));
-        ctx.setVariable("errorNotFound", Objects.requireNonNullElse(webExchange.getAttributeValue("errorNotFound"), false));
+        var args = Pages.getArgs(Pages.LOGIN_PAGE, webExchange);
+        ctx.setVariable("loginArgs", args);
 
         templateEngine.process("login", ctx, writer);
     }

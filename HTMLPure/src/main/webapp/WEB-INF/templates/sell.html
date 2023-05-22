@@ -16,28 +16,28 @@
     <div class="row mb-3">
         <div class="col shadow">
             <div class="text-center">
-                <span th:if="${args.articleInsertion.isSuccess}" th:utext="#{sell.goodInsertion}">Article inserted correctly!</span>
+                <span th:if="${sellArgs.articleInsertion.isSuccess}" th:utext="#{sell.goodInsertion}">Article inserted correctly!</span>
             </div>
 
             <form th:action="@{/insertArticle}" th:method="post" enctype='multipart/form-data'>
                 <div class="row text-center">
-                    <span th:if="${args.articleInsertion.isDataFormatError}" th:utext="#{articleInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+                    <span th:if="${sellArgs.articleInsertion.isDataFormatError}" th:utext="#{articleInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
                 </div>
                 <div class="row text-center">
-                    <span th:if="${args.articleInsertion.isQueryError}" th:utext="#{articleInsertion.errorQuery}">There was an error in the execution of your request</span>
+                    <span th:if="${sellArgs.articleInsertion.isQueryError}" th:utext="#{articleInsertion.errorQuery}">There was an error in the execution of your request</span>
                 </div>
                 <div class="row mt-1">
                     <label for="articleName" th:utext="#{articleInsertion.name}" class="col col-form-label">Insert
                         article name</label>
                     <div class="col-8">
-                        <input type="text" id="articleName" name="articleName" class="form-control" th:value="${args.article.name}">
+                        <input type="text" id="articleName" name="articleName" class="form-control" th:value="${sellArgs.article.name}">
                     </div>
                 </div>
                 <div class="row mt-1">
                     <label for="articleDesc" th:utext="#{articleInsertion.description}" class="col col-form-label">Insert
                         an article description</label>
                     <div class="col-8">
-                        <textarea id="articleDesc" name="articleDesc" class="form-control" th:text="${args.article.desc}"></textarea>
+                        <textarea id="articleDesc" name="articleDesc" class="form-control" th:text="${sellArgs.article.desc}"></textarea>
                     </div>
                 </div>
                 <div class="row mt-1">
@@ -53,7 +53,7 @@
                     <div class="col-8">
                         <div class="input-group">
                             <span class="input-group-text">€</span>
-                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control" th:value="${args.article.price}">
+                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control" th:value="${sellArgs.article.price}">
                         </div>
                     </div>
                 </div>
@@ -66,15 +66,15 @@
 
         <div class="col shadow">
             <div class="text-center">
-                <span th:if="${args.auctionInsertion.isSuccess}" th:utext="#{sell.goodAuctionInsertion}">Auction inserted correctly!</span>
+                <span th:if="${sellArgs.auctionInsertion.isSuccess}" th:utext="#{sell.goodAuctionInsertion}">Auction inserted correctly!</span>
             </div>
 
             <form th:action="@{/insertAuction}" th:method="post">
                 <div class="text-center">
-                    <span th:if="${args.auctionInsertion.isDataFormatError}" th:utext="#{auctionInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+                    <span th:if="${sellArgs.auctionInsertion.isDataFormatError}" th:utext="#{auctionInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
                 </div>
                 <div class="text-center">
-                    <span th:if="${args.auctionInsertion.isQueryError}" th:utext="#{auctionInsertion.errorQuery}">There was an error in the execution of your request</span>
+                    <span th:if="${sellArgs.auctionInsertion.isQueryError}" th:utext="#{auctionInsertion.errorQuery}">There was an error in the execution of your request</span>
                 </div>
 
                 <div class="row mt-1">
@@ -88,7 +88,7 @@
                             <option th:each="article : ${articles}"
                                     th:utext="${article.name}"
                                     th:value="${article.codArticle}"
-                                    th:selected="${args.auction.articleIds.contains(article.codArticle)}"></option>
+                                    th:selected="${sellArgs.auction.articleIds.contains(article.codArticle)}"></option>
                         </select>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                            class="col col-form-label">Insert minimum price rise</label>
                     <div class="col-8">
                         <input type="number" step="1" id="minimumOfferDifference" name="minimumOfferDifference"
-                               class="form-control" th:value="${args.auction.minimumOfferDifference}">
+                               class="form-control" th:value="${sellArgs.auction.minimumOfferDifference}">
                     </div>
                 </div>
 
@@ -107,7 +107,7 @@
                         expiry
                         date</label>
                     <div class="col-8">
-                        <input type="datetime-local" id="auctionExpiration" name="expiryDate" class="form-control" th:value="${args.auction.expiry}">
+                        <input type="datetime-local" id="auctionExpiration" name="expiryDate" class="form-control" th:value="${sellArgs.auction.expiry}">
                     </div>
                 </div>
 

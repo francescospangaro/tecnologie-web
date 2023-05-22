@@ -4,6 +4,8 @@ import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,14 +16,13 @@ import java.util.Objects;
 
 public class ClosedAuctionController extends BaseController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClosedAuctionController.class);
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
-
-        int auctionId;
-        try {
-            auctionId = Integer.parseInt(req.getParameter("id"));
-        } catch (NumberFormatException ex) {
+        var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
+        if(auctionId == null) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("notFound"), resp.getWriter());
             return;
@@ -34,12 +35,15 @@ public class ClosedAuctionController extends BaseController {
                 gson.toJson(new ParsingError("notFound"), resp.getWriter());
                 return;
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
-        resp.setContentType("application/json");
-        resp.getWriter().write("{}");
+            resp.setContentType("application/json");
+            resp.getWriter().write("{}");
+        } catch (SQLException e) {
+            LOGGER.error("Failed to closeAuction({})", auctionId, e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
+        }
     }
 
     @Override
@@ -53,7 +57,10 @@ public class ClosedAuctionController extends BaseController {
             gson.toJson(Objects.requireNonNullElseGet(closedAuction,
                     () -> new ParsingError("errorClosedQuery")), resp.getWriter());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to get findAuctions({}, closed: true)", session.id(), e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorClosedQuery"), resp.getWriter());
         }
     }
 

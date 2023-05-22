@@ -1,11 +1,25 @@
 package it.polimi.webapp;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.thymeleaf.web.IWebExchange;
 
 public class IWebExchanges {
 
     private IWebExchanges() {
+    }
+
+    @Contract("_, _, !null -> !null; _, _, _ -> _")
+    public static @Nullable Integer getAttributeOr(IWebExchange webExchange, String attributeName, @Nullable Integer fallback) {
+        var v = webExchange.getAttributeValue(attributeName);
+        if(v == null)
+            return fallback;
+
+        try {
+            return Integer.parseInt(v.toString());
+        } catch (NumberFormatException ex) {
+            return fallback;
+        }
     }
 
     @SuppressWarnings("unchecked")

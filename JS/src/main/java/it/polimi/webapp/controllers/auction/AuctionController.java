@@ -27,7 +27,7 @@ public class AuctionController extends BaseController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuctionController.class);
 
     @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         List<Integer> articleIds = List.of();
         try {
@@ -79,14 +79,13 @@ public class AuctionController extends BaseController {
         var session = HttpServlets.requireSession(req);
 
         if (req.getParameter("id") != null) {
-            int auctionId;
-            try {
-                auctionId = Integer.parseInt(req.getParameter("id"));
-            } catch (NumberFormatException ex) {
+            var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
+            if (auctionId == null) {
                 resp.setContentType("application/json");
                 gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
                 return;
             }
+
             try (var connection = dataSource.getConnection()) {
                 var result = new AuctionDao(connection).findAuctionByIds(session.id(), auctionId);
                 resp.setContentType("application/json");
@@ -94,7 +93,10 @@ public class AuctionController extends BaseController {
                 gson.toJson(Objects.requireNonNullElseGet(result,
                         () -> new ParsingError("errorQuery")), resp.getWriter());
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Failed to get findAuctionByIds({}, {})", session.id(), auctionId, e);
+
+                resp.setContentType("application/json");
+                gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
             }
         } else {
             try (var connection = dataSource.getConnection()) {
@@ -104,7 +106,10 @@ public class AuctionController extends BaseController {
                 gson.toJson(Objects.requireNonNullElseGet(boughtAuctions,
                         () -> new ParsingError("errorQuery")), resp.getWriter());
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                LOGGER.error("Failed to get findUserBoughtAuctions({})", session.id(), e);
+
+                resp.setContentType("application/json");
+                gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
             }
 
         }
