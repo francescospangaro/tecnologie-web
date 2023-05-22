@@ -1,11 +1,14 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.beans.InsertionSuccessful;
 import it.polimi.webapp.dao.ArticleDao;
 import it.polimi.webapp.dao.AuctionDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -23,57 +26,40 @@ import java.util.Objects;
 )
 public class ArticleController extends BaseController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArticleController.class);
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        Integer userId = (Integer) req.getSession().getAttribute("userId");
-        String articleName = req.getParameter("articleName");
-        String articleDesc = req.getParameter("articleDesc");
-        Part articleImage = req.getPart("articleImage");
+        var session = HttpServlets.requireSession(req);
+        String articleName = HttpServlets.getParameterOr(req, "articleName", "");
+        String articleDesc = HttpServlets.getParameterOr(req, "articleDesc", "");
+        Double articlePrice = HttpServlets.getParameterOr(req, "articlePrice", (Double) null);
+        InputStream imageStream = HttpServlets.getImageOrNull(req, "articleImage");
 
-        InputStream imageStream = null;
-        String mimeType = null;
-
-        String imageName = null;
-
-        if(articleImage != null){
-            imageStream = articleImage.getInputStream();
-            imageName = articleImage.getSubmittedFileName();
-            mimeType = getServletContext().getMimeType(imageName);
-        }
-
-        boolean dataError = articleName == null || articleName.isEmpty()
-                            || articleDesc == null || articleDesc.isEmpty()
-                            || Objects.requireNonNull(articleImage).getSize() == 0 || imageStream == null
-                            || (imageStream.available()==0) || !Objects.requireNonNull(mimeType).startsWith("image/");
-
-        double articlePrice = -1;
-        try {
-            articlePrice = Double.parseDouble(req.getParameter("articlePrice"));
-        } catch (NumberFormatException e){
-            dataError = true;
-        }
-
-        if(dataError) {
+        if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || imageStream == null) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorArticleDataInserted"), resp.getWriter());
             return;
         }
 
-        var article = new Article(articleName, articleDesc, Objects.requireNonNull(imageName), articlePrice, userId);
+        var article = new Article(articleName, articleDesc, "", articlePrice, session.id());
+        var queryError = false;
 
-        Integer inserted;
-
+        Integer inserted = -1;
         try (var connection = dataSource.getConnection()) {
             inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
-            if (inserted == null) {
-                // error in query execution
-                resp.setContentType("application/json");
-                gson.toJson(new ParsingError("errorArticleQuery"), resp.getWriter());
-                return;
-            }
+            queryError = inserted == null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to execute article insertion query", e);
+            queryError = true;
+        }
+
+        if (queryError) {
+            // error in query execution
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorArticleQuery"), resp.getWriter());
+            return;
         }
 
         resp.setContentType("application/json");

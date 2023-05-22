@@ -1,6 +1,7 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.beans.User;
 import it.polimi.webapp.dao.LoginDao;
 
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ public class LoginController extends BaseController {
 
         try (var connection = dataSource.getConnection()) {
             LoginDao loginDao = new LoginDao(connection);
+            // TODO: return user bean directly from the dao
             List<String> userData = loginDao.findUser(username, password);
             if (userData.get(0).equals("")) {
                 var dispatcher = Objects.requireNonNull(req.getRequestDispatcher("/login"), "Missing dispatcher");
@@ -40,9 +42,13 @@ public class LoginController extends BaseController {
             }
             //found user, and password is correct
             req.setAttribute("loginUsername", "");
-            req.getSession(true).setAttribute("userId", Integer.parseInt(userData.get(0)));
-            req.getSession().setAttribute("user", userData.get(1));
-            req.getSession().setAttribute("loginTime", LocalDateTime.now());
+
+            var session = req.getSession(true);
+            session.setAttribute("user", new User(Integer.parseInt(userData.get(0)), userData.get(0), LocalDateTime.now()));
+            // TODO: remove when the session is fully switched
+            session.setAttribute("userId", Integer.parseInt(userData.get(0)));
+            session.setAttribute("loginTime", LocalDateTime.now());
+
             resp.sendRedirect(getServletContext().getContextPath() + "/home");
         } catch (SQLException e) {
             throw new RuntimeException(e);

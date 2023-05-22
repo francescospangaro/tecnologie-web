@@ -1,9 +1,14 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.Auction;
+import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.AuctionDao;
+import it.polimi.webapp.pages.SellPage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -17,85 +22,54 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-
-@MultipartConfig(
-        maxFileSize = 1024 * 1024 * 10,      // 10 MB
-        maxRequestSize = 1024 * 1024 * 100   // 100 MB
-)
 public class AuctionController extends BaseController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuctionController.class);
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        boolean wrongInsertedData = false, numError = false;
-
-        List<Integer> articleIds = null;
+        List<Integer> articleIds = List.of();
         try {
             var stringArticleIds = req.getParameterValues("selectedArticles");
-            articleIds = stringArticleIds == null ? null : Arrays.stream(stringArticleIds)
+            articleIds = stringArticleIds == null ? articleIds : Arrays.stream(stringArticleIds)
                     .map(Integer::parseInt)
                     .toList();
-        } catch (NumberFormatException ex) {
-            wrongInsertedData = true;
+        } catch (NumberFormatException ignored) {
+            // parsing failed
         }
 
-        int minimumOfferDifference = -1;
-        try {
-            minimumOfferDifference = Integer.parseInt(req.getParameter("minimumOfferDifference"));
-        } catch (NumberFormatException ex) {
-            numError = true;
-            wrongInsertedData = true;
-        }
+        Integer minimumOfferDifference = HttpServlets.getParameterOr(req, "minimumOfferDifference", (Integer) null);
+        LocalDateTime expiryDate = HttpServlets.getParameterOr(req, "expiryDate", (LocalDateTime) null);
 
-        LocalDateTime expiryDate = null;
-        try {
-            var dateStr = req.getParameter("expiryDate");
-            expiryDate = dateStr != null ? LocalDateTime.parse(dateStr) : null;
-        } catch (DateTimeParseException ex) {
-            wrongInsertedData = true;
-        }
-
-        wrongInsertedData = wrongInsertedData
-                || articleIds == null || articleIds.isEmpty()
-                || minimumOfferDifference <= 0
-                || expiryDate == null || expiryDate.isBefore(LocalDateTime.now());
-
-        if (wrongInsertedData) {
-            if(!numError)
-                req.setAttribute("auctionPrice", minimumOfferDifference);
-            if(expiryDate != null)
-                req.setAttribute("auctionTime", expiryDate);
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
-            req.setAttribute("errorAuctionDataInserted", true);
-            disp.forward(req, resp);
+        if (articleIds.isEmpty() || minimumOfferDifference == null || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
+            SellPage.forwardWith(req, resp, new SellPageArgs(
+                    SellPageArgs.InsertionState.ERROR_DATA_FORMAT,
+                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
             return;
         }
-
-        // Make NullAway happy, 'cause it can't infer that these are affectively non-null
-        Objects.requireNonNull(expiryDate);
-        Objects.requireNonNull(articleIds);
 
         var auction = new Auction(
                 expiryDate,
                 articleIds.stream().map(Article::new).toList(),
                 minimumOfferDifference);
 
+        boolean queryError;
         try (var connection = dataSource.getConnection()) {
             int result = new AuctionDao(connection).insertAuction(auction);
-            if (result == 0) {
-                //error in query execution
-                var disp = Objects.requireNonNull(req.getRequestDispatcher("/sell"), "Missing dispatcher");
-                req.setAttribute("errorAuctionQuery", true);
-                disp.forward(req, resp);
-                return;
-            }
+            queryError = result == 0;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to insert auction", e);
+            queryError = true;
         }
 
-        req.setAttribute("auctionPrice", "");
-        req.setAttribute("auctionTime", "");
-        req.setAttribute("goodAuctionInsertion", true);
+        if(queryError) {
+            SellPage.forwardWith(req, resp, new SellPageArgs(
+                    SellPageArgs.InsertionState.ERROR_QUERY,
+                    new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)));
+            return;
+        }
+
         resp.sendRedirect(getServletContext().getContextPath() + "/sell");
     }
 
