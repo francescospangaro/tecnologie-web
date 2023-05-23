@@ -16,7 +16,6 @@ import java.util.Objects;
 public class OpenAuctionController extends BaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAuctionController.class);
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
@@ -28,7 +27,6 @@ public class OpenAuctionController extends BaseController {
                     () -> new ParsingError("errorOpenQuery")), resp.getWriter());
         } catch (SQLException e) {
             LOGGER.error("Failed to findAuctions({}, closed: false)", session.id(), e);
-
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorOpenQuery"), resp.getWriter());
         }

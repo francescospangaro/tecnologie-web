@@ -2,31 +2,24 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.UserSession;
-import it.polimi.webapp.beans.User;
+import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.LoginDao;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
 
 public class LoginController extends BaseController {
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String username = req.getParameter("user");
         String password = req.getParameter("pass");
         if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-            var disp = Objects.requireNonNull(req.getRequestDispatcher("/login"), "Missing dispatcher");
-            req.setAttribute("errorCred", true);
-            assert username != null;
-            if(!username.isEmpty())
-                req.setAttribute("loginUsername", username);
-            disp.forward(req, resp);
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorCred"), resp.getWriter());
             return;
         }
 
@@ -34,19 +27,16 @@ public class LoginController extends BaseController {
             LoginDao loginDao = new LoginDao(connection);
             var user = loginDao.findUser(username, password);
             if (user == null) {
-                // TODO: there's a dispatcher left here
-                var dispatcher = Objects.requireNonNull(req.getRequestDispatcher("/login"), "Missing dispatcher");
-                req.setAttribute("errorNotFound", true);
-                req.setAttribute("loginUsername", username);
-                dispatcher.forward(req, resp);
+                resp.setContentType("application/json");
+                gson.toJson(new ParsingError("errorNotFound"), resp.getWriter());
                 return;
             }
 
             var session = req.getSession(true);
             session.setAttribute("user", new UserSession(user.id(), user.name(), LocalDateTime.now()));
 
-            // TODO: there's a redirect left here
-            resp.sendRedirect(getServletContext().getContextPath() + "/home");
+            resp.setContentType("application/json");
+            gson.toJson(/* TODO: what object here? */ resp.getWriter());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
