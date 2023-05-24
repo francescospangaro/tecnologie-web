@@ -21,19 +21,488 @@
 
 <body>
 
-<div class="container mt-4">
-    <p th:utext="#{home.welcome(${session.user})}" class="text-center"></p>
+<!-- Home page template -->
+<div class="container mt-4" id="home-page" style="display: none">
+    <p class="text-center">Ciao iuser</p>
+
+    <p class="text-center">Scegli cosa caricare:</p>
+    <div id="pages-menu">
+        <div style="display: none">
+            <a href="#" id="page-link-template"></a>
+            <br>
+        </div>
+    </div>
+</div>
+
+<!-- Buy page template -->
+<div class="container mt-4" id="buy-page" style="display: none">>
+    <div>
+        <form th:action="@{/buy}" th:method="get" class="text-center input-group">
+            <input class="form-control" type="text" th:name="search" th:value="${searchTerm}">
+            <button type="submit" class="btn btn-outline-primary" th:text="#{buy.confirmSearch}">Buy</button>
+        </form>
+    </div>
 
     <div class="text-center">
-        <p th:with="df=#{date.format}" th:text="#{home.date(${#calendars.format(today,df)})}"></p>
+        <span th:if="${errorQuery}" th:utext="#{buy.errorQuery}"></span>
     </div>
-    <p th:utext="#{home.menu}" class="text-center"></p>
-    <div>
-        <ul>
-            <li><a href="buy" th:href="@{/buy}" th:utext="#{home.buy}"></a></li>
-            <li><a href="sell" th:href="@{/sell}" th:utext="#{home.sell}"></a></li>
-            <li><a href="login" th:href="@{/logout}" th:utext="#{home.logout}"></a></li>
-        </ul>
+    <div th:if="${!errorQuery}" class="text-center">
+        <table class="table table-striped table-hover table-bordered center">
+            <thead>
+            <tr>
+                <td th:utext="#{buy.auctionNumTitle}">#</td>
+                <td th:utext="#{buy.auctionMaxOfferTitle}">Max offer</td>
+                <td th:utext="#{buy.auctionRemainingTimeTitle}">Remaining time</td>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="auction : ${auctions}">
+                <tr>
+                    <td><a th:href="@{'/offers?id=' + ${auction.id}}" th:utext="${auction.id}" href="#">1</a></td>
+                    <td th:utext="${auction.maxOffer} + '€'">120€</td>
+                    <td th:with="days=${auction.getRemainingDays(session.loginTime)},
+                         hours=${auction.getRemainingHours(session.loginTime)}"
+                        th:utext="#{buy.remainingTime(${days}, ${hours})}">0d, 1h
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2">
+                        <table class="table center">
+                            <thead>
+                            <tr>
+                                <td th:utext="#{buy.articleNumTitle}">Code</td>
+                                <td th:utext="#{buy.auctionNameTitle}">Article</td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="article : ${auction.articles}">
+                                <tr>
+                                    <td th:utext="${article.codArticle}">1</td>
+                                    <td th:utext="${article.name}">Motosega</td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <br><br><br>
+    <h3 th:utext="#{buy.wonAuctionsTitle}">Won Auctions</h3>
+    <table class="table table-striped table-hover table-bordered center">
+        <thead>
+        <tr>
+            <td th:utext="#{buy.auctionNumTitle}">#</td>
+            <td th:utext="#{buy.auctionFinalPrice}">Max offer</td>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="auction : ${boughtAuctions}">
+            <tr>
+                <td th:utext="${auction.base.id}">1</td>
+                <td th:utext="${auction.finalPrice} + '€'">60€</td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <table class="table center">
+                        <thead>
+                        <tr>
+                            <td th:utext="#{buy.articleNumTitle}">Code</td>
+                            <td th:utext="#{buy.auctionNameTitle}">Article</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="article : ${auction.base.articles}">
+                            <tr>
+                                <td th:utext="${article.codArticle}">1</td>
+                                <td th:utext="${article.name}">Motosega</td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </th:block>
+        </tbody>
+    </table>
+</div>
+
+<!-- Sell page template -->
+<div class="container mt-4" id="sell-page" style="display: none">
+
+    <div class="row mb-3">
+        <div class="col shadow">
+            <div class="text-center">
+                <span th:if="${goodInsertion}" th:utext="#{sell.goodInsertion}">Article inserted correctly!</span>
+            </div>
+
+            <form th:action="@{/insertArticle}" th:method="post" enctype='multipart/form-data'>
+                <div class="row text-center">
+                    <span th:if="${errorArticleDataInserted}" th:utext="#{articleInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+                </div>
+                <div class="row text-center">
+                    <span th:if="${errorArticleQuery}" th:utext="#{articleInsertion.errorQuery}">There was an error in the execution of your request</span>
+                </div>
+                <div class="row mt-1">
+                    <label for="articleName" th:utext="#{articleInsertion.name}" class="col col-form-label">Insert
+                        article name</label>
+                    <div class="col-8">
+                        <input type="text" id="articleName" name="articleName" class="form-control" th:value="${articleName}">
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <label for="articleDesc" th:utext="#{articleInsertion.description}" class="col col-form-label">Insert
+                        an article description</label>
+                    <div class="col-8">
+                        <textarea id="articleDesc" name="articleDesc" class="form-control" th:value="${articleDescription}"></textarea>
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <label for="articleImage" th:utext="#{articleInsertion.image}" class="col col-form-label">Insert the
+                        article image</label>
+                    <div class="col-8">
+                        <input type="file" id="articleImage" name="articleImage" class="form-control">
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <label for="articlePrice" th:utext="#{articleInsertion.price}" class="col col-form-label">Insert the
+                        article price</label>
+                    <div class="col-8">
+                        <div class="input-group">
+                            <span class="input-group-text">€</span>
+                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control" th:value="${articlePrice}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <button type="submit" class="btn btn-outline-primary" th:text="#{articleInsertion.submit}">Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col shadow">
+            <div class="text-center">
+                <span th:if="${goodAuctionInsertion}" th:utext="#{sell.goodAuctionInsertion}">Auction inserted correctly!</span>
+            </div>
+
+            <form th:action="@{/insertAuction}" th:method="post">
+                <div class="text-center">
+                    <span th:if="${errorAuctionDataInserted}" th:utext="#{auctionInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+                </div>
+                <div class="text-center">
+                    <span th:if="${errorAuctionQuery}" th:utext="#{auctionInsertion.errorQuery}">There was an error in the execution of your request</span>
+                </div>
+
+                <div class="row mt-1">
+                    <label for="selectedArticles" th:utext="#{auctionInsertion.selectArticle}"
+                           class="col col-form-label">Select one or more (hold ctrl for multiple)</label>
+                    <div class="col-8">
+                        <p th:if="${errorArticlesQuery}" th:utext="#{auctionInsertion.noArticles}">No articles
+                            found!</p>
+                        <select th:if="${!errorArticlesQuery}" id="selectedArticles" name="selectedArticles"
+                                class="form-select" multiple size="4">
+                            <option th:each="article : ${articles}"
+                                    th:utext="${article.name}"
+                                    th:value="${article.codArticle}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-1">
+                    <label for="minimumOfferDifference" th:utext="#{auctionInsertion.minimumOfferDifference}"
+                           class="col col-form-label">Insert minimum price rise</label>
+                    <div class="col-8">
+                        <input type="number" step="1" id="minimumOfferDifference" name="minimumOfferDifference"
+                               class="form-control" th:value="${auctionPrice}">
+                    </div>
+                </div>
+
+                <div class="row mt-1">
+                    <label for="auctionExpiration" th:utext="#{auctionInsertion.expiryDate}" class="col col-form-label">Insert
+                        expiry
+                        date</label>
+                    <div class="col-8">
+                        <input type="datetime-local" id="auctionExpiration" name="expiryDate" class="form-control" th:value="${auctionTime}">
+                    </div>
+                </div>
+
+                <div class="row mt-1">
+                    <button type="submit" class="btn btn-outline-primary" th:text="#{auctionInsertion.submit}">Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <span class="col" th:utext="#{sell.closed}">Closed auctions:</span>
+        <span class="col" th:utext="#{sell.open}">Open auctions:</span>
+    </div>
+
+    <div class="row text-center">
+        <span th:if="${errorClosedQuery}" class="col" th:utext="#{sell.errorQuery}">There was an error resolving your request</span>
+        <span th:if="${errorOpenQuery}" class="col" th:utext="#{sell.errorQuery}">There was an error resolving your request</span>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <table class="table table-striped table-hover table-bordered center">
+                <thead>
+                <tr>
+                    <td th:utext="#{sell.auctionNumTitle}">#</td>
+                    <td th:utext="#{sell.actionMaxOfferTitle}">Max offer</td>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="auction : ${closedAuction}">
+                    <tr>
+                        <td><a th:href="@{'/auctionDetails?id=' + ${auction.id}}" th:utext="${auction.id}"
+                               href="#">1</a></td>
+                        <td th:utext="${auction.maxOffer} + '€'">60€</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <table class="table center">
+                                <thead>
+                                <tr>
+                                    <td th:utext="#{sell.articleNumTitle}">Code</td>
+                                    <td th:utext="#{sell.auctionNameTitle}">Article</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="article : ${auction.articles}">
+                                    <tr>
+                                        <td th:utext="${article.codArticle}">1</td>
+                                        <td th:utext="${article.name}">Motosega</td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <table class="table table-striped table-hover table-bordered center">
+                <thead>
+                <tr>
+                    <td th:utext="#{sell.auctionNumTitle}">#</td>
+                    <td th:utext="#{sell.actionMaxOfferTitle}">Max offer</td>
+                    <td th:utext="#{sell.auctionRemainingTimeTitle}">Remaining time</td>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="auction : ${openAuction}">
+                    <tr>
+                        <td><a th:href="@{'/auctionDetails?id=' + ${auction.id}}" th:utext="${auction.id}"
+                               href="#">1</a></td>
+                        <td th:utext="${auction.maxOffer} + '€'">50€</td>
+                        <td th:with="days=${auction.getRemainingDays(session.loginTime)},
+                         hours=${auction.getRemainingHours(session.loginTime)}"
+                            th:utext="#{sell.remainingTime(${days}, ${hours})}">1d, 2h
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <table class="table center">
+                                <thead>
+                                <tr>
+                                    <td th:utext="#{sell.articleNumTitle}">Code</td>
+                                    <td th:utext="#{sell.auctionNameTitle}">Article</td>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="article : ${auction.articles}">
+                                    <tr>
+                                        <td th:utext="${article.codArticle}">1</td>
+                                        <td th:utext="${article.name}">Motosega</td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Auction details page template -->
+<div class="container mt-4" id="auction-details-page">
+    <div class="row text-center">
+        <span th:if="${errorQuery}"
+              th:utext="#{auctionDetails.errorQuery}">There was an error resolving your request</span>
+    </div>
+    <div th:if="${!errorQuery}">
+        <h2 th:utext="#{auctionDetails.auctionNum(${auction.base.id})}" class="row">Auction #1</h2>
+        <div class="row">
+            <div class="col">
+                <div class="card mb-3" th:each="article : ${auction.base.articles}">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img class="img-fluid rounded-start"
+                                 th:src="@{'data:image/jpeg;base64,' + ${ article.immagine}}"
+                                 src="https://placehold.co/600x400"/>
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body">
+                                <h5 class="card-title" th:utext="${article.name}">Table</h5>
+                                <p class="card-text" th:utext="${article.description}">A large table</p>
+                                <p class="card-text">
+                                    <small class="text-muted"
+                                           th:utext="#{auctionDetails.articleCode(${article.codArticle})}">
+                                        Code: 1
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div th:if="${auction.isOpen && !auction.base.isExpired(session.loginTime)}"
+                     class="row"
+                     th:with="days=${auction.base.getRemainingDays(session.loginTime)},
+                              hours=${auction.base.getRemainingHours(session.loginTime)}"
+                     th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}">Expires in 0d, 1h
+                </div>
+
+                <th:block th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}">
+                    <form th:action="@{/closeAuction}" method="post" class="row">
+                        <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
+                        <button type="submit" class="btn btn-danger" th:text="#{auctionDetails.closeAuction}">
+                            Close
+                        </button>
+                    </form>
+                </th:block>
+
+                <div th:if="${auction.isOpen}" class="row">
+                    <table class="table table-striped table-hover center">
+                        <thead>
+                        <tr>
+                            <td th:utext="#{auctionDetails.offerDateTitle}">Date</td>
+                            <td th:utext="#{auctionDetails.offerNameTitle}">Offerer</td>
+                            <td th:utext="#{auctionDetails.offerPriceTitle}">Price</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="offer : ${auction.offers}">
+                            <td th:with="df=#{date.format}" th:utext="${#temporals.format(offer.date,df)}">Tomorrow</td>
+                            <td th:utext="${offer.name}">Spangaro</td>
+                            <td th:utext="${offer.price}">10€</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <th:block th:if="${auction.isClosed()}">
+                    <div class="row" th:utext="#{auctionDetails.finalPrice(${auction.finalPrice})}">
+                        Final price: 100€
+                    </div>
+                    <div class="row" th:utext="#{auctionDetails.finalBuyer(${auction.buyerName})}">
+                        Buyer: Spangaro
+                    </div>
+                    <div class="row" th:utext="#{auctionDetails.finalAddress(${auction.buyerAddress})}">
+                        Address: Inverigo (CO)
+                    </div>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offers page template -->
+<div class="container mt-4" id="offers-page" style="display: none">
+    <div th:if="${errorQuery}" class="text-center shadow row">
+        <span th:utext="#{offers.errorQuery}">There was an error resolving your request</span>
+    </div>
+
+    <div th:if="${errorMaxOffer}" class="text-center shadow row">
+        <span th:utext="#{offers.errorMaxOffer}">Offer is lower than actual max offer</span>
+    </div>
+
+    <div th:if="${errorLowPrice}" class="text-center shadow row">
+        <span th:utext="#{offers.errorLowPrice}">Offer is lower than sum of articles' value</span>
+    </div>
+
+    <div th:if="${!errorQuery}">
+        <h2 th:utext="#{offers.auctionNum(${openAuction.base.id})}" class="row">Auction #1</h2>
+        <h4 th:utext="#{offers.maxPrice}+ ' ' + ${openAuction.base.maxOffer} + '€ '
+            + #{offers.offerDifference} + ' ' +${openAuction.base.minimumOfferDifference} + '€'">
+            Max price: 12€ Min offer difference: 1€</h4>
+        <div class="row">
+            <div class="col">
+                <div class="card mb-3" th:each="article : ${openAuction.base.articles}">
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img class="img-fluid rounded-start"
+                                 th:src="@{'data:image/jpeg;base64,' + ${ article.immagine}}"
+                                 src="https://placehold.co/600x400"/>
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body">
+                                <h5 class="card-title" th:utext="${article.name}">Table</h5>
+                                <p class="card-text" th:utext="${article.description}">A large table</p>
+                                <p class="card-text">
+                                    <small class="text-muted"
+                                           th:utext="#{offers.articleCode(${article.codArticle})}">
+                                        Code: 1
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="row"
+                     th:with="days=${openAuction.base.getRemainingDays(session.loginTime)},
+                              hours=${openAuction.base.getRemainingHours(session.loginTime)}"
+                     th:utext="#{offers.remainigTime(${days}, ${hours})}">Expires in 0d, 1h
+                </div>
+
+                <div class="row">
+                    <table class="table table-striped table-hover center">
+                        <thead>
+                        <tr>
+                            <td th:utext="#{offers.offerDateTitle}">Date</td>
+                            <td th:utext="#{offers.offerNameTitle}">Offerer</td>
+                            <td th:utext="#{offers.offerPriceTitle}">Price</td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="offer : ${openAuction.offers}">
+                            <td th:with="df=#{date.format}" th:utext="${#temporals.format(offer.date,df)}">Tomorrow</td>
+                            <td th:utext="${offer.name}">Spangaro</td>
+                            <td th:utext="${offer.price}">10€</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <form th:action="@{/insertOffer}" th:method="post" class="row">
+                    <input type="hidden" th:id="id" name="id" th:value="${openAuction.base.id}">
+                    <div class="input-group g-0">
+                        <span class="input-group-text">€</span>
+                        <input type="number" step="0.01" id="offerValue" name="offerValue" class="form-control" th:value="${offerPlaceholder}">
+                        <button type="submit" class="btn btn-primary" th:text="#{offers.confirm}">
+                            Place offer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
