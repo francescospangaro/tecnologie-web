@@ -1,0 +1,47 @@
+@startuml
+' https://plantuml.com/ie-diagram
+
+entity Articolo {
+  * **codArticolo**
+  --
+  * nome
+  * descrizione
+  * immagine
+  * prezzo
+}
+
+entity Utente {
+    * **idUtente**
+    --
+    * nome
+    * cognome
+    * email
+    * password
+    * indirizzo
+}
+
+entity Offerta {
+    * **idOfferta**
+    --
+    * rialzoMin
+    * scadenza
+}
+
+entity Asta {
+    * **idAsta**
+    --
+    * rialzoMin
+    * scadenza
+}
+
+entity AsteArticoli {
+}
+
+Articolo "0...N" ||-d-|{ "1...1  " Utente : possiede <
+Articolo "1...1  " ||-d-|{ "0...N " AsteArticoli : comprende <
+AsteArticoli "1...N  " ||-d-|{ "1...1 " Asta : comprende <
+Utente "1...1" ||-l-|{ "0...N" Asta : possiede >
+Utente "1...1  " ||-d-|{ "0...N " Offerta : piazza >
+Asta "1...1" ||-d-|{ "1...N  " Offerta : riceve >
+
+@enduml
