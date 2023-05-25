@@ -19,6 +19,12 @@
 
 
 <!-- Servlets and Filters-->
+    <!-- Debug Stuff -->
+    <filter>
+        <filter-name>DisableCorsFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.DisableCorsFilter</filter-class>
+    </filter>
+
     <!-- Login -->
     <servlet>
         <servlet-name>LoginPage</servlet-name>
@@ -48,8 +54,8 @@
 
     <!-- Buy -->
     <servlet>
-        <servlet-name>BuyPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.BuyPage</servlet-class>
+        <servlet-name>SearchController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.SearchController</servlet-class>
     </servlet>
 
         <!-- Offers -->
@@ -101,6 +107,12 @@
     </servlet>
 
 <!-- Mappings -->
+    <!-- Debug Stuff -->
+    <filter-mapping>
+        <filter-name>DisableCorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <!-- Login -->
     <servlet-mapping>
         <servlet-name>LoginPage</servlet-name>
@@ -137,8 +149,8 @@
 
     <!-- Buy -->
     <servlet-mapping>
-        <servlet-name>BuyPage</servlet-name>
-        <url-pattern>/buy</url-pattern>
+        <servlet-name>SearchController</servlet-name>
+        <url-pattern>/search</url-pattern>
     </servlet-mapping>
 
         <!-- Offers -->
@@ -167,7 +179,7 @@
         <!-- Single auctions -->
     <servlet-mapping>
         <servlet-name>AuctionController</servlet-name>
-        <url-pattern>/insertAuction</url-pattern>
+        <url-pattern>/auction</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

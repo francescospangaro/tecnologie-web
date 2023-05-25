@@ -7,7 +7,7 @@ public record Article(int codArticle,
                       @Nullable String description,
                       @Nullable String immagine,
                       double prezzo,
-                      int idUtente) {
+                      @Nullable Integer idUtente) {
 
     public Article(String name,
                    String description,
@@ -22,11 +22,11 @@ public record Article(int codArticle,
                    String description,
                    String immagine,
                    double prezzo) {
-        this(codArticle, name, description, immagine, prezzo, -1);
+        this(codArticle, name, description, immagine, prezzo, null);
     }
 
     public Article(int codArticle) {
-        this(codArticle, null, null, null, -1, -1);
+        this(codArticle, null, null, null, -1, null);
     }
 
     @Override
@@ -55,12 +55,5 @@ public record Article(int codArticle,
         if(prezzo == -1D)
             throw new IllegalStateException("Article was created without prezzo");
         return prezzo;
-    }
-
-    @Override
-    public int idUtente() {
-        if(idUtente == -1)
-            throw new IllegalStateException("Article was created without idUtente");
-        return idUtente;
     }
 }

@@ -20,10 +20,10 @@ public class OpenAuctionController extends BaseController {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
         try (var connection = dataSource.getConnection()) {
-            var closedAuction = new AuctionDao(connection).findAuctions(session.id(), false);
+            var openAuction = new AuctionDao(connection).findAuctions(session.id(), false);
             resp.setContentType("application/json");
             //print open auctions
-            gson.toJson(Objects.requireNonNullElseGet(closedAuction,
+            gson.toJson(Objects.requireNonNullElseGet(openAuction,
                     () -> new ParsingError("errorOpenQuery")), resp.getWriter());
         } catch (SQLException e) {
             LOGGER.error("Failed to findAuctions({}, closed: false)", session.id(), e);

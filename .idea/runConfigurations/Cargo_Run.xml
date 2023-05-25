@@ -13,6 +13,7 @@
               <option value="clean" />
               <option value="package" />
               <option value="cargo:run" />
+              <option value="-Dcargo-run-JS" />
             </list>
           </option>
           <option name="pomFileName" />

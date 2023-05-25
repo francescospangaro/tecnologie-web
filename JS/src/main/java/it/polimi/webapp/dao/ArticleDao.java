@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 public class ArticleDao {
 
@@ -63,7 +64,7 @@ public class ArticleDao {
             insertArticle.setString(2, article.description());
             insertArticle.setBlob(3, imageStream);
             insertArticle.setDouble(4, article.prezzo());
-            insertArticle.setInt(5, article.idUtente());
+            insertArticle.setInt(5, Objects.requireNonNull(article.idUtente(), "Missing user id"));
 
             if (insertArticle.executeUpdate() != 1)
                 return null;

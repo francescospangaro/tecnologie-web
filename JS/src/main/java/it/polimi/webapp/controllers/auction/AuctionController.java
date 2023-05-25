@@ -71,7 +71,7 @@ public class AuctionController extends BaseController {
         }
 
         resp.setContentType("application/json");
-        gson.toJson(new InsertionSuccessful(inserted), resp.getWriter());
+        gson.toJson(new InsertionSuccessful(Objects.requireNonNull(inserted)), resp.getWriter());
     }
 
     @Override

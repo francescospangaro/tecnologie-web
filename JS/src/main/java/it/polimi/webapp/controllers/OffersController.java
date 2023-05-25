@@ -58,8 +58,7 @@ public class OffersController extends BaseController {
         }
 
         resp.setContentType("application/json");
-        assert inserted.id() != null;
-        gson.toJson(new InsertionSuccessful(inserted.id()), resp.getWriter());
+        gson.toJson(new InsertionSuccessful(Objects.requireNonNull(inserted.id())), resp.getWriter());
     }
 
     @Override

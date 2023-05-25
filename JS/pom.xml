@@ -26,4 +26,28 @@
         </dependency>
     </dependencies>
 
+
+    <profiles>
+        <profile>
+            <id>cargo-run-JS</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>cargo-run-JS</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.cargo</groupId>
+                        <artifactId>cargo-maven3-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

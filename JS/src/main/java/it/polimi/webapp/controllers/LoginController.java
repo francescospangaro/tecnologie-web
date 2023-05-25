@@ -36,7 +36,7 @@ public class LoginController extends BaseController {
             session.setAttribute("user", new UserSession(user.id(), user.name(), LocalDateTime.now()));
 
             resp.setContentType("application/json");
-            gson.toJson(/* TODO: what object here? */ resp.getWriter());
+            gson.toJson(user, resp.getWriter());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

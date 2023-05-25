@@ -163,6 +163,7 @@
                 <version>1.10.5</version>
 
                 <configuration>
+                    <skip>true</skip>
                     <container>
                         <containerId>tomcat9x</containerId>
                         <artifactInstaller>
