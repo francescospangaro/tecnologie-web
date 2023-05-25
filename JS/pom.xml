@@ -50,4 +50,27 @@
         </profile>
     </profiles>
 
+
+    <profiles>
+        <profile>
+            <id>cargo-run-js</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>cargo-run-js</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.cargo</groupId>
+                        <artifactId>cargo-maven3-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

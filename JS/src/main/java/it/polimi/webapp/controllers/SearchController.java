@@ -32,7 +32,7 @@ public class SearchController extends BaseController {
             LOGGER.error("Failed to findAuctionByWord({})", search, e);
 
             resp.setContentType("application/json");
-            gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
+            gson.toJson(new ParsingError("errorSearchQuery"), resp.getWriter());
         }
     }
 

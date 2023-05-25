@@ -77,22 +77,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         /**
          * @param {number} id
-         * @return {Promise<ErrorResponse | Cosa>} result
+         * @return {Promise<ErrorResponse | Auction>} result
          */
-        const getAllCoseById = async function (id) {
-            const response = await fetch(url + 'GetCoseById?id=' + id)
-            /** @type {ErrorResponse | Cosa} */
+        const getAuctionByIds = async function (id) {
+            const response = await fetch(url + 'auctionDetails?id=' + id)
+            /** @type {ErrorResponse | Auction} */
             const obj = await response.json();
             if (!obj.error)
-                obj.auctions.forEach(auction => auction.expiry = new Date(auction.expiry))
+                obj.map(a => {
+                    a.expiry = new Date(a.expiry)
+                    return a
+                })
             return obj
         }
 
-        const insertCosa = async function (formData) {
-            const response = await fetch(url + 'postQualcosa', {
+        const insertAuction = async function (formData) {
+            const response = await fetch(url + 'insertAuction', {
                 method: 'POST',
                 body: formData,
             })
+
+            const res = await response.json();
+            if(!res.error)
+
             return await response.json();
         }
 
@@ -134,8 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         return {
-            getAllCoseById: getAllCoseById,
-            insertCosa: insertCosa,
+            getAuctionByIds: getAuctionByIds,
+            insertAuction: insertAuction,
             searchAuction: searchAuction,
             getBoughtAuctions: getBoughtAuctions
         }
