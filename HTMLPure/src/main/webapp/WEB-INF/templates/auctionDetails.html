@@ -44,14 +44,14 @@
             </div>
 
             <div class="col">
-                <div th:if="${auction.isOpen && !auction.base.isExpired(session.loginTime)}"
+                <div th:if="${auction.isOpen && !auction.base.isExpired(session.user.loginTime)}"
                      class="row"
-                     th:with="days=${auction.base.getRemainingDays(session.loginTime)},
-                              hours=${auction.base.getRemainingHours(session.loginTime)}"
+                     th:with="days=${auction.base.getRemainingDays(session.user.loginTime)},
+                              hours=${auction.base.getRemainingHours(session.user.loginTime)}"
                      th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}">Expires in 0d, 1h
                 </div>
 
-                <th:block th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}">
+                <th:block th:if="${auction.isOpen && auction.base.isExpired(session.user.loginTime)}">
                     <form th:action="@{/closeAuction}" method="post" class="row">
                         <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
                         <button type="submit" class="btn btn-danger" th:text="#{auctionDetails.closeAuction}">

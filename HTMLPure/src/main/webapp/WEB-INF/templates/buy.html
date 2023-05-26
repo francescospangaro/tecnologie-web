@@ -37,8 +37,8 @@
                 <tr>
                     <td><a th:href="@{'/offers?id=' + ${auction.id}}" th:utext="${auction.id}" href="#">1</a></td>
                     <td th:utext="${auction.maxOffer} + '€'">120€</td>
-                    <td th:with="days=${auction.getRemainingDays(session.loginTime)},
-                         hours=${auction.getRemainingHours(session.loginTime)}"
+                    <td th:with="days=${auction.getRemainingDays(session.user.loginTime)},
+                         hours=${auction.getRemainingHours(session.user.loginTime)}"
                         th:utext="#{buy.remainingTime(${days}, ${hours})}">0d, 1h
                     </td>
                 </tr>

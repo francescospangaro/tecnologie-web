@@ -22,7 +22,7 @@
 <body>
 
 <div class="container mt-4">
-    <p th:utext="#{home.welcome(${session.user})}" class="text-center"></p>
+    <p th:utext="#{home.welcome(${session.user.name})}" class="text-center"></p>
 
     <div class="text-center">
         <p th:with="df=#{date.format}" th:text="#{home.date(${#calendars.format(today,df)})}"></p>
