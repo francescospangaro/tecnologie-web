@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Cargo Debug" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="Cargo Run HTML" type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings" />
@@ -13,8 +13,7 @@
               <option value="clean" />
               <option value="package" />
               <option value="cargo:run" />
-              <option value="-Dcargo-run-JS" />
-              <option value="-Ddebug-cargo" />
+              <option value="-Dcargo-run-html-pure" />
             </list>
           </option>
           <option name="pomFileName" />
