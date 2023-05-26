@@ -42,7 +42,7 @@ public class IWebExchanges {
         if(!webExchange.hasSession())
             return null;
 
-        var session = webExchange.getSession().getAttributeValue("UserSession");
+        var session = webExchange.getSession().getAttributeValue("user");
         if(!(session instanceof UserSession u))
             return null;
 

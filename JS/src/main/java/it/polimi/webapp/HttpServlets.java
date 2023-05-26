@@ -91,7 +91,7 @@ public class HttpServlets {
         if(session == null)
             return null;
 
-        var sessionObj = session.getAttribute("UserSession");
+        var sessionObj = session.getAttribute("user");
         if(!(sessionObj instanceof UserSession u))
             return null;
 
