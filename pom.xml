@@ -233,7 +233,7 @@
                             <configuration>
                                 <properties>
                                     <cargo.start.jvmargs>
-                                        -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+                                        -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:${debugger.port}
                                     </cargo.start.jvmargs>
                                 </properties>
                             </configuration>

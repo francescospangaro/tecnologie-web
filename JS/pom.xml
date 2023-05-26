@@ -15,6 +15,7 @@
 
     <properties>
         <servlet.port>8081</servlet.port>
+        <debugger.port>5006</debugger.port>
     </properties>
 
     <dependencies>
@@ -25,31 +26,6 @@
             <version>2.10.1</version>
         </dependency>
     </dependencies>
-
-
-    <profiles>
-        <profile>
-            <id>cargo-run-JS</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>cargo-run-JS</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.cargo</groupId>
-                        <artifactId>cargo-maven3-plugin</artifactId>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 
     <profiles>
         <profile>
