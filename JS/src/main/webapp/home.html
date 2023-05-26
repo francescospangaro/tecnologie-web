@@ -96,41 +96,37 @@
     </div>
 
     <br><br><br>
-    <h3 th:utext="#{buy.wonAuctionsTitle}">Won Auctions</h3>
+    <h3>Won Auctions</h3>
     <table class="table table-striped table-hover table-bordered center">
         <thead>
         <tr>
-            <td th:utext="#{buy.auctionNumTitle}">#</td>
-            <td th:utext="#{buy.auctionFinalPrice}">Max offer</td>
+            <td>#</td>
+            <td>Max offer</td>
         </tr>
         </thead>
         <tbody>
-        <th:block th:each="auction : ${boughtAuctions}">
-            <tr>
-                <td th:utext="${auction.base.id}">1</td>
-                <td th:utext="${auction.finalPrice} + '€'">60€</td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table class="table center">
-                        <thead>
-                        <tr>
-                            <td th:utext="#{buy.articleNumTitle}">Code</td>
-                            <td th:utext="#{buy.auctionNameTitle}">Article</td>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="article : ${auction.base.articles}">
-                            <tr>
-                                <td th:utext="${article.codArticle}">1</td>
-                                <td th:utext="${article.name}">Motosega</td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-        </th:block>
+        <tr>
+            <td>1</td>
+            <td>60€</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="table center">
+                    <thead>
+                    <tr>
+                        <td>Code</td>
+                        <td>Article</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Motosega</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
         </tbody>
     </table>
 </div>
@@ -140,79 +136,68 @@
 
     <div class="row mb-3">
         <div class="col shadow">
-            <div class="text-center">
-                <span th:if="${goodInsertion}" th:utext="#{sell.goodInsertion}">Article inserted correctly!</span>
+            <div class="text-center" id="correctArticleInsertion" hidden>
+                <span>Article inserted correctly!</span>
             </div>
 
-            <form th:action="@{/insertArticle}" th:method="post" enctype='multipart/form-data'>
-                <div class="row text-center">
-                    <span th:if="${errorArticleDataInserted}" th:utext="#{articleInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+            <form enctype='multipart/form-data' id="article-insertion-form">
+                <div class="row text-center" id="errorArticleInsertion" hidden>
+                    <span>Missing or wrong data format inserted</span>
                 </div>
-                <div class="row text-center">
-                    <span th:if="${errorArticleQuery}" th:utext="#{articleInsertion.errorQuery}">There was an error in the execution of your request</span>
+                <div class="row text-center" id="errorArticleQuery" hidden>
+                    <span>There was an error in the execution of your request</span>
                 </div>
                 <div class="row mt-1">
-                    <label for="articleName" th:utext="#{articleInsertion.name}" class="col col-form-label">Insert
-                        article name</label>
+                    <label for="articleName" class="col col-form-label">Insert article's name</label>
                     <div class="col-8">
-                        <input type="text" id="articleName" name="articleName" class="form-control"
-                               th:value="${articleName}">
+                        <input type="text" id="articleName" name="articleName" class="form-control">
                     </div>
                 </div>
                 <div class="row mt-1">
-                    <label for="articleDesc" th:utext="#{articleInsertion.description}" class="col col-form-label">Insert
-                        an article description</label>
+                    <label for="articleDesc" class="col col-form-label">Insert article's description</label>
                     <div class="col-8">
-                        <textarea id="articleDesc" name="articleDesc" class="form-control"
-                                  th:value="${articleDescription}"></textarea>
+                        <textarea id="articleDesc" name="articleDesc" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="row mt-1">
-                    <label for="articleImage" th:utext="#{articleInsertion.image}" class="col col-form-label">Insert the
-                        article image</label>
+                    <label for="articleImage" class="col col-form-label">Insert the article's image</label>
                     <div class="col-8">
                         <input type="file" id="articleImage" name="articleImage" class="form-control">
                     </div>
                 </div>
                 <div class="row mt-1">
-                    <label for="articlePrice" th:utext="#{articleInsertion.price}" class="col col-form-label">Insert the
-                        article price</label>
+                    <label for="articlePrice" class="col col-form-label">Insert the article's price</label>
                     <div class="col-8">
                         <div class="input-group">
                             <span class="input-group-text">€</span>
-                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control"
-                                   th:value="${articlePrice}">
+                            <input type="number" step="0.01" id="articlePrice" name="articlePrice" class="form-control">
                         </div>
                     </div>
                 </div>
                 <div class="row mt-1">
-                    <button type="submit" class="btn btn-outline-primary" th:text="#{articleInsertion.submit}">Submit
-                    </button>
+                    <button type="submit" class="btn btn-outline-primary">Submit</button>
                 </div>
             </form>
         </div>
 
         <div class="col shadow">
-            <div class="text-center">
-                <span th:if="${goodAuctionInsertion}" th:utext="#{sell.goodAuctionInsertion}">Auction inserted correctly!</span>
+            <div class="text-center" id="correctAuctionInsertion" hidden>
+                <span>Auction inserted correctly!</span>
             </div>
 
-            <form th:action="@{/insertAuction}" th:method="post">
-                <div class="text-center">
-                    <span th:if="${errorAuctionDataInserted}" th:utext="#{auctionInsertion.errorDataInserted}">Missing or wrong data format inserted</span>
+            <form id="auction-insertion-form">
+                <div class="text-center" id="auctionDataError" hidden>
+                    <span>Missing or wrong data format inserted</span>
                 </div>
-                <div class="text-center">
-                    <span th:if="${errorAuctionQuery}" th:utext="#{auctionInsertion.errorQuery}">There was an error in the execution of your request</span>
+                <div class="text-center" id="errorAuctionQuery" hidden>
+                    <span>There was an error in the execution of your request</span>
                 </div>
 
                 <div class="row mt-1">
-                    <label for="selectedArticles" th:utext="#{auctionInsertion.selectArticle}"
-                           class="col col-form-label">Select one or more (hold ctrl for multiple)</label>
-                    <div class="col-8">
-                        <p th:if="${errorArticlesQuery}" th:utext="#{auctionInsertion.noArticles}">No articles
-                            found!</p>
-                        <select th:if="${!errorArticlesQuery}" id="selectedArticles" name="selectedArticles"
-                                class="form-select" multiple size="4">
+                    <label for="selectedArticles" class="col col-form-label">Select one or more (hold ctrl for multiple)</label>
+                    <div class="col-8" id="noArticles">
+                        <p>No articles found!</p>
+                        <select id="selectedArticles" name="selectedArticles" class="form-select" multiple size="4">
                             <option th:each="article : ${articles}"
                                     th:utext="${article.name}"
                                     th:value="${article.codArticle}"></option>

@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     });
 
+    //repositories
     const auctionRepository = (() => {
         const url = "http://localhost:8081/JS/"
 
@@ -91,15 +92,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             return obj
         }
 
+        /**
+         * @param formData
+         * @returns {Promise<any>}
+         */
         const insertAuction = async function (formData) {
             const response = await fetch(url + 'insertAuction', {
                 method: 'POST',
                 body: formData,
             })
-
-            const res = await response.json();
-            if(!res.error)
-
             return await response.json();
         }
 
@@ -108,6 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<ErrorResponse | { error: false } & Auction[]>}
          */
         const searchAuction = async function (keyWord) {
+            //TODO: check for % that returns everything
             const response = await fetch(url + "search?" + new URLSearchParams({search: keyWord}).toString())
             /** @type {ErrorResponse | { error: false } & Auction[]} */
             const res = await response.json();
@@ -147,7 +149,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             getBoughtAuctions: getBoughtAuctions
         }
     })();
+    const articleRepository = (() => {
+        const url = "http://localhost:8081/JS/"
 
+        /**
+         * @typedef {{ error: true, msg: string }} ErrorResponse
+         * @typedef {{error: false, codArticle: number, name: string, description: string, immagine: string, prezzo: number, idUtente: number }} Article
+         */
+
+        /**
+         * @param formData
+         * @returns {Promise<any>}
+         */
+        const insertArticle = async function (formData) {
+            const response = await fetch(url + 'insertArticle', {
+                method: 'POST',
+                body: formData,
+            })
+            return await response.json();
+        }
+
+        /**
+         * @returns {Promise<ErrorResponse | {error: false} & Article[]>}
+         */
+        const findAllArticles = async function () {
+            const response = await fetch(url + 'article')
+            /** @type {ErrorResponse | { error: false } & Article[]} */
+            return await response.json();
+        }
+
+        return {
+            insertArticle: insertArticle,
+            findAllArticles: findAllArticles,
+        }
+    })();
+
+    //pages
     function buyPage(containerDiv) {
 
         const auctionTemplate = document.getElementById('found-auction-template')
@@ -179,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Called when a page is shown
             // Refresh data we got from the repo
 
-            if(keyword.value.trim() !== "") {
+            if (keyword.value.trim() !== "") {
                 const auctions = await auctionRepository.searchAuction(keyword.value) // Load from repo
                 // Once loaded, we can clean up old cached data
                 while (foundAuctionsTable.firstChild)
@@ -224,5 +261,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             await this.unmount()
             await this.mount()
         }
+    }
+    function sellPage(containerDiv) {
+        this.create = async () => {
+            const articleForm = document.getElementById("articleInsertionForm")
+            articleForm.addEventListener('submit', async e => {
+                e.preventDefault()
+                if (!e.target.checkValidity()) {
+                    e.target.reportValidity()
+                    return
+                }
+                await articleRepository.insertArticle(articleForm)
+                await this.mutateState()
+            })
+
+            const auctionForm = document.getElementById("auctionInsertionForm")
+            auctionForm.addEventListener('submit', async e => {
+                e.preventDefault()
+                if (!e.target.checkValidity()) {
+                    e.target.reportValidity()
+                    return
+                }
+                await auctionRepository.insertAuction(auctionForm)
+                await this.mutateState()
+            })
+
+            const closedAuctionTable = document.getElementById("closed-auction-table")
+        };
     }
 });
