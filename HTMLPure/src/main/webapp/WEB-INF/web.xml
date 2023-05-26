@@ -78,12 +78,12 @@
     <!-- Single auctions -->
     <servlet>
         <servlet-name>AuctionController</servlet-name>
-        <servlet-class>it.polimi.webapp.controllers.auction.AuctionController</servlet-class>
+        <servlet-class>it.polimi.webapp.controllers.AuctionController</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>CloseAuctionController</servlet-name>
-        <servlet-class>it.polimi.webapp.controllers.auction.ClosedAuctionController</servlet-class>
+        <servlet-class>it.polimi.webapp.controllers.CloseAuctionController</servlet-class>
     </servlet>
 
 
