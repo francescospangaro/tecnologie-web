@@ -3,12 +3,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <style>
-        ul {
-            text-align: center;
-            list-style-position: inside;
-        }
-    </style>
     <title>Casa d'aste "La Mafia"</title>
 
 
@@ -28,12 +22,10 @@
         <p th:with="df=#{date.format}" th:text="#{home.date(${#calendars.format(today,df)})}"></p>
     </div>
     <p th:utext="#{home.menu}" class="text-center"></p>
-    <div>
-        <ul>
-            <li><a href="buy" th:href="@{/buy}" th:utext="#{home.buy}"></a></li>
-            <li><a href="sell" th:href="@{/sell}" th:utext="#{home.sell}"></a></li>
-            <li><a href="login" th:href="@{/logout}" th:utext="#{home.logout}"></a></li>
-        </ul>
+    <div class="text-center">
+        <div><a href="buy" th:href="@{/buy}" th:utext="#{home.buy}"></a></div>
+        <div><a href="sell" th:href="@{/sell}" th:utext="#{home.sell}"></a></div>
+        <div><a href="login" th:href="@{/logout}" th:utext="#{home.logout}"></a></div>
     </div>
 </div>
 
