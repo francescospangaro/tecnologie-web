@@ -23,7 +23,7 @@ public class OffersController extends BaseController {
         var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
         var offerPrice = HttpServlets.getParameterOr(req, "offerValue", (Integer) null);
 
-        if (auctionId == null || offerPrice == null) {
+        if (auctionId == null || offerPrice == null || offerPrice <= 0) {
             Pages.forwardTo(Pages.OFFERS_PAGE, new OffersPageArgs(auctionId, offerPrice,
                     OffersDao.InsertionResult.DB_ERROR), req, resp);
             return;

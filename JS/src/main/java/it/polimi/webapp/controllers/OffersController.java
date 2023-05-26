@@ -28,7 +28,7 @@ public class OffersController extends BaseController {
         var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
         var offerPrice = HttpServlets.getParameterOr(req, "offerValue", (Integer) null);
 
-        if (auctionId == null || offerPrice == null) {
+        if (auctionId == null || offerPrice == null || offerPrice <= 0) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorQuery"), resp.getWriter());
             return;

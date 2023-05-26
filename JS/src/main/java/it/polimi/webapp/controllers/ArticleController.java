@@ -37,7 +37,7 @@ public class ArticleController extends BaseController {
         Double articlePrice = HttpServlets.getParameterOr(req, "articlePrice", (Double) null);
         InputStream imageStream = HttpServlets.getImageOrNull(req, "articleImage");
 
-        if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || imageStream == null) {
+        if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || articlePrice <= 0 || imageStream == null) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorArticleDataInserted"), resp.getWriter());
             return;

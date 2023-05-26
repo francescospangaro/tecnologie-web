@@ -40,7 +40,7 @@ public class AuctionController extends BaseController {
         Integer minimumOfferDifference = HttpServlets.getParameterOr(req, "minimumOfferDifference", (Integer) null);
         LocalDateTime expiryDate = HttpServlets.getParameterOr(req, "expiryDate", (LocalDateTime) null);
 
-        if (articleIds.isEmpty() || minimumOfferDifference == null || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
+        if (articleIds.isEmpty() || minimumOfferDifference == null || minimumOfferDifference <= 0 || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
             Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_DATA_FORMAT,
                     new SellPageArgs.AuctionData(minimumOfferDifference, expiryDate, articleIds)), req, resp);

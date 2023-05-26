@@ -1,6 +1,7 @@
 package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
+import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.UserSession;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.LoginDao;
@@ -15,9 +16,10 @@ public class LoginController extends BaseController {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String username = req.getParameter("user");
-        String password = req.getParameter("pass");
-        if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
+        String username = HttpServlets.getParameterOr(req, "user", "");
+        String password = HttpServlets.getParameterOr(req, "pass", "");
+
+        if (username.isEmpty() || password.isEmpty()) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorCred"), resp.getWriter());
             return;

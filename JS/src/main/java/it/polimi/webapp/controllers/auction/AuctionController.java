@@ -42,7 +42,7 @@ public class AuctionController extends BaseController {
         Integer minimumOfferDifference = HttpServlets.getParameterOr(req, "minimumOfferDifference", (Integer) null);
         LocalDateTime expiryDate = HttpServlets.getParameterOr(req, "expiryDate", (LocalDateTime) null);
 
-        if (articleIds.isEmpty() || minimumOfferDifference == null || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
+        if (articleIds.isEmpty() || minimumOfferDifference == null || minimumOfferDifference <= 0 || expiryDate == null || expiryDate.isBefore(LocalDateTime.now())) {
             resp.setContentType("application/json");
             gson.toJson(new ParsingError("errorAuctionDataInserted"), resp.getWriter());
             return;

@@ -23,6 +23,12 @@ public class SearchController extends BaseController {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var search = HttpServlets.getParameterOr(req, "search", "");
+        if(search.isEmpty()) {
+            resp.setContentType("application/json");
+            gson.toJson(Collections.emptyList(), resp.getWriter());
+            return;
+        }
+
         try (var connection = dataSource.getConnection()) {
             var result = new AuctionDao(connection).findAuctionByWord(search);
             resp.setContentType("application/json");

@@ -36,7 +36,7 @@ public class ArticleController extends BaseController {
         Double articlePrice = HttpServlets.getParameterOr(req, "articlePrice", (Double) null);
         InputStream imageStream = HttpServlets.getImageOrNull(req, "articleImage");
 
-        if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || imageStream == null) {
+        if (articleName.isEmpty() || articleDesc.isEmpty() || articlePrice == null || articlePrice <= 0 || imageStream == null) {
             Pages.forwardTo(Pages.SELL_PAGE, new SellPageArgs(
                     InsertionState.ERROR_DATA_FORMAT,
                     new SellPageArgs.ArticleData(articleName, articleDesc, articlePrice)), req, resp);
