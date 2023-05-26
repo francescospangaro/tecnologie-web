@@ -3,6 +3,7 @@ package it.polimi.webapp;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.thymeleaf.web.IWebExchange;
+import org.thymeleaf.web.IWebRequest;
 
 public class IWebExchanges {
 
@@ -10,13 +11,13 @@ public class IWebExchanges {
     }
 
     @Contract("_, _, !null -> !null; _, _, _ -> _")
-    public static @Nullable Integer getAttributeOr(IWebExchange webExchange, String attributeName, @Nullable Integer fallback) {
-        var v = webExchange.getAttributeValue(attributeName);
+    public static @Nullable Integer getParameterOr(IWebRequest webRequest, String attributeName, @Nullable Integer fallback) {
+        var v = webRequest.getParameterValue(attributeName);
         if(v == null)
             return fallback;
 
         try {
-            return Integer.parseInt(v.toString());
+            return Integer.parseInt(v);
         } catch (NumberFormatException ex) {
             return fallback;
         }

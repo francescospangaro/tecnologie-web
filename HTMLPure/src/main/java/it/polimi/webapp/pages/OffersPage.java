@@ -27,7 +27,7 @@ public class OffersPage extends ThymeleafServlet {
         var args = Pages.getArgs(Pages.OFFERS_PAGE, webExchange);
         ctx.setVariable("offersArgs", args);
 
-        Integer auctionId = IWebExchanges.getAttributeOr(webExchange, "id", args.auctionId());
+        Integer auctionId = IWebExchanges.getParameterOr(webExchange.getRequest(), "id", args.auctionId());
         if (auctionId == null) {
             ctx.setVariable("errorQuery", true);
         } else {

@@ -26,7 +26,7 @@ public class AuctionDetailsPage extends ThymeleafServlet {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
         var session = IWebExchanges.requireSession(webExchange);
 
-        var auctionId = IWebExchanges.getAttributeOr(webExchange, "id", (Integer) null);
+        var auctionId = IWebExchanges.getParameterOr(webExchange.getRequest(), "id", (Integer) null);
         if (auctionId == null) {
             ctx.setVariable("errorQuery", true);
         } else {
