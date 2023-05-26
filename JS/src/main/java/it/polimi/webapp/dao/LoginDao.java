@@ -2,6 +2,7 @@ package it.polimi.webapp.dao;
 
 import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.User;
+import jakarta.security.enterprise.identitystore.PasswordHash;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,11 @@ public class LoginDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginDao.class);
 
     private final Connection connection;
+    private final PasswordHash passwordHash;
 
-    public LoginDao(Connection connection) {
+    public LoginDao(Connection connection, PasswordHash passwordHash) {
         this.connection = connection;
+        this.passwordHash = passwordHash;
     }
 
     /**
@@ -26,7 +29,7 @@ public class LoginDao {
      * if found the password is then checked locally
      * if not found returns an error
      */
-    public @Nullable User findUser(String userName, String password) throws SQLException {
+    public @Nullable User findUser(String userName, char[] password) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT idUtente, nome, email, password
                 FROM utente
@@ -35,7 +38,7 @@ public class LoginDao {
             query.setString(1, userName);
 
             try (var res = query.executeQuery()) {
-                if (res.next() && res.getString(4).equals(password))
+                if (res.next() && passwordHash.verify(password, res.getString(4)))
                     return new User(res.getInt(1), res.getString(2), res.getString(3));
             } catch (SQLException e) {
                 LOGGER.error("Failed to execute findUser query", e);

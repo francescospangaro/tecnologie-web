@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `casa_daste`.`utente` (
   `nome` VARCHAR(45) NOT NULL,
   `cognome` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
-  `password` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   `indirizzo` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idUtente`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
