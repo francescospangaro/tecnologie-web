@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             {id: "home", displayName: "Home", div: document.getElementById("home-page")},
             {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
             {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
+            {id: "auction-details", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
         ].map(async d => {
             const view = d.view ? new d.view(d.div) : undefined
             if (view)
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             get: () => {
                 return selectedPage
             },
-            set: async (newPage) => {
+            set: async (newPage, args) => {
                 selectedPage.div.setAttribute("hidden", "");
                 if (selectedPage.view)
                     try {
@@ -30,20 +31,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 newPage.div.removeAttribute("hidden");
                 if (newPage.view)
                     try {
-                        await newPage.view.mount()
+                        await newPage.view.mount(args)
                     } catch (e) {
                         console.error("Failed to mount new page", newPage, e)
                     }
                 selectedPage = newPage;
             },
         }
-        obj.setById = async (id) => {
-            const newPage = pages.filter(p => p.id === id)
+        obj.setById = async (id, args) => {
+            const newPage = pages.filter(p => p.id === id)[0]
             if (!newPage)
                 throw "invalid page id " + id
-            await obj.set(newPage);
+            await obj.set(newPage, args);
         }
         // Trigger the initial page mount
+        // TODO: we need to remove the home page and write the custom logic by saving client-sided what was visited
         obj.set(selectedPage)
         return obj
     })()
@@ -51,6 +53,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pagesMenu = document.getElementById('pages-menu')
     const pageLinkTemplate = document.getElementById('page-link-template')
     pages.forEach(page => {
+        // If it doesn't have a display name, we are not supposed to show it
+        if(!page.displayName)
+            return
+
         const pageLink = pageLinkTemplate.cloneNode(true)
         /** @type HTMLElement */
         const anchor = pageLink.querySelector('.link-anchor')
@@ -65,26 +71,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         /**
          * @typedef {{ error: true, msg: string }} ErrorResponse
-         * @typedef {{ error: false,  offerId: number, userId: number, auctionId: number, price: number, name: string, date: Date}} Offer
+         * @typedef {{ error: false, offerId: number, userId: number, auctionId: number, price: number, name: string, date: Date}} Offer
          * @typedef {{error: false, codArticle: number, name: string, description: string, immagine: string, prezzo: number, idUtente: number }} Article
          * @typedef {{error: false, id: number, expiry: Date, articles: Article[], minimumOfferDifference: number, maxOffer: number }} Auction
-         * @typedef {{error: false, base: Auction, finalPrice: number, buyerName: string, buyerAddress: string }} ClosedAuction
-         * @typedef {{error: false, base: Auction, offers: Offer[] }} OpenAuction
+         * @typedef {{error: false, kind: 'closed', base: Auction, finalPrice: number, buyerName: string, buyerAddress: string }} ClosedAuction
+         * @typedef {{error: false, kind: 'open', base: Auction, offers: Offer[] }} OpenAuction
          */
 
         /**
          * @param {number} id
-         * @return {Promise<ErrorResponse | Auction>} result
+         * @return {Promise<ErrorResponse | OpenAuction | ClosedAuction>} result
          */
         const getAuctionByIds = async function (id) {
-            const response = await fetch(url + 'auctionDetails?id=' + id)
+            const response = await fetch(url + 'auction?id=' + id)
             /** @type {ErrorResponse | Auction} */
             const obj = await response.json();
             if (!obj.error)
-                obj.map(a => {
-                    a.expiry = new Date(a.expiry)
-                    return a
-                })
+                obj.base.expiry = new Date(obj.base.expiry)
             return obj
         }
 
@@ -414,7 +417,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sellClosedErrorQuery.setAttribute("hidden", "")
                 closedAuctions.forEach(closedAuction => {
                     const closedAuctionEl = closedAuctionTemplate.cloneNode(true)
-                    closedAuctionEl.querySelector('.closed-auction-id').textContent = closedAuction.id
+                    /** @type {HTMLElement} */
+                    const closedAuctionAnchor = closedAuctionEl.querySelector('.closed-auction-id')
+                    closedAuctionAnchor.textContent = closedAuction.id
+                    closedAuctionAnchor.addEventListener('click', async e => {
+                        e.preventDefault()
+                        await selectedPage.setById('auction-details', closedAuction.id)
+                    })
                     closedAuctionEl.querySelector('.closed-auction-final-price').textContent = closedAuction.maxOffer
 
                     /** @type {HTMLElement} */
@@ -444,7 +453,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sellOpenErrorQuery.setAttribute("hidden", "")
                 openAuctions.forEach(openAuction => {
                     const openAuctionEl = openAuctionTemplate.cloneNode(true)
-                    openAuctionEl.querySelector('.open-auction-id').textContent = openAuction.id
+                    /** @type {HTMLElement} */
+                    const openAuctionAnchor = openAuctionEl.querySelector('.open-auction-id')
+                    openAuctionAnchor.textContent = openAuction.id
+                    openAuctionAnchor.addEventListener('click', async e => {
+                        e.preventDefault()
+                        await selectedPage.setById('auction-details', openAuction.id)
+                    })
                     openAuctionEl.querySelector('.open-auction-max-offer').textContent = openAuction.maxOffer
                     // TODO: we need to use the login time, not a new date
                     const dateDiffMillis = openAuction.expiry - new Date()
@@ -477,6 +492,73 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Easiest way to mutate is to just unmount and remount
             await this.unmount()
             await this.mount()
+        }
+    }
+
+    function auctionDetailsPage(containerDiv) {
+        let currentId = undefined
+
+        const auctionDetailsErrorQuery = document.getElementById("auction-details-error-query")
+        const auctionDetailsContent = document.getElementById("auction-details-content")
+        const auctionDetailsIdEl = document.getElementById("auction-details-id")
+        const articleDetailsTemplate = document.getElementById("articles-details-template")
+        const articleDetailsContainer = document.getElementById("articles-details-container")
+
+        this.create = async () => {
+        };
+
+        /**
+         * @param {number} id
+         * @returns {Promise<void>}
+         */
+        this.mount = async (id) => {
+            currentId = id
+
+            if(!id) {
+                auctionDetailsErrorQuery.removeAttribute("hidden")
+                auctionDetailsContent.setAttribute("hidden", "")
+                return
+            }
+            auctionDetailsErrorQuery.setAttribute("hidden", "")
+            auctionDetailsContent.removeAttribute("hidden")
+
+            const auction = await auctionRepository.getAuctionByIds(id)
+            if(auction.error) {
+                auctionDetailsErrorQuery.removeAttribute("hidden")
+                auctionDetailsContent.setAttribute("hidden", "")
+                return
+            }
+
+            auctionDetailsIdEl.textContent = auction.base.id.toString()
+
+            auction.base.articles.forEach(article => {
+                const articleDetailsEl = articleDetailsTemplate.cloneNode(true)
+                articleDetailsEl.querySelector('.article-details-code').textContent = article.codArticle
+                articleDetailsEl.querySelector('.article-details-name').textContent = article.name
+                articleDetailsEl.querySelector('.article-details-description').textContent = article.description
+                articleDetailsEl.querySelector('.article-details-image').src = "data:image/jpeg;base64," + article.immagine
+
+                Array.from(articleDetailsEl.childNodes).forEach(node => articleDetailsContainer.appendChild(node));
+            });
+
+            if(auction.kind === 'open') {
+
+                return
+            }
+
+            // if(auction.kind === 'closed')
+
+        };
+
+        this.unmount = async () => {
+            // Called when a page is no longer shown
+            // Do anything that might be required when the page is removed
+        }
+
+        this.mutateState = async (id) => {
+            // Easiest way to mutate is to just unmount and remount
+            await this.unmount()
+            await this.mount(id || currentId)
         }
     }
 });

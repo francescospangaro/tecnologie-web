@@ -348,30 +348,27 @@
 
 <!-- Auction details page template -->
 <div class="container mt-4" id="auction-details-page" hidden>
-    <div class="row text-center">
-        <span th:if="${errorQuery}"
-              th:utext="#{auctionDetails.errorQuery}">There was an error resolving your request</span>
+    <div class="row text-center" id="auction-details-error-query" hidden>
+        <span>There was an error resolving your request</span>
     </div>
-    <div th:if="${!errorQuery}">
-        <h2 th:utext="#{auctionDetails.auctionNum(${auction.base.id})}" class="row">Auction #1</h2>
+    <div id="auction-details-content" hidden>
+        <h2>Auction #<span id="auction-details-id">1</span></h2>
         <div class="row">
             <div class="col">
-                <div class="card mb-3" th:each="article : ${auction.base.articles}">
-                    <div class="row g-0">
+                <div class="card mb-3">
+                    <div class="row g-0" id="articles-details-container">
+                    </div>
+
+                    <div id="articles-details-template" hidden>
                         <div class="col-4">
-                            <img class="img-fluid rounded-start"
-                                 th:src="@{'data:image/jpeg;base64,' + ${ article.immagine}}"
-                                 src="https://placehold.co/600x400"/>
+                            <img class="article-details-image img-fluid rounded-start"/>
                         </div>
                         <div class="col-8">
                             <div class="card-body">
-                                <h5 class="card-title" th:utext="${article.name}">Table</h5>
-                                <p class="card-text" th:utext="${article.description}">A large table</p>
+                                <h5 class="card-title article-details-name">Table</h5>
+                                <p class="card-text article-details-description">A large table</p>
                                 <p class="card-text">
-                                    <small class="text-muted"
-                                           th:utext="#{auctionDetails.articleCode(${article.codArticle})}">
-                                        Code: 1
-                                    </small>
+                                    <small class="text-muted">Code: <span class="article-details-code">1</span></small>
                                 </p>
                             </div>
                         </div>
@@ -380,52 +377,51 @@
             </div>
 
             <div class="col">
-                <div th:if="${auction.isOpen && !auction.base.isExpired(session.loginTime)}"
-                     class="row"
-                     th:with="days=${auction.base.getRemainingDays(session.loginTime)},
-                              hours=${auction.base.getRemainingHours(session.loginTime)}"
-                     th:utext="#{auctionDetails.remainigTime(${days}, ${hours})}">Expires in 0d, 1h
+                <!-- isOpen && !isExpired -->
+                <div id="open-auction-expiry-div" class="row">
+                    Expires in <span id="open-auction-expiry-days">0</span>d, <span id="open-auction-expiry-hours">1</span>h
                 </div>
 
-                <th:block th:if="${auction.isOpen && auction.base.isExpired(session.loginTime)}">
-                    <form th:action="@{/closeAuction}" method="post" class="row">
-                        <input type="hidden" th:value="${auction.base.id}" th:name="id"/>
-                        <button type="submit" class="btn btn-danger" th:text="#{auctionDetails.closeAuction}">
-                            Close
-                        </button>
-                    </form>
-                </th:block>
+                <!-- isOpen && isExpired -->
+                <form class="row">
+                    <input type="hidden"/>
+                    <button type="submit" class="btn btn-danger">
+                        Close
+                    </button>
+                </form>
 
-                <div th:if="${auction.isOpen}" class="row">
-                    <table class="table table-striped table-hover center">
+                <!-- isOpen -->
+                <div id="open-auction-details" class="row">
+                    <table class="table table-striped table-hover center" id="auction-details-offers-table" hidden>
                         <thead>
                         <tr>
-                            <td th:utext="#{auctionDetails.offerDateTitle}">Date</td>
-                            <td th:utext="#{auctionDetails.offerNameTitle}">Offerer</td>
-                            <td th:utext="#{auctionDetails.offerPriceTitle}">Price</td>
+                            <td>Date</td>
+                            <td>Offerer</td>
+                            <td>Price</td>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="offer : ${auction.offers}">
-                            <td th:with="df=#{date.format}" th:utext="${#temporals.format(offer.date,df)}">Tomorrow</td>
-                            <td th:utext="${offer.name}">Spangaro</td>
-                            <td th:utext="${offer.price}">10€</td>
+
+                        </tbody>
+                    </table>
+
+                    <table hidden>
+                        <tbody id="auction-details-offers-template">
+                        <tr>
+                            <td class="details-offer-date">Tomorrow</td>
+                            <td class="details-offer-name">Spangaro</td>
+                            <td class="details-offer-price">10€</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <th:block th:if="${auction.isClosed()}">
-                    <div class="row" th:utext="#{auctionDetails.finalPrice(${auction.finalPrice})}">
-                        Final price: 100€
-                    </div>
-                    <div class="row" th:utext="#{auctionDetails.finalBuyer(${auction.buyerName})}">
-                        Buyer: Spangaro
-                    </div>
-                    <div class="row" th:utext="#{auctionDetails.finalAddress(${auction.buyerAddress})}">
-                        Address: Inverigo (CO)
-                    </div>
-                </th:block>
+                <!-- !isOpen -->
+                <div id="closed-auction-details">
+                    <div class="row">Final price: <span id="closed-auction-final-price">100€</span></div>
+                    <div class="row">Buyer: <span id="closed-auction-buyer">Spangaro</span></div>
+                    <div class="row">Address: <span id="closed-auction-buyer-address">Inverigo (CO)</span></div>
+                </div>
             </div>
         </div>
     </div>
