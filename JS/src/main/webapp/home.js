@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return [
             {id: "home", displayName: "Home", div: document.getElementById("home-page")},
             {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
-            {id: "sell", displayName: "Sell", div: document.getElementById("sell-page")},
+            {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
         ].map(async d => {
             const view = d.view ? new d.view(d.div) : undefined
             if (view)
@@ -56,11 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const anchor = pageLink.querySelector('.link-anchor')
         anchor.textContent = page.displayName
         anchor.addEventListener('click', () => selectedPage.set(page));
-        Array.from(pageLink.childNodes).forEach(node => {
-            console.log(node)
-            console.log(pagesMenu)
-            pagesMenu.appendChild(node)
-        })
+        Array.from(pageLink.childNodes).forEach(node => pagesMenu.appendChild(node))
     });
 
     //repositories
@@ -93,11 +89,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         /**
-         * @param formData
+         * @return {Promise<ErrorResponse | Auction[]>} result
+         */
+        const getClosedAuction = async function () {
+            const response = await fetch(url + 'closedAuction')
+            /** @type {ErrorResponse | Auction[]} */
+            const obj = await response.json();
+            if (!obj.error)
+                obj.map(a => {
+                    a.expiry = new Date(a.expiry)
+                    return a
+                })
+            return obj
+        }
+
+        /**
+         * @return {Promise<ErrorResponse | Auction[]>} result
+         */
+        const getOpenAuction = async function () {
+            const response = await fetch(url + 'openAuction')
+            /** @type {ErrorResponse | Auction[]} */
+            const obj = await response.json();
+            if (!obj.error)
+                obj.map(a => {
+                    a.expiry = new Date(a.expiry)
+                    return a
+                })
+            return obj
+        }
+
+        /**
+         * @param {URLSearchParams} formData
          * @returns {Promise<any>}
          */
         const insertAuction = async function (formData) {
-            const response = await fetch(url + 'insertAuction', {
+            const response = await fetch(url + 'auction', {
                 method: 'POST',
                 body: formData,
             })
@@ -125,24 +151,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         /**
-         * @returns {Promise<ErrorResponse | {error: false} & Auction[]>}
+         * @returns {Promise<ErrorResponse | {error: false} & ClosedAuction[]>}
          */
         const getBoughtAuctions = async function () {
             const response = await fetch(url + "auction")
-            /** @type {ErrorResponse | { error: false } & Auction[]} */
+            /** @type {ErrorResponse | { error: false } & ClosedAuction[]} */
             const res = await response.json();
             if (res.error)
                 return res
             // noinspection UnnecessaryLocalVariableJS
             /** @type {any} */
             const mapped = res.map(a => {
-                a.expiry = new Date(a.expiry)
+                a.base.expiry = new Date(a.base.expiry)
                 return a
             })
             return mapped
         }
 
         return {
+            getClosedAuction: getClosedAuction,
+            getOpenAuction: getOpenAuction,
             getAuctionByIds: getAuctionByIds,
             insertAuction: insertAuction,
             searchAuction: searchAuction,
@@ -158,11 +186,11 @@ document.addEventListener('DOMContentLoaded', async () => {
          */
 
         /**
-         * @param formData
+         * @param {FormData} formData
          * @returns {Promise<any>}
          */
         const insertArticle = async function (formData) {
-            const response = await fetch(url + 'insertArticle', {
+            const response = await fetch(url + 'article', {
                 method: 'POST',
                 body: formData,
             })
@@ -190,6 +218,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const auctionTemplate = document.getElementById('found-auction-template')
         const articleTemplate = document.getElementById('article-template')
 
+        const wonAuctionTemplate = document.getElementById('won-auction-template')
+        const wonArticleTemplate = document.getElementById('won-auction-article-template')
+        const wonAuctionTable = document.getElementById('won-auction-table')
+
         const foundAuctionsTable = document.getElementById("found-auctions-container");
         const keyword = document.getElementById("search-keyword")
 
@@ -215,40 +247,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.mount = async () => {
             // Called when a page is shown
             // Refresh data we got from the repo
+            const promises = []
 
             if (keyword.value.trim() !== "") {
-                const auctions = await auctionRepository.searchAuction(keyword.value) // Load from repo
-                // Once loaded, we can clean up old cached data
-                while (foundAuctionsTable.firstChild)
-                    foundAuctionsTable.removeChild(foundAuctionsTable.firstChild)
+                // Load from repo
+                promises.push(auctionRepository.searchAuction(keyword.value).then(auctions => {
+                    // Once loaded, we can clean up old cached data
+                    while (foundAuctionsTable.firstChild)
+                        foundAuctionsTable.removeChild(foundAuctionsTable.firstChild)
 
-                if (auctions.error) {
-                    errorSearchQuery.removeAttribute("hidden");
+                    if (auctions.error) {
+                        errorSearchQuery.removeAttribute("hidden");
+                    } else {
+                        errorSearchQuery.setAttribute("hidden", "");
+                        auctions.forEach(auction => {
+                            const auctionEl = auctionTemplate.cloneNode(true)
+                            auctionEl.querySelector('.auction-id').textContent = auction.id
+                            auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
+                            // TODO: we need to use the login time, not a new date
+                            const dateDiffMillis = auction.expiry - new Date()
+                            const days = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
+                            const hours = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
+                            auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
+
+                            /** @type {HTMLElement} */
+                            const articleTable = auctionEl.querySelector('.article-table')
+                            auction.articles.forEach(article => {
+                                const articleEl = articleTemplate.cloneNode(true)
+                                articleEl.querySelector('.article-code').textContent = article.codArticle
+                                articleEl.querySelector('.article-name').textContent = article.name
+                                Array.from(articleEl.childNodes).forEach(node => articleTable.appendChild(node));
+                            })
+
+                            Array.from(auctionEl.childNodes).forEach(node => foundAuctionsTable.appendChild(node));
+                        })
+                    }
+                }))
+            }
+
+            promises.push(auctionRepository.getBoughtAuctions().then(wonAuctions => {
+                // Once loaded, we can clean up old cached data
+                while (wonAuctionTable.firstChild)
+                    wonAuctionTable.removeChild(wonAuctionTable.firstChild)
+
+                //TODO: error message
+                if (wonAuctions.error) {
+                    console.error("nothing found")
                 } else {
-                    errorSearchQuery.setAttribute("hidden", "");
-                    auctions.forEach(auction => {
-                        const auctionEl = auctionTemplate.cloneNode(true)
-                        auctionEl.querySelector('.auction-id').textContent = auction.id
-                        auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
-                        // TODO: we need to use the login time, not a new date
-                        const dateDiffMillis = auction.expiry - new Date()
-                        const days = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
-                        const hours = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
-                        auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
+                    wonAuctions.forEach(wonAuction => {
+                        const wonAuctionEl = wonAuctionTemplate.cloneNode(true)
+                        wonAuctionEl.querySelector('.won-auction-id').textContent = wonAuction.base.id
+                        wonAuctionEl.querySelector('.won-auction-price').textContent = wonAuction.finalPrice
 
                         /** @type {HTMLElement} */
-                        const articleTable = auctionEl.querySelector('.article-table')
-                        auction.articles.forEach(article => {
-                            const articleEl = articleTemplate.cloneNode(true)
-                            articleEl.querySelector('.article-code').textContent = article.codArticle
-                            articleEl.querySelector('.article-name').textContent = article.name
-                            Array.from(articleEl.childNodes).forEach(node => articleTable.appendChild(node));
+                        const wonArticleTable = wonAuctionEl.querySelector('.won-article-table')
+                        wonAuction.base.articles.forEach(wonArticle => {
+                            const wonArticleEl = wonArticleTemplate.cloneNode(true)
+                            wonArticleEl.querySelector('.won-article-id').textContent = wonArticle.codArticle
+                            wonArticleEl.querySelector('.won-article-name').textContent = wonArticle.name
+                            Array.from(wonArticleEl.childNodes).forEach(node => wonArticleTable.appendChild(node))
                         })
 
-                        Array.from(auctionEl.childNodes).forEach(node => foundAuctionsTable.appendChild(node));
+                        Array.from(wonAuctionEl.childNodes).forEach(node => wonAuctionTable.appendChild(node));
                     })
                 }
-            }
+            }))
+
+            await Promise.all(promises)
         }
 
         this.unmount = async () => {
@@ -262,31 +327,156 @@ document.addEventListener('DOMContentLoaded', async () => {
             await this.mount()
         }
     }
+
     function sellPage(containerDiv) {
+        const articleForm = document.getElementById("article-insertion-form")
+        const auctionForm = document.getElementById("auction-insertion-form")
+        const articlesErrorQuery = document.getElementById("articles-error-query")
+        const articlesNotFound = document.getElementById("articles-not-found")
+        const selectArticles = document.getElementById("selectedArticles")
+
+        const closedAuctionTemplate = document.getElementById("closed-auction-template")
+        const closedAuctionTable = document.getElementById("closed-auction-table")
+        const closedArticleTemplate = document.getElementById("closed-article-template")
+        const sellClosedErrorQuery = document.getElementById("sellClosedErrorQuery")
+
+        const openAuctionTemplate = document.getElementById("open-auction-template")
+        const openAuctionTable = document.getElementById("open-auctions-table")
+        const openArticleTemplate = document.getElementById("open-article-template")
+        const sellOpenErrorQuery = document.getElementById("sellOpenErrorQuery")
+
         this.create = async () => {
-            const articleForm = document.getElementById("articleInsertionForm")
             articleForm.addEventListener('submit', async e => {
                 e.preventDefault()
                 if (!e.target.checkValidity()) {
                     e.target.reportValidity()
                     return
                 }
-                await articleRepository.insertArticle(articleForm)
+                await articleRepository.insertArticle(new FormData(articleForm))
+                e.target.reset()
                 await this.mutateState()
             })
 
-            const auctionForm = document.getElementById("auctionInsertionForm")
             auctionForm.addEventListener('submit', async e => {
                 e.preventDefault()
                 if (!e.target.checkValidity()) {
                     e.target.reportValidity()
                     return
                 }
-                await auctionRepository.insertAuction(auctionForm)
+                //noinspection JSCheckFunctionSignatures
+                await auctionRepository.insertAuction(new URLSearchParams(new FormData(auctionForm)))
+                e.target.reset()
                 await this.mutateState()
             })
-
-            const closedAuctionTable = document.getElementById("closed-auction-table")
         };
+
+        this.mount = async () => {
+            // Called when a page is shown
+            // Refresh data we got from the repo
+            const promises = []
+
+            promises.push(articleRepository.findAllArticles().then(articles => {
+                // Once loaded, we can clean up old cached data
+                while (selectArticles.firstChild)
+                    selectArticles.removeChild(selectArticles.firstChild)
+
+                if (articles.error) {
+                    articlesErrorQuery.removeAttribute("hidden")
+                    return
+                }
+                articlesErrorQuery.setAttribute("hidden", "")
+
+                if (articles.length === 0) {
+                    articlesNotFound.removeAttribute("hidden")
+                    return
+                }
+                articlesNotFound.setAttribute("hidden", "")
+
+                articles.forEach(article => {
+                    const articleOptionEl = document.createElement("option")
+                    articleOptionEl.value = article.codArticle.toString()
+                    articleOptionEl.textContent = article.name
+                    selectArticles.appendChild(articleOptionEl);
+                })
+            }))
+
+            //populates closed auction tables
+            promises.push(auctionRepository.getClosedAuction().then(closedAuctions => {
+                // Once loaded, we can clean up old cached data
+                while (closedAuctionTable.firstChild)
+                    closedAuctionTable.removeChild(closedAuctionTable.firstChild)
+
+                if (closedAuctions.error) {
+                    sellClosedErrorQuery.removeAttribute("hidden")
+                    return
+                }
+
+                sellClosedErrorQuery.setAttribute("hidden", "")
+                closedAuctions.forEach(closedAuction => {
+                    const closedAuctionEl = closedAuctionTemplate.cloneNode(true)
+                    closedAuctionEl.querySelector('.closed-auction-id').textContent = closedAuction.id
+                    closedAuctionEl.querySelector('.closed-auction-final-price').textContent = closedAuction.maxOffer
+
+                    /** @type {HTMLElement} */
+                    const closedArticleTable = closedAuctionEl.querySelector('.closed-article-table')
+                    closedAuction.articles.forEach(closedArticle => {
+                        const closedArticleEl = closedArticleTemplate.cloneNode(true)
+                        closedArticleEl.querySelector('.closed-article-id').textContent = closedArticle.codArticle
+                        closedArticleEl.querySelector('.closed-article-name').textContent = closedArticle.name
+                        Array.from(closedArticleEl.childNodes).forEach(node => closedArticleTable.appendChild(node))
+                    })
+
+                    Array.from(closedAuctionEl.childNodes).forEach(node => closedAuctionTable.appendChild(node));
+                })
+            }))
+
+            //populates closed auction tables
+            promises.push(auctionRepository.getOpenAuction().then(openAuctions => {
+                // Once loaded, we can clean up old cached data
+                while (openAuctionTable.firstChild)
+                    openAuctionTable.removeChild(openAuctionTable.firstChild)
+
+                if (openAuctions.error) {
+                    sellOpenErrorQuery.removeAttribute("hidden")
+                    return
+                }
+
+                sellOpenErrorQuery.setAttribute("hidden", "")
+                openAuctions.forEach(openAuction => {
+                    const openAuctionEl = openAuctionTemplate.cloneNode(true)
+                    openAuctionEl.querySelector('.open-auction-id').textContent = openAuction.id
+                    openAuctionEl.querySelector('.open-auction-max-offer').textContent = openAuction.maxOffer
+                    // TODO: we need to use the login time, not a new date
+                    const dateDiffMillis = openAuction.expiry - new Date()
+                    const days = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
+                    const hours = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
+                    openAuctionEl.querySelector('.open-auction-remaining-time').textContent = `${days}d ${hours}h`
+
+                    /** @type {HTMLElement} */
+                    const openArticleTable = openAuctionEl.querySelector('.open-articles-table')
+                    openAuction.articles.forEach(openArticle => {
+                        const openArticleEl = openArticleTemplate.cloneNode(true)
+                        openArticleEl.querySelector('.open-article-id').textContent = openArticle.codArticle
+                        openArticleEl.querySelector('.open-article-name').textContent = openArticle.name
+                        Array.from(openArticleEl.childNodes).forEach(node => openArticleTable.appendChild(node))
+                    })
+
+                    Array.from(openAuctionEl.childNodes).forEach(node => openAuctionTable.appendChild(node));
+                })
+            }))
+
+            await Promise.all(promises)
+        };
+
+        this.unmount = async () => {
+            // Called when a page is no longer shown
+            // Do anything that might be required when the page is removed
+        }
+
+        this.mutateState = async () => {
+            // Easiest way to mutate is to just unmount and remount
+            await this.unmount()
+            await this.mount()
+        }
     }
 });

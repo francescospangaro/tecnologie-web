@@ -109,7 +109,7 @@ public class AuctionDao {
                 : doPopulateOpenAuction(baseAuction);
     }
 
-    public @Nullable ClosedAuction findUserBoughtAuctions(int userId) throws SQLException {
+    public List<ClosedAuction> findUserBoughtAuctions(int userId) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
                        articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto, utente.nome, utente.indirizzo
@@ -122,28 +122,29 @@ public class AuctionDao {
                   AND asta.chiusa = 1
                   AND offerta.prezzoOfferto IN (
                     SELECT MAX(o.prezzoOfferto)
-                    FROM offerta as o join asta on o.asta_idAsta = asta.idAsta
-                    WHERE o.utente_idUtente = offerta.utente_idUtente
+                    FROM offerta as o
+                    WHERE o.asta_idAsta = asta.idAsta
                 )
                 """)) {
             query.setInt(1, userId);
-
             try (var res = query.executeQuery()) {
-                ClosedAuction closedAuction = null;
-                List<Article> articles = new ArrayList<>();
+                Map<Integer, ClosedAuction> auctions = new LinkedHashMap<>(); // Keep the order given by the query
                 while (res.next()) {
-                    if (closedAuction == null) {
-                        closedAuction = new ClosedAuction(
+                    int id = res.getInt(1);
+                    var closedAuction = auctions.get(id);
+                    if(closedAuction == null) {
+                        auctions.put(id, closedAuction = new ClosedAuction(
                                 new Auction(
                                         res.getInt(1),
                                         res.getTimestamp(2).toLocalDateTime(),
+                                        new ArrayList<>(),
                                         res.getInt(3)),
                                 res.getDouble(9),
                                 res.getString(10),
-                                res.getString(11));
+                                res.getString(11)));
                     }
 
-                    articles.add(new Article(
+                    closedAuction.base().articles().add(new Article(
                             res.getInt(4),
                             res.getString(5),
                             res.getString(6),
@@ -152,10 +153,7 @@ public class AuctionDao {
                             userId));
                 }
 
-                if (closedAuction == null)
-                    return null;
-
-                return closedAuction.withBase(closedAuction.base().withArticles(articles));
+                return List.copyOf(auctions.values());
             }
         }
     }

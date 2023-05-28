@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -59,7 +60,7 @@ public class ArticleDao {
         try (PreparedStatement insertArticle = connection.prepareStatement("""
                 INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
                 VALUES (?, ?, ?, ?, ?)
-                """)) {
+                """, Statement.RETURN_GENERATED_KEYS)) {
             insertArticle.setString(1, article.name());
             insertArticle.setString(2, article.description());
             insertArticle.setBlob(3, imageStream);

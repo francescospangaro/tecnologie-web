@@ -15,6 +15,7 @@
 
     <properties>
         <servlet.port>8080</servlet.port>
+        <cargo.rmi.port>8206</cargo.rmi.port>
         <debugger.port>5005</debugger.port>
     </properties>
 

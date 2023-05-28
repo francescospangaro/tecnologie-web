@@ -193,6 +193,7 @@
                     <configuration>
                         <properties>
                             <cargo.servlet.port>${servlet.port}</cargo.servlet.port>
+                            <cargo.rmi.port>${cargo.rmi.port}</cargo.rmi.port>
                             <!-- Log level -->
 <!--                            <cargo.logging>high</cargo.logging>-->
                         </properties>

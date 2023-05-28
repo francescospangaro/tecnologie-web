@@ -15,7 +15,7 @@ public class NotLoggedFilter extends HttpFilter {
         if (req instanceof HttpServletRequest httpReq &&
                 httpReq.getSession(false) == null &&
                 res instanceof HttpServletResponse httpRes){
-            httpRes.sendRedirect(getServletContext().getContextPath() + "/login");
+            httpRes.sendRedirect(getServletContext().getContextPath() + "/login.html");
             return;
         }
         chain.doFilter(req, res);

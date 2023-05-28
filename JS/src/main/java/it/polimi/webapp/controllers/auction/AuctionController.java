@@ -103,8 +103,7 @@ public class AuctionController extends BaseController {
                 var boughtAuctions = new AuctionDao(connection).findUserBoughtAuctions(session.id());
                 resp.setContentType("application/json");
                 //print auction by user id
-                gson.toJson(Objects.requireNonNullElseGet(boughtAuctions,
-                        () -> new ParsingError("errorQuery")), resp.getWriter());
+                gson.toJson(boughtAuctions, resp.getWriter());
             } catch (SQLException e) {
                 LOGGER.error("Failed to get findUserBoughtAuctions({})", session.id(), e);
 

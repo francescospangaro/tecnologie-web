@@ -16,15 +16,19 @@ public record Auction(
         LocalDateTime expiry,
         @Nullable List<Article> articles,
         int minimumOfferDifference,
-        double maxOffer
+        @Nullable Double maxOffer
 ) {
 
+    public Auction(int id, LocalDateTime expiry, List<Article> articles, int minimumOfferDifference) {
+        this(id, expiry, articles, minimumOfferDifference, null);
+    }
+
     public Auction(LocalDateTime expiry, List<Article> articles, int minimumOfferDifference) {
-        this(-1, expiry, articles, minimumOfferDifference, -1);
+        this(-1, expiry, articles, minimumOfferDifference, null);
     }
 
     public Auction(int id, LocalDateTime expiry, int minimumOfferDifference) {
-        this(id, expiry, null, minimumOfferDifference, -1);
+        this(id, expiry, null, minimumOfferDifference, null);
     }
 
     public Auction(Auction toCopy, double maxOffer){
@@ -43,13 +47,6 @@ public record Auction(
         if(articles == null)
             throw new IllegalStateException("Auction was created without articles");
         return articles;
-    }
-
-    @Override
-    public double maxOffer() {
-        if(maxOffer == -1D)
-            throw new IllegalStateException("Auction was created without maxOffer");
-        return maxOffer;
     }
 
     public Auction withId(int id) {

@@ -19,18 +19,8 @@
 
 
 <!-- Servlets and Filters-->
-    <!-- Debug Stuff -->
-    <filter>
-        <filter-name>DisableCorsFilter</filter-name>
-        <filter-class>it.polimi.webapp.filters.DisableCorsFilter</filter-class>
-    </filter>
 
     <!-- Login -->
-    <servlet>
-        <servlet-name>LoginPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.LoginPage</servlet-class>
-    </servlet>
-
     <servlet>
         <servlet-name>LoginController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.LoginController</servlet-class>
@@ -46,33 +36,16 @@
         <filter-class>it.polimi.webapp.filters.NotLoggedFilter</filter-class>
     </filter>
 
-    <!-- Home -->
-    <servlet>
-        <servlet-name>HomePage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.HomePage</servlet-class>
-    </servlet>
-
     <!-- Buy -->
     <servlet>
         <servlet-name>SearchController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.SearchController</servlet-class>
     </servlet>
 
-        <!-- Offers -->
-    <servlet>
-        <servlet-name>OffersPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.OffersPage</servlet-class>
-    </servlet>
-
+    <!-- Offers -->
     <servlet>
         <servlet-name>OffersController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.OffersController</servlet-class>
-    </servlet>
-
-    <!-- Sell -->
-    <servlet>
-        <servlet-name>SellPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.SellPage</servlet-class>
     </servlet>
 
     <!-- Single articles -->
@@ -88,16 +61,13 @@
     </servlet>
 
     <servlet>
-        <servlet-name>CloseAuctionController</servlet-name>
+        <servlet-name>ClosedAuctionController</servlet-name>
         <servlet-class>it.polimi.webapp.controllers.auction.ClosedAuctionController</servlet-class>
     </servlet>
 
-
-
-    <!-- View closed auctions -->
     <servlet>
-        <servlet-name>AuctionDetailsPage</servlet-name>
-        <servlet-class>it.polimi.webapp.pages.AuctionDetailsPage</servlet-class>
+        <servlet-name>OpenAuctionController</servlet-name>
+        <servlet-class>it.polimi.webapp.controllers.auction.OpenAuctionController</servlet-class>
     </servlet>
 
     <!-- Logout -->
@@ -107,18 +77,7 @@
     </servlet>
 
 <!-- Mappings -->
-    <!-- Debug Stuff -->
-    <filter-mapping>
-        <filter-name>DisableCorsFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
     <!-- Login -->
-    <servlet-mapping>
-        <servlet-name>LoginPage</servlet-name>
-        <url-pattern>/login</url-pattern>
-    </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>LoginController</servlet-name>
         <url-pattern>/userLogin</url-pattern>
@@ -126,26 +85,16 @@
 
     <filter-mapping>
         <filter-name>LoggedFilter</filter-name>
-        <url-pattern>/login</url-pattern>
+        <url-pattern>/login.html</url-pattern>
         <url-pattern>/userLogin</url-pattern>
     </filter-mapping>
 
     <filter-mapping>
         <filter-name>NotLoggedFilter</filter-name>
-        <url-pattern>/home</url-pattern>
-        <url-pattern>/buy</url-pattern>
-        <url-pattern>/offers</url-pattern>
-        <url-pattern>/insertOffer</url-pattern>
-        <url-pattern>/sell</url-pattern>
-        <url-pattern>/auctionDetails</url-pattern>
-        <url-pattern>/closeAuction</url-pattern>
+        <url-pattern>/home.html</url-pattern>
+        <url-pattern>/search</url-pattern>
+        <url-pattern>/auction</url-pattern>
     </filter-mapping>
-
-    <!-- Home -->
-    <servlet-mapping>
-        <servlet-name>HomePage</servlet-name>
-        <url-pattern>/home</url-pattern>
-    </servlet-mapping>
 
     <!-- Buy -->
     <servlet-mapping>
@@ -153,27 +102,15 @@
         <url-pattern>/search</url-pattern>
     </servlet-mapping>
 
-        <!-- Offers -->
-    <servlet-mapping>
-        <servlet-name>OffersPage</servlet-name>
-        <url-pattern>/offers</url-pattern>
-    </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>OffersController</servlet-name>
         <url-pattern>/insertOffer</url-pattern>
     </servlet-mapping>
 
-    <!-- Sell -->
-    <servlet-mapping>
-        <servlet-name>SellPage</servlet-name>
-        <url-pattern>/sell</url-pattern>
-    </servlet-mapping>
-
         <!-- Single articles -->
     <servlet-mapping>
         <servlet-name>ArticleController</servlet-name>
-        <url-pattern>/insertArticle</url-pattern>
+        <url-pattern>/article</url-pattern>
     </servlet-mapping>
 
         <!-- Single auctions -->
@@ -183,14 +120,13 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>CloseAuctionController</servlet-name>
-        <url-pattern>/closeAuction</url-pattern>
+        <servlet-name>ClosedAuctionController</servlet-name>
+        <url-pattern>/closedAuction</url-pattern>
     </servlet-mapping>
 
-    <!-- View auctions details -->
     <servlet-mapping>
-        <servlet-name>AuctionDetailsPage</servlet-name>
-        <url-pattern>/auctionDetails</url-pattern>
+        <servlet-name>OpenAuctionController</servlet-name>
+        <url-pattern>/openAuction</url-pattern>
     </servlet-mapping>
 
     <!-- Logout -->
