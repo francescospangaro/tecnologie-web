@@ -34,7 +34,7 @@ public class OffersController extends BaseController {
             return;
         }
 
-        var offer = new Offer(session.id(), auctionId, offerPrice, session.loginTime());
+        var offer = new Offer(session.id(), auctionId, offerPrice, LocalDateTime.now());
 
         OffersDao.InsertionReturn inserted;
 

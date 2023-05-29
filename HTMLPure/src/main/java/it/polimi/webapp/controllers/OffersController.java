@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 public class OffersController extends BaseController {
 
@@ -29,7 +29,7 @@ public class OffersController extends BaseController {
             return;
         }
 
-        var offer = new Offer(session.id(), auctionId, offerPrice, session.loginTime());
+        var offer = new Offer(session.id(), auctionId, offerPrice, LocalDateTime.now());
 
         try (var connection = dataSource.getConnection()) {
             var inserted = new OffersDao(connection).insertOffer(offer);
