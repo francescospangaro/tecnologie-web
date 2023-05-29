@@ -8,6 +8,7 @@ import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AuctionDao {
     private final Connection connection;
@@ -306,6 +307,28 @@ public class AuctionDao {
                         throw new SQLException("Creating auction failed, no ID obtained.");
 
                     generatedId = generatedKeys.getInt(1);
+                }
+            }
+
+            try (var query = connection.prepareStatement(String.format("""
+                    SELECT articolo.codArticolo
+                    FROM articolo
+                          JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                          JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
+                    WHERE articolo.codArticolo IN %s AND asta.chiusa = true
+                    """,
+                    articleIds.stream()
+                            .map(ignored -> "?")
+                            .collect(Collectors.joining(", ", "(", ")")))
+            )) {
+                for(int idx = 0; idx < articleIds.size(); idx++)
+                    query.setInt(idx + 1, articleIds.get(idx));
+
+                try (var res = query.executeQuery()) {
+                    if (res.next()) {
+                        connection.rollback();
+                        return 0;
+                    }
                 }
             }
 
