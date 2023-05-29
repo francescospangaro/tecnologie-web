@@ -320,7 +320,7 @@ public class AuctionDao {
         });
     }
 
-    public int closeAuction(int auctionId, LocalDateTime loginTime, int userId) throws SQLException {
+    public int closeAuction(int auctionId, int userId) throws SQLException {
         try (PreparedStatement close = connection.prepareStatement("""
                 UPDATE asta
                 INNER JOIN (
@@ -336,7 +336,7 @@ public class AuctionDao {
                 """)) {
             close.setInt(1, userId);
             close.setInt(2, auctionId);
-            close.setTimestamp(3, Timestamp.valueOf(loginTime));
+            close.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now(clock)));
             return close.executeUpdate();
         }
     }

@@ -29,7 +29,7 @@ public class ClosedAuctionController extends BaseController {
         }
 
         try(var connection = dataSource.getConnection()) {
-            var res = new AuctionDao(connection).closeAuction(auctionId, session.loginTime(), session.id());
+            var res = new AuctionDao(connection).closeAuction(auctionId, session.id());
             if(res == 0) {
                 resp.setContentType("application/json");
                 gson.toJson(new ParsingError("notFound"), resp.getWriter());
