@@ -1,15 +1,21 @@
 ## Running
-Use the IntelliJ 'Cargo Run' configuration or from the console:
+Use the IntelliJ `Cargo Run HTML`/`Cargo Run JS` configuration or from the console:
 ```bash
-maven clean package cargo:run
+maven clean package cargo:run -Dcargo-run-html-pure
 ```
-then navigate to `localhost:8080/webapp`.
+```bash
+maven clean package cargo:run -Dcargo-run-js
+```
+then navigate to `localhost:8080/HTMLPure/`/`localhost:8081/JS/home.html`.
 
-To debug, use the IntelliJ 'Cargo Debug' configuration instead or from the console:
+To debug, use the IntelliJ `Cargo Debug HTML`/`Cargo Debug JS` configuration instead or from the console:
 ```bash
-clean package cargo:run -Ddebug-cargo
+maven clean package cargo:run -Dcargo-run-html-pure -Ddebug-cargo
 ```
-then attach a remote debugger to port 5005 and navigate to `localhost:8080/webapp`.
+```bash
+maven clean package cargo:run -Dcargo-run-js -Ddebug-cargo
+```
+then attach a remote debugger to port 5005/5006 and navigate to `localhost:8080/HTMLPure/`/`localhost:8081/JS/home.html`.
 
 `http://localhost:8080/host-manager` and `http://localhost:8080/manager`
 can be accessed by using `root` and `password` as credentials.
