@@ -15,6 +15,7 @@
               <option value="cargo:run" />
               <option value="-Dcargo-run-js" />
               <option value="-Ddebug-cargo" />
+              <option value="-Dmaven.clean.failOnError=false" />
             </list>
           </option>
           <option name="pomFileName" />
