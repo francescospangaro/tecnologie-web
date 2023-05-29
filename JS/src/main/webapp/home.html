@@ -21,11 +21,9 @@
 
 <body>
 
-<p class="text-center">Scegli cosa caricare:</p>
-<div id="pages-menu">
+<div id="pages-menu" class="text-center">
     <div id="page-link-template" hidden>
-        <a class="link-anchor" href="#"></a>
-        <br>
+        <a class="link-anchor" href="#"></a><span> </span>
     </div>
 </div>
 
@@ -63,7 +61,7 @@
             <tbody id="found-auction-template">
             <tr>
                 <td><a class="auction-id" href="#">1</a></td>
-                <td class="auction-maxOffer">120€</td>
+                <td><span class="auction-maxOffer">120</span>€</td>
                 <td class="auction-remaining-time">0d, 1h
                 </td>
             </tr>
@@ -113,7 +111,7 @@
         <tbody id="won-auction-template">
         <tr>
             <td class="won-auction-id">1</td>
-            <td class="won-auction-price">60€</td>
+            <td><span class="won-auction-price">60</span>€</td>
         </tr>
         <tr>
             <td colspan="3">
@@ -269,7 +267,7 @@
                 <tbody id="closed-auction-template">
                 <tr>
                     <td><a href="#" class="closed-auction-id">1</a></td>
-                    <td class="closed-auction-final-price">60€</td>
+                    <td><span class="closed-auction-final-price">60</span>€</td>
                 </tr>
                 <tr>
                     <td colspan="3">
@@ -314,7 +312,7 @@
                 <tbody id="open-auction-template">
                 <tr>
                     <td><a href="#" class="open-auction-id">1</a></td>
-                    <td class="open-auction-max-offer">50€</td>
+                    <td><span class="open-auction-max-offer">50</span>€</td>
                     <td class="open-auction-remaining-time">1d, 2h</td>
                 </tr>
                 <tr>
@@ -378,7 +376,7 @@
 
             <div class="col">
                 <!-- isOpen && !isExpired -->
-                <div id="auction-details-expiry-div" class="row">
+                <div id="auction-details-expiry-div">
                     Expires in <span id="open-auction-expiry-days">0</span>d, <span id="open-auction-expiry-hours">1</span>h
                 </div>
 
@@ -410,7 +408,7 @@
                         <tr>
                             <td class="details-offer-date">Tomorrow</td>
                             <td class="details-offer-name">Spangaro</td>
-                            <td class="details-offer-price">10€</td>
+                            <td><span class="details-offer-price">10</span>€</td>
                         </tr>
                         </tbody>
                     </table>
@@ -418,9 +416,9 @@
 
                 <!-- !isClosed -->
                 <div id="closed-auction-details" hidden>
-                    <div class="row">Final price: <span id="closed-auction-final-price">100€</span></div>
-                    <div class="row">Buyer: <span id="closed-auction-buyer">Spangaro</span></div>
-                    <div class="row">Address: <span id="closed-auction-buyer-address">Inverigo (CO)</span></div>
+                    <div>Final price: <span id="closed-auction-final-price">100</span>€</div>
+                    <div>Buyer: <span id="closed-auction-buyer">Spangaro</span></div>
+                    <div>Address: <span id="closed-auction-buyer-address">Inverigo (CO)</span></div>
                 </div>
             </div>
         </div>

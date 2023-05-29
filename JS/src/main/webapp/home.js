@@ -84,10 +84,16 @@ document.addEventListener('DOMContentLoaded', async () => {
          */
         const getAuctionByIds = async function (id) {
             const response = await fetch(url + 'auction?id=' + id)
-            /** @type {ErrorResponse | Auction} */
+            /** @type {ErrorResponse | OpenAuction | ClosedAuction} */
             const obj = await response.json();
-            if (!obj.error)
+            if (!obj.error) {
                 obj.base.expiry = new Date(obj.base.expiry)
+                if(obj.kind === 'open')
+                    obj.offers = obj.offers.map(o => {
+                        o.date = new Date(o.date)
+                        return o;
+                    })
+            }
             return obj
         }
 
@@ -598,7 +604,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 auction.offers.forEach(offer => {
                     const offerEl = openAuctionDetailsTemplate.cloneNode(true)
-                    offerEl.querySelector('.details-offer-date').textContent = new Date(offer.date)
+                    offerEl.querySelector('.details-offer-date').textContent = offer.date.toLocaleString()
                     offerEl.querySelector('.details-offer-name').textContent = offer.name
                     offerEl.querySelector('.details-offer-price').textContent = offer.price
 
