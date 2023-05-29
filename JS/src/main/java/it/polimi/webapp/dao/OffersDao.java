@@ -5,13 +5,20 @@ import it.polimi.webapp.beans.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 public class OffersDao {
     private final Connection connection;
+    private final Clock clock;
 
     public OffersDao(Connection connection) {
+        this(connection, Clock.systemDefaultZone());
+    }
+
+    public OffersDao(Connection connection, Clock clock) {
         this.connection = connection;
+        this.clock = clock;
     }
 
     /**
@@ -38,7 +45,7 @@ public class OffersDao {
         }
     }
 
-    private static int doInsertOffer(Connection tx, Offer offer) throws SQLException, InsertionException {
+    private int doInsertOffer(Connection tx, Offer offer) throws SQLException, InsertionException {
         // Touch with an update all items of this auction, so that we will hold a transaction lock on those
         // If anybody else tries to do the same thing (so basically this method is called concurrently)
         // he will have to wait for us to be done with our transaction
@@ -58,7 +65,7 @@ public class OffersDao {
                 AND (asta.chiusa = 1 OR asta.scadenza <= ?)
                 """)) {
             checkClosedOrExpired.setInt(1, offer.auctionId());
-            checkClosedOrExpired.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            checkClosedOrExpired.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now(clock)));
 
             try (var result = checkClosedOrExpired.executeQuery()) {
                 if (result.next()) {

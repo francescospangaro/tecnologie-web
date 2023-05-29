@@ -5,14 +5,21 @@ import it.polimi.webapp.beans.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class AuctionDao {
     private final Connection connection;
+    private final Clock clock;
 
     public AuctionDao(Connection connection) {
+        this(connection, Clock.systemDefaultZone());
+    }
+
+    public AuctionDao(Connection connection, Clock clock) {
         this.connection = connection;
+        this.clock = clock;
     }
 
     public @Nullable List<Auction> findAuctions(int userId, boolean closed) throws SQLException {
@@ -221,7 +228,7 @@ public class AuctionDao {
                 ))
                   AND a.idAsta = ?
                 ORDER BY a.scadenza""")) {
-            query.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            query.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now(clock)));
             query.setInt(2, auctionId);
 
             try (var res = query.executeQuery()) {
@@ -335,7 +342,7 @@ public class AuctionDao {
     }
 
     public List<Auction> findAuctionByWord(String search) {
-        Timestamp requestTime = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp requestTime = Timestamp.valueOf(LocalDateTime.now(clock));
         try (var query = connection.prepareStatement("""
                 SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
                        articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
