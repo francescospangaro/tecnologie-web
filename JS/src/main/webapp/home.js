@@ -527,6 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const closedAuctionBuyer = document.getElementById("closed-auction-buyer")
         const closedAuctionAddress = document.getElementById("closed-auction-buyer-address")
 
+        const openAuctionDetails = document.getElementById("open-auction-details")
         const openAuctionDetailsTemplate = document.getElementById("auction-details-offers-template")
         const openAuctionDetailsContainer = document.getElementById("auction-details-offers-table")
 
@@ -589,6 +590,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     auctionCloseButton.setAttribute("hidden", "")
                     auctionDetailsExpiration.removeAttribute("hidden")
                 }
+                openAuctionDetails.removeAttribute("hidden")
                 closedAuctionDetails.setAttribute("hidden", "")
 
                 while (openAuctionDetailsContainer.firstChild)
@@ -609,6 +611,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // if(auction.kind === 'closed')
             auctionCloseButton.setAttribute("hidden", "")
             auctionDetailsExpiration.setAttribute("hidden", "")
+            openAuctionDetails.setAttribute("hidden", "")
             closedAuctionFinalPrice.textContent = auction.finalPrice.toString()
             closedAuctionBuyer.textContent = auction.buyerName
             closedAuctionAddress.textContent = auction.buyerAddress
@@ -621,7 +624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // sets everything to hidden while page is loading
             auctionDetailsContent.setAttribute("hidden", "")
             closedAuctionDetails.setAttribute("hidden", "")
-            openAuctionDetailsContainer.setAttribute("hidden", "")
+            openAuctionDetails.setAttribute("hidden", "")
         }
 
         this.mutateState = async (id) => {
