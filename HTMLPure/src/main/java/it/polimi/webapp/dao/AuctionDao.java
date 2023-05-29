@@ -1,5 +1,6 @@
 package it.polimi.webapp.dao;
 
+import it.polimi.webapp.Transactions;
 import it.polimi.webapp.beans.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -272,10 +273,11 @@ public class AuctionDao {
      * Inserts an auction in the DB, also connects the auction to its articles
      * with the table astearticoli
      */
-    public int insertAuction(Auction auction) throws SQLException {
-        connection.setAutoCommit(false);
-        try {
-            try (PreparedStatement insertAuction = connection.prepareStatement(
+    public int insertAuction(Auction auctionIn) throws SQLException {
+        return Transactions.start(connection, Transactions.Type.NESTED, tx -> {
+
+            var auction = auctionIn;
+            try (PreparedStatement insertAuction = tx.prepareStatement(
                     "INSERT INTO asta (rialzoMin, scadenza) VALUES (?, ?)",
                     Statement.RETURN_GENERATED_KEYS)) {
                 insertAuction.setInt(1, auction.minimumOfferDifference());
@@ -296,7 +298,7 @@ public class AuctionDao {
                     .map(Article::codArticle)
                     .toArray(Integer[]::new);
 
-            try (PreparedStatement relate = connection.prepareStatement(
+            try (PreparedStatement relate = tx.prepareStatement(
                     "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
             ) {
                 for (int articleId : articleIds) {
@@ -308,14 +310,8 @@ public class AuctionDao {
                 relate.executeBatch();
             }
 
-            connection.commit();
             return 1;
-        } catch (Throwable t) {
-            connection.rollback();
-            throw t;
-        } finally {
-            connection.setAutoCommit(true);
-        }
+        });
     }
 
     public int closeAuction(int auctionId, LocalDateTime loginTime, int userId) throws SQLException {
