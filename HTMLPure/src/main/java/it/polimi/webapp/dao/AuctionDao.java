@@ -92,7 +92,11 @@ public class AuctionDao {
                 List<Article> articles = new ArrayList<>();
                 while (res.next()) {
                     if (baseAuction == null) {
-                        baseAuction = new Auction(auctionId, res.getTimestamp(1).toLocalDateTime(), res.getInt(2));
+                        baseAuction = new Auction(
+                                auctionId,
+                                res.getTimestamp(1).toLocalDateTime(),
+                                articles,
+                                res.getInt(2));
                         closed = res.getBoolean(3);
                     }
 
@@ -108,7 +112,7 @@ public class AuctionDao {
                 if (baseAuction == null)
                     return null;
 
-                baseAuction = baseAuction.withArticles(articles);
+                baseAuction = baseAuction.withArticles(List.copyOf(articles));
             }
         }
 
@@ -253,7 +257,7 @@ public class AuctionDao {
                         baseAuction = new Auction(
                                 auctionId,
                                 res.getTimestamp(2).toLocalDateTime(),
-                                null,
+                                articles,
                                 res.getInt(3),
                                 res.getObject(9) == null
                                         ? res.getDouble(9)
@@ -283,15 +287,15 @@ public class AuctionDao {
      * Inserts an auction in the DB, also connects the auction to its articles
      * with the table astearticoli
      */
-    public int insertAuction(Auction auctionIn) throws SQLException {
+    public int insertAuction(LocalDateTime expiry, List<Integer> articleIds, int minimumOfferDifference) throws SQLException {
         return Transactions.start(connection, Transactions.Type.NESTED, tx -> {
 
-            var auction = auctionIn;
+            int generatedId;
             try (PreparedStatement insertAuction = tx.prepareStatement(
                     "INSERT INTO asta (rialzoMin, scadenza) VALUES (?, ?)",
                     Statement.RETURN_GENERATED_KEYS)) {
-                insertAuction.setInt(1, auction.minimumOfferDifference());
-                insertAuction.setTimestamp(2, Timestamp.valueOf(auction.expiry()));
+                insertAuction.setInt(1, minimumOfferDifference);
+                insertAuction.setTimestamp(2, Timestamp.valueOf(expiry));
                 int res = insertAuction.executeUpdate();
                 if (res == 0)
                     return 0;
@@ -300,20 +304,16 @@ public class AuctionDao {
                     if (!generatedKeys.next())
                         throw new SQLException("Creating auction failed, no ID obtained.");
 
-                    auction = auction.withId(generatedKeys.getInt(1));
+                    generatedId = generatedKeys.getInt(1);
                 }
             }
-
-            var articleIds = auction.articles().stream()
-                    .map(Article::codArticle)
-                    .toArray(Integer[]::new);
 
             try (PreparedStatement relate = tx.prepareStatement(
                     "INSERT INTO astearticoli (articolo_codArticolo, asta_idAsta) VALUES (?, ?)")
             ) {
                 for (int articleId : articleIds) {
                     relate.setInt(1, articleId);
-                    relate.setInt(2, auction.id());
+                    relate.setInt(2, generatedId);
                     relate.addBatch();
                 }
 

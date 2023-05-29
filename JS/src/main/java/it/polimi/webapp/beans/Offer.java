@@ -10,9 +10,4 @@ public record Offer(
         String name,
         LocalDateTime date
 ) {
-
-    public Offer(int userId, int auctionId, double price, LocalDateTime dateTime){
-        this(-1, userId, auctionId, price, "", dateTime);
-    }
-
 }

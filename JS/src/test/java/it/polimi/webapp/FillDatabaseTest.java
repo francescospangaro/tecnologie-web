@@ -1,8 +1,5 @@
 package it.polimi.webapp;
 
-import it.polimi.webapp.beans.Article;
-import it.polimi.webapp.beans.Auction;
-import it.polimi.webapp.beans.Offer;
 import it.polimi.webapp.dao.ArticleDao;
 import it.polimi.webapp.dao.AuctionDao;
 import it.polimi.webapp.dao.OffersDao;
@@ -113,13 +110,13 @@ public class FillDatabaseTest {
                     var generatedArticles = new ArrayList<Integer>();
                     for (int i = 0, len = rnd.nextInt(0, 20); i < len; i++) {
                         try (InputStream is = new ByteArrayInputStream(generatedImages.get(rnd.nextInt(generatedImages.size())))) {
-                            generatedArticles.add(articleDao.insertArticle(new Article(
+                            generatedArticles.add(articleDao.insertArticle(
                                     faker.commerce().productName(),
                                     faker.lorem().sentence(5, 4),
-                                    "",
+                                    is,
                                     numFormat.parse(faker.commerce().price(10, 100)).doubleValue(),
                                     userId
-                            ), is));
+                            ));
                         }
                     }
 
@@ -146,14 +143,14 @@ public class FillDatabaseTest {
                         var expiry = expired
                                 ? loginTime.minus(rnd.nextInt(100), ChronoUnit.DAYS)
                                 : loginTime.plus(rnd.nextInt(100), ChronoUnit.DAYS);
-                        var auction = auctionDao.insertAuction(new Auction(
+                        var auction = auctionDao.insertAuction(
                                 expiry,
                                 IntStream.range(0, rnd.nextInt(1, 20))
                                         .map(ignored -> articles.get(rnd.nextInt(articles.size())))
                                         .distinct()
-                                        .mapToObj(Article::new)
+                                        .boxed()
                                         .toList(),
-                                numFormat.parse(faker.commerce().price(1, 10)).intValue()));
+                                numFormat.parse(faker.commerce().price(1, 10)).intValue());
 
                         var list = expired ? generatedExpiredAuctions : generatedNonExpiredAuctions;
                         list.add(auction);
@@ -179,7 +176,7 @@ public class FillDatabaseTest {
                     var startDate = auctionToExpiration.get(auction).minus(maxBound, ChronoUnit.DAYS);
 
                     for (int i = 0; i < numOffers; i++) {
-                        while (offersDao.insertOffer(new Offer(
+                        while (offersDao.insertOffer(
                                 userIds.get(rnd.nextInt(userIds.size())),
                                 auction,
                                 numFormat.parse(faker.commerce().price(1000, 100000D / numOffers * i)).doubleValue(),
@@ -187,7 +184,7 @@ public class FillDatabaseTest {
                                         : startDate.plusDays(rnd.nextInt(
                                         maxBound / numOffers * (i - 1),
                                         maxBound / numOffers * i))
-                        )).type() != OffersDao.TypeError.DONE) ;
+                        ).type() != OffersDao.TypeError.DONE) ;
                     }
                 }
 

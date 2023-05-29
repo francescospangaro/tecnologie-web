@@ -3,14 +3,12 @@ package it.polimi.webapp.controllers;
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
 import it.polimi.webapp.beans.InsertionSuccessful;
-import it.polimi.webapp.beans.Offer;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
 import it.polimi.webapp.dao.OffersDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -34,12 +32,10 @@ public class OffersController extends BaseController {
             return;
         }
 
-        var offer = new Offer(session.id(), auctionId, offerPrice, LocalDateTime.now());
-
         OffersDao.InsertionReturn inserted;
 
         try (var connection = dataSource.getConnection()) {
-            inserted = new OffersDao(connection).insertOffer(offer);
+            inserted = new OffersDao(connection).insertOffer(session.id(), auctionId, offerPrice, LocalDateTime.now());
             if (inserted.type() != OffersDao.TypeError.DONE) {
                 resp.setContentType("application/json");
                 gson.toJson(new ParsingError(inserted.type() == OffersDao.TypeError.LOWER_THAN_MAX ?

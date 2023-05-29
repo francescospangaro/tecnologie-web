@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
 
 public class ArticleDao {
 
@@ -56,16 +55,20 @@ public class ArticleDao {
         }
     }
 
-    public @Nullable Integer insertArticle(Article article, InputStream imageStream) throws SQLException {
+    public @Nullable Integer insertArticle(String name,
+                                           String description,
+                                           InputStream imageStream,
+                                           double price,
+                                           int userId) throws SQLException {
         try (PreparedStatement insertArticle = connection.prepareStatement("""
                 INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
                 VALUES (?, ?, ?, ?, ?)
                 """, Statement.RETURN_GENERATED_KEYS)) {
-            insertArticle.setString(1, article.name());
-            insertArticle.setString(2, article.description());
+            insertArticle.setString(1, name);
+            insertArticle.setString(2, description);
             insertArticle.setBlob(3, imageStream);
-            insertArticle.setDouble(4, article.prezzo());
-            insertArticle.setInt(5, Objects.requireNonNull(article.idUtente(), "Missing user id"));
+            insertArticle.setDouble(4, price);
+            insertArticle.setInt(5, userId);
 
             if (insertArticle.executeUpdate() != 1)
                 return null;

@@ -2,7 +2,6 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
-import it.polimi.webapp.beans.Article;
 import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.ArticleDao;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.Objects;
 
 @MultipartConfig(
         maxFileSize = 1024 * 1024 * 10,      // 10 MB
@@ -43,10 +41,9 @@ public class ArticleController extends BaseController {
             return;
         }
 
-        var article = new Article(articleName, articleDesc, "", articlePrice, session.id());
         var queryError = false;
         try (var connection = dataSource.getConnection()) {
-            int inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
+            int inserted = new ArticleDao(connection).insertArticle(articleName, articleDesc, imageStream, articlePrice, session.id());
 
             queryError = inserted == 0;
         } catch (SQLException e) {

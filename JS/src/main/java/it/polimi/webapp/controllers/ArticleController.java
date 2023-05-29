@@ -2,11 +2,9 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
-import it.polimi.webapp.beans.Article;
-import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.beans.InsertionSuccessful;
+import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.ArticleDao;
-import it.polimi.webapp.dao.AuctionDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +12,6 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -43,12 +40,11 @@ public class ArticleController extends BaseController {
             return;
         }
 
-        var article = new Article(articleName, articleDesc, "", articlePrice, session.id());
         var queryError = false;
 
         Integer inserted = -1;
         try (var connection = dataSource.getConnection()) {
-            inserted = new ArticleDao(connection).insertArticle(article, Objects.requireNonNull(imageStream));
+            inserted = new ArticleDao(connection).insertArticle(articleName, articleDesc, imageStream, articlePrice, session.id());
             queryError = inserted == null;
         } catch (SQLException e) {
             LOGGER.error("Failed to execute article insertion query", e);

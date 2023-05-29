@@ -2,7 +2,6 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
-import it.polimi.webapp.beans.Offer;
 import it.polimi.webapp.beans.OffersPageArgs;
 import it.polimi.webapp.dao.OffersDao;
 import it.polimi.webapp.pages.Pages;
@@ -29,10 +28,8 @@ public class OffersController extends BaseController {
             return;
         }
 
-        var offer = new Offer(session.id(), auctionId, offerPrice, LocalDateTime.now());
-
         try (var connection = dataSource.getConnection()) {
-            var inserted = new OffersDao(connection).insertOffer(offer);
+            var inserted = new OffersDao(connection).insertOffer(session.id(), auctionId, offerPrice, LocalDateTime.now());
             if (inserted != OffersDao.InsertionResult.DONE) {
                 Pages.forwardTo(Pages.OFFERS_PAGE, new OffersPageArgs(auctionId, offerPrice, inserted), req, resp);
                 return;

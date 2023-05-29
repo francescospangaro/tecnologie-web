@@ -54,16 +54,20 @@ public class ArticleDao {
         }
     }
 
-    public int insertArticle(Article article, InputStream imageStream) throws SQLException {
+    public int insertArticle(String name,
+                             String description,
+                             InputStream imageStream,
+                             double price,
+                             int userId) throws SQLException {
         try (PreparedStatement insertArticle = connection.prepareStatement("""
             INSERT INTO articolo (nome, descrizione, immagine, prezzo, utente_idUtente)
             VALUES (?, ?, ?, ?, ?)
             """)) {
-            insertArticle.setString(1, article.name());
-            insertArticle.setString(2, article.description());
+            insertArticle.setString(1, name);
+            insertArticle.setString(2, description);
             insertArticle.setBlob(3, imageStream);
-            insertArticle.setDouble(4, article.prezzo());
-            insertArticle.setInt(5, article.idUtente());
+            insertArticle.setDouble(4, price);
+            insertArticle.setInt(5, userId);
             return insertArticle.executeUpdate();
         }
     }

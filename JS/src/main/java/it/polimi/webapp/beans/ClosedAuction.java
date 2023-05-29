@@ -13,10 +13,6 @@ public record ClosedAuction(String kind,
         this("closed", base, finalPrice, buyerName, buyerAddress);
     }
 
-    public ClosedAuction withBase(Auction base) {
-        return new ClosedAuction(base, finalPrice, buyerName, buyerAddress);
-    }
-
     @Override
     public boolean isClosed() {
         return true;

@@ -2,22 +2,17 @@ package it.polimi.webapp.controllers.auction;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
-import it.polimi.webapp.beans.Article;
-import it.polimi.webapp.beans.Auction;
 import it.polimi.webapp.beans.InsertionSuccessful;
 import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.AuctionDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -48,15 +43,14 @@ public class AuctionController extends BaseController {
             return;
         }
 
-        var auction = new Auction(
-                expiryDate,
-                articleIds.stream().map(Article::new).toList(),
-                minimumOfferDifference);
-
         boolean queryError;
         Integer inserted = -1;
         try (var connection = dataSource.getConnection()) {
-            inserted = new AuctionDao(connection).insertAuction(auction);
+            inserted = new AuctionDao(connection).insertAuction(
+                    expiryDate,
+                    articleIds,
+                    minimumOfferDifference);
+
             queryError = inserted == null;
         } catch (SQLException e) {
             LOGGER.error("Failed to insert auction", e);

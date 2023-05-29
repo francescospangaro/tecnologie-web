@@ -2,8 +2,6 @@ package it.polimi.webapp.controllers;
 
 import it.polimi.webapp.BaseController;
 import it.polimi.webapp.HttpServlets;
-import it.polimi.webapp.beans.Article;
-import it.polimi.webapp.beans.Auction;
 import it.polimi.webapp.beans.InsertionState;
 import it.polimi.webapp.beans.SellPageArgs;
 import it.polimi.webapp.dao.AuctionDao;
@@ -47,14 +45,9 @@ public class AuctionController extends BaseController {
             return;
         }
 
-        var auction = new Auction(
-                expiryDate,
-                articleIds.stream().map(Article::new).toList(),
-                minimumOfferDifference);
-
         boolean queryError;
         try (var connection = dataSource.getConnection()) {
-            int result = new AuctionDao(connection).insertAuction(auction);
+            int result = new AuctionDao(connection).insertAuction(expiryDate, articleIds, minimumOfferDifference);
             queryError = result == 0;
         } catch (SQLException e) {
             LOGGER.error("Failed to insert auction", e);
