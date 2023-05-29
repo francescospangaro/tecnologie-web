@@ -499,10 +499,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         let currentId = undefined
 
         const auctionDetailsErrorQuery = document.getElementById("auction-details-error-query")
+        const auctionDetailsExpiration = document.getElementById("auction-details-expiry-div")
+        const auctionCloseButton = document.getElementById("auction-details-close-button")
         const auctionDetailsContent = document.getElementById("auction-details-content")
         const auctionDetailsIdEl = document.getElementById("auction-details-id")
         const articleDetailsTemplate = document.getElementById("articles-details-template")
         const articleDetailsContainer = document.getElementById("articles-details-container")
+
+        const closedAuctionDetails = document.getElementById("closed-auction-details")
+        const closedAuctionFinalPrice = document.getElementById("closed-auction-final-price")
+        const closedAuctionBuyer = document.getElementById("closed-auction-buyer")
+        const closedAuctionAddress = document.getElementById("closed-auction-buyer-address")
+
+        const openAuctionDetailsTemplate = document.getElementById("auction-details-offers-template")
+        const openAuctionDetailsContainer = document.getElementById("auction-details-offers-table")
 
         this.create = async () => {
         };
@@ -542,12 +552,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if(auction.kind === 'open') {
+                if(auction.base.expiry - new Date() <= 0){
+                    auctionCloseButton.removeAttribute("hidden")
+                    auctionDetailsExpiration.setAttribute("hidden", "")
+                }else{
+                    auctionCloseButton.setAttribute("hidden", "")
+                    auctionDetailsExpiration.removeAttribute("hidden")
+                }
+                closedAuctionDetails.setAttribute("hidden", "")
+
+                auction.offers.forEach(offer => {
+                    const offerEl = openAuctionDetailsTemplate.cloneNode(true)
+                    offerEl.querySelector('.details-offer-date').textContent = new Date(offer.date)
+                    offerEl.querySelector('.details-offer-name').textContent = offer.name
+                    offerEl.querySelector('.details-offer-price').textContent = offer.price
+
+                    Array.from(offerEl.childNodes).forEach(node => openAuctionDetailsContainer.appendChild(node));
+                })
 
                 return
             }
 
             // if(auction.kind === 'closed')
-
+            auctionCloseButton.setAttribute("hidden", "")
+            auctionDetailsExpiration.setAttribute("hidden", "")
+            closedAuctionFinalPrice.textContent = auction.finalPrice.toString()
+            closedAuctionBuyer.textContent = auction.buyerName
+            closedAuctionAddress.textContent = auction.buyerAddress
+            closedAuctionDetails.removeAttribute("hidden")
         };
 
         this.unmount = async () => {

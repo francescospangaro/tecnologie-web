@@ -378,14 +378,14 @@
 
             <div class="col">
                 <!-- isOpen && !isExpired -->
-                <div id="open-auction-expiry-div" class="row">
+                <div id="auction-details-expiry-div" class="row">
                     Expires in <span id="open-auction-expiry-days">0</span>d, <span id="open-auction-expiry-hours">1</span>h
                 </div>
 
                 <!-- isOpen && isExpired -->
                 <form class="row">
                     <input type="hidden"/>
-                    <button type="submit" class="btn btn-danger">
+                    <button type="submit" class="btn btn-danger" id="auction-details-close-button" hidden>
                         Close
                     </button>
                 </form>
@@ -416,8 +416,8 @@
                     </table>
                 </div>
 
-                <!-- !isOpen -->
-                <div id="closed-auction-details">
+                <!-- !isClosed -->
+                <div id="closed-auction-details" hidden>
                     <div class="row">Final price: <span id="closed-auction-final-price">100€</span></div>
                     <div class="row">Buyer: <span id="closed-auction-buyer">Spangaro</span></div>
                     <div class="row">Address: <span id="closed-auction-buyer-address">Inverigo (CO)</span></div>
