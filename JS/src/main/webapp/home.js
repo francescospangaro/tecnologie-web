@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pageLinkTemplate = document.getElementById('page-link-template')
     pages.forEach(page => {
         // If it doesn't have a display name, we are not supposed to show it
-        if(!page.displayName)
+        if (!page.displayName)
             return
 
         const pageLink = pageLinkTemplate.cloneNode(true)
@@ -171,7 +171,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             return mapped
         }
 
+        /**
+         * @param {URLSearchParams} formData
+         * @returns {Promise<ErrorResponse | any>}
+         */
+        const closeAuction = async function (formData) {
+            const response = await fetch(url + "closedAuction", {
+                method: 'POST',
+                body: formData,
+            })
+            /** @type {ErrorResponse | any} */
+            return await response.json();
+        }
+
         return {
+            closeAuction: closeAuction,
             getClosedAuction: getClosedAuction,
             getOpenAuction: getOpenAuction,
             getAuctionByIds: getAuctionByIds,
@@ -498,6 +512,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function auctionDetailsPage(containerDiv) {
         let currentId = undefined
 
+        const auctionToCloseInput = document.getElementById("auction-to-close-id")
+        const closeAuctionForm = document.getElementById("close-button-form")
         const auctionDetailsErrorQuery = document.getElementById("auction-details-error-query")
         const auctionDetailsExpiration = document.getElementById("auction-details-expiry-div")
         const auctionCloseButton = document.getElementById("auction-details-close-button")
@@ -515,6 +531,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         const openAuctionDetailsContainer = document.getElementById("auction-details-offers-table")
 
         this.create = async () => {
+            closeAuctionForm.addEventListener('submit', async e => {
+                e.preventDefault()
+                if (!e.target.checkValidity()) {
+                    e.target.reportValidity()
+                    return
+                }
+                await auctionRepository.closeAuction(new URLSearchParams(new FormData(closeAuctionForm)))
+                e.target.reset()
+                await this.mutateState()
+            })
         };
 
         /**
@@ -524,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.mount = async (id) => {
             currentId = id
 
-            if(!id) {
+            if (!id) {
                 auctionDetailsErrorQuery.removeAttribute("hidden")
                 auctionDetailsContent.setAttribute("hidden", "")
                 return
@@ -533,13 +559,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             auctionDetailsContent.removeAttribute("hidden")
 
             const auction = await auctionRepository.getAuctionByIds(id)
-            if(auction.error) {
+            if (auction.error) {
                 auctionDetailsErrorQuery.removeAttribute("hidden")
                 auctionDetailsContent.setAttribute("hidden", "")
                 return
             }
 
             auctionDetailsIdEl.textContent = auction.base.id.toString()
+
+            while (articleDetailsContainer.firstChild)
+                articleDetailsContainer.removeChild(articleDetailsContainer.firstChild)
 
             auction.base.articles.forEach(article => {
                 const articleDetailsEl = articleDetailsTemplate.cloneNode(true)
@@ -551,15 +580,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 Array.from(articleDetailsEl.childNodes).forEach(node => articleDetailsContainer.appendChild(node));
             });
 
-            if(auction.kind === 'open') {
-                if(auction.base.expiry - new Date() <= 0){
+            if (auction.kind === 'open') {
+                if (auction.base.expiry - new Date() <= 0) {
+                    auctionToCloseInput.value = id.toString();
                     auctionCloseButton.removeAttribute("hidden")
                     auctionDetailsExpiration.setAttribute("hidden", "")
-                }else{
+                } else {
                     auctionCloseButton.setAttribute("hidden", "")
                     auctionDetailsExpiration.removeAttribute("hidden")
                 }
                 closedAuctionDetails.setAttribute("hidden", "")
+
+                while (openAuctionDetailsContainer.firstChild)
+                    openAuctionDetailsContainer.removeChild(openAuctionDetailsContainer.firstChild)
 
                 auction.offers.forEach(offer => {
                     const offerEl = openAuctionDetailsTemplate.cloneNode(true)
@@ -585,6 +618,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.unmount = async () => {
             // Called when a page is no longer shown
             // Do anything that might be required when the page is removed
+            // sets everything to hidden while page is loading
+            auctionDetailsContent.setAttribute("hidden", "")
+            closedAuctionDetails.setAttribute("hidden", "")
+            openAuctionDetailsContainer.setAttribute("hidden", "")
         }
 
         this.mutateState = async (id) => {
