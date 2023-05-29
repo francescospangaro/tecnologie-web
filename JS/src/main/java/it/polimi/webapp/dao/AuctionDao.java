@@ -195,13 +195,16 @@ public class AuctionDao {
     }
 
     private @Nullable OpenAuction doPopulateOpenAuction(Auction base) throws SQLException {
+        // NB: also sort by price as two offers can be placed in the 'same instant'
+        // (not a high enough datetime precision on the db field),
+        // so to be sorted correctly we also rely on the price (which is only supposed to grow)
         try (var query = connection.prepareStatement("""
                 SELECT offerta.idOfferta, offerta.utente_idUtente, offerta.asta_idAsta, offerta.prezzoOfferto, utente.nome, offerta.dataOfferta
                 FROM utente
                     JOIN offerta ON utente.idUtente = offerta.utente_idUtente
                     JOIN asta ON offerta.asta_idAsta = asta.idAsta
                 WHERE offerta.asta_idAsta = ? AND asta.chiusa = false
-                ORDER BY offerta.dataOfferta DESC
+                ORDER BY offerta.dataOfferta DESC, offerta.prezzoOfferto DESC
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
