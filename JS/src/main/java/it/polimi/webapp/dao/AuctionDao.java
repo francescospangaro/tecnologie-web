@@ -260,7 +260,7 @@ public class AuctionDao {
                                 res.getTimestamp(2).toLocalDateTime(),
                                 articles,
                                 res.getInt(3),
-                                res.getObject(9) == null
+                                res.getObject(9) != null
                                         ? res.getDouble(9)
                                         : res.getDouble(10));
                     }
@@ -413,7 +413,7 @@ public class AuctionDao {
                                 res.getTimestamp(2).toLocalDateTime(),
                                 new ArrayList<>(),
                                 res.getInt(3),
-                                res.getObject(9) == null
+                                res.getObject(9) != null
                                         ? res.getDouble(9)
                                         : res.getDouble(10)));
 
