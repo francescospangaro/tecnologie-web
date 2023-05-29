@@ -25,18 +25,20 @@ public class AuctionDao {
     public @Nullable List<Auction> findAuctions(int userId, boolean closed) throws SQLException {
 
         try (var query = connection.prepareStatement("""
-                SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
-                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
-                FROM articolo, astearticoli, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
-                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                AND a.idAsta=astearticoli.asta_idAsta
-                AND articolo.utente_idUtente=?
-                AND a.chiusa=?
-                AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
-                    select MAX(offerta.prezzoOfferto)
-                    from offerta JOIN asta as a1 ON offerta.asta_idAsta = a1.idAsta
-                    WHERE a1.idAsta = a.idAsta
-                ))
+                SELECT a.idAsta, a.scadenza, a.rialzoMin,
+                       articolo.codArticolo, articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo,
+                       offerta.prezzoOfferto
+                FROM articolo
+                       JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                       JOIN asta as a ON astearticoli.asta_idAsta = a.idAsta
+                       LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta
+                WHERE articolo.utente_idUtente=?
+                      AND a.chiusa=?
+                      AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
+                          select MAX(o1.prezzoOfferto)
+                          from offerta as o1
+                          WHERE o1.asta_idAsta = a.idAsta
+                      ))
                 ORDER BY a.scadenza""")) {
             query.setInt(1, userId);
             query.setInt(2, closed ? 1 : 0);
@@ -67,7 +69,6 @@ public class AuctionDao {
         }
     }
 
-
     /**
      * Method returns the auction opened by the logged user,
      * then returns an auction object created by checking
@@ -78,13 +79,12 @@ public class AuctionDao {
         boolean closed = false;
 
         try (var query = connection.prepareStatement("""
-                SELECT asta.scadenza, asta.rialzoMin, asta.chiusa, articolo.codArticolo,
-                    articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
-                FROM articolo, asta, astearticoli
-                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                AND asta.idAsta=astearticoli.asta_idAsta
-                AND articolo.utente_idUtente=?
-                AND asta_idAsta = ?""")) {
+                SELECT asta.scadenza, asta.rialzoMin, asta.chiusa,
+                       articolo.codArticolo, articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo
+                FROM articolo
+                     JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                     JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
+                WHERE articolo.utente_idUtente=? AND asta_idAsta = ?""")) {
             query.setInt(1, userId);
             query.setInt(2, auctionId);
 
@@ -122,10 +122,10 @@ public class AuctionDao {
                 SELECT asta.idAsta, asta.scadenza, asta.rialzoMin, articolo.codArticolo,
                        articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto, utente.nome, utente.indirizzo
                 FROM articolo
-                         join astearticoli on articolo.codArticolo = astearticoli.articolo_codArticolo
-                         join asta on asta.idAsta = astearticoli.asta_idAsta
-                         join offerta on offerta.asta_idAsta = asta.idAsta
-                         join utente on utente.idUtente = offerta.utente_idUtente
+                         JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                         JOIN asta ON asta.idAsta = astearticoli.asta_idAsta
+                         JOIN offerta ON offerta.asta_idAsta = asta.idAsta
+                         JOIN utente ON utente.idUtente = offerta.utente_idUtente
                 WHERE offerta.utente_idUtente = ?
                   AND asta.chiusa = 1
                   AND offerta.prezzoOfferto IN (
@@ -169,15 +169,16 @@ public class AuctionDao {
     private @Nullable ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.prezzoOfferto, utente.nome, utente.indirizzo
-                FROM utente, offerta, asta as a
+                FROM utente
+                    JOIN offerta ON offerta.utente_idUtente = utente.idUtente
+                    JOIN asta AS a ON offerta.asta_idAsta = a.idAsta
                 WHERE offerta.asta_idAsta = ?
-                AND offerta.utente_idUtente = utente.idUtente
-                AND a.chiusa = true
-                AND offerta.prezzoOfferto IN (
-                        select MAX(offerta.prezzoOfferto)
-                        from offerta, asta as a1
-                        WHERE a1.idAsta = a.idAsta
-                    )
+                  AND a.chiusa = true
+                  AND offerta.prezzoOfferto IN (
+                    select MAX(offerta.prezzoOfferto)
+                    from offerta
+                    WHERE offerta.asta_idAsta = a.idAsta
+                  )
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
@@ -191,18 +192,23 @@ public class AuctionDao {
     private @Nullable OpenAuction doPopulateOpenAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.idOfferta, offerta.utente_idUtente, offerta.asta_idAsta, offerta.prezzoOfferto, utente.nome, offerta.dataOfferta
-                FROM utente, offerta, asta
-                WHERE offerta.asta_idAsta = ?
-                AND asta.idAsta = offerta.asta_idAsta
-                AND offerta.utente_idUtente = utente.idUtente
-                AND asta.chiusa = false
+                FROM utente
+                    JOIN offerta ON utente.idUtente = offerta.utente_idUtente
+                    JOIN asta ON offerta.asta_idAsta = asta.idAsta
+                WHERE offerta.asta_idAsta = ? AND asta.chiusa = false
                 ORDER BY offerta.dataOfferta DESC
                 """)) {
             query.setInt(1, base.id());
             try (var res = query.executeQuery()) {
                 List<Offer> offers = new ArrayList<>();
                 while (res.next())
-                    offers.add(new Offer(res.getInt(1), res.getInt(2), res.getInt(3), res.getDouble(4), res.getString(5), res.getTimestamp(6).toLocalDateTime()));
+                    offers.add(new Offer(
+                            res.getInt(1),
+                            res.getInt(2),
+                            res.getInt(3),
+                            res.getDouble(4),
+                            res.getString(5),
+                            res.getTimestamp(6).toLocalDateTime()));
                 return new OpenAuction(base, offers);
             }
         }
@@ -214,19 +220,28 @@ public class AuctionDao {
     public @Nullable OpenAuction findOpenAuctionById(int auctionId) throws SQLException {
         Auction baseAuction = null;
         try (var query = connection.prepareStatement("""
-                SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
-                       articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
-                FROM articolo, astearticoli, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
-                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                  AND a.idAsta=astearticoli.asta_idAsta
-                  AND a.chiusa=false
+                SELECT a.idAsta, a.scadenza, a.rialzoMin,
+                       articolo.codArticolo, articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo,
+                       offerta.prezzoOfferto,
+                       (
+                          SELECT SUM(articolo.prezzo)
+                          FROM articolo
+                               JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                               JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
+                          WHERE asta.idAsta = a.idAsta
+                       )
+                FROM articolo
+                     JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                     JOIN asta AS a ON astearticoli.asta_idAsta = a.idAsta
+                     LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta
+                WHERE a.chiusa=false
                   AND a.scadenza > ?
-                  AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
-                    select MAX(offerta.prezzoOfferto)
-                    from offerta JOIN asta as a1 ON offerta.asta_idAsta = a1.idAsta
-                    WHERE a1.idAsta = a.idAsta
-                ))
                   AND a.idAsta = ?
+                  AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
+                    select MAX(o.prezzoOfferto)
+                    from offerta as o
+                    WHERE o.asta_idAsta = a.idAsta
+                  ))
                 ORDER BY a.scadenza""")) {
             query.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now(clock)));
             query.setInt(2, auctionId);
@@ -235,27 +250,15 @@ public class AuctionDao {
                 List<Article> articles = new ArrayList<>();
                 while (res.next()) {
                     if (baseAuction == null) {
-                        baseAuction = new Auction(auctionId, res.getTimestamp(2).toLocalDateTime(), res.getInt(3));
+                        baseAuction = new Auction(
+                                auctionId,
+                                res.getTimestamp(2).toLocalDateTime(),
+                                null,
+                                res.getInt(3),
+                                res.getObject(9) == null
+                                        ? res.getDouble(9)
+                                        : res.getDouble(10));
                     }
-
-                    if (res.getObject(9) == null)
-                        try (var internalQuery = connection.prepareStatement("""
-                                SELECT SUM(articolo.prezzo)
-                                FROM articolo, astearticoli, asta
-                                WHERE asta.idAsta = ?
-                                AND asta.idAsta = astearticoli.asta_idAsta
-                                AND astearticoli.articolo_codArticolo=articolo.codArticolo
-                                """)) {
-                            internalQuery.setInt(1, auctionId);
-
-                            try (var internalRes = internalQuery.executeQuery()) {
-                                if (internalRes.next())
-                                    baseAuction = new Auction(baseAuction, internalRes.getDouble(1));
-                            }
-                        }
-                    else
-                        baseAuction = new Auction(baseAuction, res.getDouble(9));
-
 
                     articles.add(new Article(
                             res.getInt(4),
@@ -269,7 +272,7 @@ public class AuctionDao {
                 if (baseAuction == null)
                     return null;
 
-                baseAuction = baseAuction.withArticles(articles);
+                baseAuction = baseAuction.withArticles(List.copyOf(articles));
             }
         }
 
@@ -322,13 +325,12 @@ public class AuctionDao {
 
     public int closeAuction(int auctionId, int userId) throws SQLException {
         try (PreparedStatement close = connection.prepareStatement("""
-                UPDATE asta
-                INNER JOIN (
+                UPDATE asta INNER JOIN (
                     SELECT a.idAsta as oldId
-                    from asta as a, astearticoli, articolo
-                    where astearticoli.asta_idAsta = a.idAsta
-                    and astearticoli.articolo_codArticolo = articolo.codArticolo
-                    and articolo.utente_idUtente = ?
+                    FROM asta as a
+                         JOIN astearticoli ON a.idAsta = astearticoli.asta_idAsta
+                         JOIN articolo ON astearticoli.articolo_codArticolo = articolo.codArticolo
+                    WHERE articolo.utente_idUtente = ?
                 ) as joinedAuctions
                 ON joinedAuctions.oldId = asta.idAsta
                 SET asta.chiusa = true
@@ -341,27 +343,34 @@ public class AuctionDao {
         }
     }
 
-    public List<Auction> findAuctionByWord(String search) {
+    public List<Auction> findAuctionByWord(String search) throws SQLException {
         Timestamp requestTime = Timestamp.valueOf(LocalDateTime.now(clock));
         try (var query = connection.prepareStatement("""
-                SELECT a.idAsta, a.scadenza, a.rialzoMin, articolo.codArticolo,
-                       articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo, offerta.prezzoOfferto
-                FROM articolo, astearticoli, (asta as a LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta)
-                WHERE articolo.codArticolo=astearticoli.articolo_codArticolo
-                  AND a.idAsta=astearticoli.asta_idAsta
-                  AND a.chiusa=false
+                SELECT a.idAsta, a.scadenza, a.rialzoMin,
+                       articolo.codArticolo, articolo.nome, articolo.descrizione, articolo.immagine, articolo.prezzo,
+                       offerta.prezzoOfferto,
+                       (
+                           SELECT SUM(articolo.prezzo)
+                           FROM articolo
+                               JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                               JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
+                           WHERE asta.idAsta = a.idAsta
+                       )
+                FROM articolo
+                     JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
+                     JOIN asta AS a ON astearticoli.asta_idAsta = a.idAsta
+                     LEFT OUTER JOIN offerta ON a.idAsta = offerta.asta_idAsta
+                WHERE a.chiusa=false
                   AND a.scadenza > ?
                   AND (offerta.idOfferta IS NULL OR offerta.prezzoOfferto IN (
-                    select MAX(offerta.prezzoOfferto)
-                    from offerta JOIN asta as a1 ON offerta.asta_idAsta = a1.idAsta
-                    WHERE a1.idAsta = a.idAsta
-                ))
+                    select MAX(o.prezzoOfferto)
+                    from offerta AS o
+                    WHERE o.asta_idAsta = a.idAsta
+                  ))
                   AND a.idAsta IN (
                     SELECT astearticoli.asta_idAsta
-                    from astearticoli, articolo
-                    WHERE articolo_codArticolo = articolo.codArticolo
-                      AND (articolo.nome LIKE (?)
-                        OR articolo.descrizione LIKE (?)))
+                    from astearticoli JOIN articolo ON astearticoli.articolo_codArticolo = articolo.codArticolo
+                    WHERE articolo.nome LIKE (?) OR articolo.descrizione LIKE (?))
                 ORDER BY a.scadenza
                 """)) {
             query.setTimestamp(1, requestTime);
@@ -370,64 +379,28 @@ public class AuctionDao {
 
             try (var res = query.executeQuery()) {
                 Map<Integer, Auction> auctions = new LinkedHashMap<>(); // keep the db order
-
                 while (res.next()) {
-
-
                     int id = res.getInt(1);
                     var currAuction = auctions.get(id);
-
                     // if there are no offers gets the sum of the auction's articles' prices
-                    if (res.getObject(9) == null) {
-                        try (var internalQuery = connection.prepareStatement("""
-                                SELECT SUM(articolo.prezzo)
-                                FROM articolo, astearticoli, asta
-                                WHERE asta.idAsta = ?
-                                AND asta.idAsta = astearticoli.asta_idAsta
-                                AND astearticoli.articolo_codArticolo=articolo.codArticolo
-                                """)) {
-                            internalQuery.setInt(1, id);
+                    if (currAuction == null)
+                        auctions.put(id, currAuction = new Auction(id,
+                                res.getTimestamp(2).toLocalDateTime(),
+                                new ArrayList<>(),
+                                res.getInt(3),
+                                res.getObject(9) == null
+                                        ? res.getDouble(9)
+                                        : res.getDouble(10)));
 
-                            try (var internalRes = internalQuery.executeQuery()) {
-                                if (internalRes.next()) {
-                                    if (currAuction == null)
-                                        auctions.put(id, currAuction = new Auction(id,
-                                                res.getTimestamp(2).toLocalDateTime(),
-                                                new ArrayList<>(),
-                                                res.getInt(3),
-                                                internalRes.getDouble(1)));
-
-                                    currAuction.articles().add(new Article(
-                                            res.getInt(4),
-                                            res.getString(5),
-                                            res.getString(6),
-                                            Base64.getEncoder().encodeToString(res.getBytes(7)),
-                                            res.getDouble(8)));
-                                }
-                            }
-                        }
-
-                    } else {
-                        if (currAuction == null)
-                            auctions.put(id, currAuction = new Auction(id,
-                                    res.getTimestamp(2).toLocalDateTime(),
-                                    new ArrayList<>(),
-                                    res.getInt(3),
-                                    res.getDouble(9)));
-
-                        currAuction.articles().add(new Article(
-                                res.getInt(4),
-                                res.getString(5),
-                                res.getString(6),
-                                Base64.getEncoder().encodeToString(res.getBytes(7)),
-                                res.getDouble(8)));
-                    }
-
+                    currAuction.articles().add(new Article(
+                            res.getInt(4),
+                            res.getString(5),
+                            res.getString(6),
+                            Base64.getEncoder().encodeToString(res.getBytes(7)),
+                            res.getDouble(8)));
                 }
                 return List.copyOf(auctions.values());
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 }

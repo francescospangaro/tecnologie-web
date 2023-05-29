@@ -79,9 +79,9 @@ public class OffersDao {
         boolean foundElement;
         try (PreparedStatement firstCheck = tx.prepareStatement("""
                 SELECT asta.rialzoMin, o.prezzoOfferto
-                FROM asta, offerta as o
+                FROM asta
+                     JOIN offerta as o ON asta.idAsta = o.asta_idAsta
                 WHERE asta.idAsta = ?
-                AND o.asta_idAsta = asta.idAsta
                 AND o.prezzoOfferto IN (
                     SELECT MAX(o1.prezzoOfferto)
                     FROM offerta as o1
@@ -101,9 +101,9 @@ public class OffersDao {
         if (!foundElement) {
             try (PreparedStatement secondCheck = tx.prepareStatement("""
                     SELECT SUM(articolo.prezzo)
-                    FROM articolo, astearticoli as a
-                    WHERE articolo.codArticolo = a.articolo_codArticolo
-                    AND a.asta_idAsta = ?
+                    FROM articolo
+                         JOIN astearticoli as a ON articolo.codArticolo = a.articolo_codArticolo
+                    WHERE a.asta_idAsta = ?
                     """)) {
                 secondCheck.setInt(1, offer.auctionId());
 

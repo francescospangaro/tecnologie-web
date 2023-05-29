@@ -28,10 +28,10 @@ public class ArticleDao {
                 WHERE utente_idUtente = ?
                 AND a.codArticolo NOT IN (
                     SELECT a1.codArticolo
-                    FROM articolo as a1, asta, astearticoli
-                    WHERE a1.codArticolo = astearticoli.articolo_codArticolo
-                    AND astearticoli.asta_idAsta = asta.idAsta
-                    AND asta.chiusa = true
+                    FROM articolo as a1
+                         JOIN astearticoli ON a1.codArticolo = astearticoli.articolo_codArticolo
+                         JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
+                    WHERE asta.chiusa = true
                 )
                 """)) {
             query.setInt(1, userId);
