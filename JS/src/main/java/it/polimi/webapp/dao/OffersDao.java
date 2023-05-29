@@ -117,8 +117,10 @@ public class OffersDao {
         }
 
         // new offer is inserted
-        try (PreparedStatement insertOffer = tx.prepareStatement(
-                "INSERT INTO offerta (prezzoOfferto, dataOfferta, utente_idUtente, asta_idAsta) VALUES (?, ?, ?, ?)")) {
+        try (PreparedStatement insertOffer = tx.prepareStatement("""
+              INSERT INTO offerta (prezzoOfferto, dataOfferta, utente_idUtente, asta_idAsta)
+              VALUES (?, ?, ?, ?)
+              """, Statement.RETURN_GENERATED_KEYS)) {
             insertOffer.setDouble(1, offer.price());
             insertOffer.setTimestamp(2, Timestamp.valueOf(offer.date()));
             insertOffer.setInt(3, offer.userId());
@@ -127,7 +129,11 @@ public class OffersDao {
             if (res == 0)
                 throw new InsertionException(TypeError.DB_ERROR);
 
-            return insertOffer.getGeneratedKeys().getInt(1);
+            try (var generatedKeys = insertOffer.getGeneratedKeys()) {
+                if (!generatedKeys.next())
+                    throw new SQLException("Creating offer failed, no ID obtained.");
+                return generatedKeys.getInt(1);
+            }
         }
     }
 
