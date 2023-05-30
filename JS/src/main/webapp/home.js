@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             newPage.div.removeAttribute("hidden");
             if (newPage.view)
                 try {
-                    await newPage.view.mount(args)
+                    await newPage.view.mount(args || new URLSearchParams())
                 } catch (e) {
                     console.error("Failed to mount new page", newPage, e)
                 }
