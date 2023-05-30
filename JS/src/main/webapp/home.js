@@ -3,6 +3,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const webappPathnamePrefix = "JS"
     const url = ""
 
+    /**
+     * @param {RequestInfo | URL} input
+     * @param {RequestInit | undefined} [init=undefined]
+     * @return {Promise<Response>}
+     */
+    const fetchIfAuthenticated = async (input, init) => {
+        const res = await fetch(input, init);
+        if (res.status === 401)
+            document.location = "login"
+        return res;
+    };
+
     //repositories
     const auctionRepository = (() => {
 
@@ -20,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @return {Promise<ErrorResponse | OpenAuction | ClosedAuction>} result
          */
         const getAuctionByIds = async function (id) {
-            const response = await fetch(url + 'auction?id=' + id)
+            const response = await fetchIfAuthenticated(url + 'auction?id=' + id)
             /** @type {ErrorResponse | OpenAuction | ClosedAuction} */
             const obj = await response.json();
             if (!obj.error) {
@@ -38,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @return {Promise<ErrorResponse | Auction[]>} result
          */
         const getClosedAuction = async function () {
-            const response = await fetch(url + 'closedAuction')
+            const response = await fetchIfAuthenticated(url + 'closedAuction')
             /** @type {ErrorResponse | Auction[]} */
             const obj = await response.json();
             if (!obj.error)
@@ -53,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @return {Promise<ErrorResponse | Auction[]>} result
          */
         const getOpenAuction = async function () {
-            const response = await fetch(url + 'openAuction')
+            const response = await fetchIfAuthenticated(url + 'openAuction')
             /** @type {ErrorResponse | Auction[]} */
             const obj = await response.json();
             if (!obj.error)
@@ -69,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<any>}
          */
         const insertAuction = async function (formData) {
-            const response = await fetch(url + 'auction', {
+            const response = await fetchIfAuthenticated(url + 'auction', {
                 method: 'POST',
                 body: formData,
             })
@@ -82,7 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          */
         const searchAuction = async function (keyWord) {
             //TODO: check for % that returns everything
-            const response = await fetch(url + "search?" + new URLSearchParams({search: keyWord}).toString())
+            const response = await fetchIfAuthenticated(url + "search?" + new URLSearchParams({search: keyWord}).toString())
             /** @type {ErrorResponse | { error: false } & Auction[]} */
             const res = await response.json();
             if (res.error)
@@ -100,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<ErrorResponse | {error: false} & ClosedAuction[]>}
          */
         const getBoughtAuctions = async function () {
-            const response = await fetch(url + "auction")
+            const response = await fetchIfAuthenticated(url + "auction")
             /** @type {ErrorResponse | { error: false } & ClosedAuction[]} */
             const res = await response.json();
             if (res.error)
@@ -119,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<ErrorResponse | any>}
          */
         const closeAuction = async function (formData) {
-            const response = await fetch(url + "closedAuction", {
+            const response = await fetchIfAuthenticated(url + "closedAuction", {
                 method: 'POST',
                 body: formData,
             })
@@ -149,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<any>}
          */
         const insertArticle = async function (formData) {
-            const response = await fetch(url + 'article', {
+            const response = await fetchIfAuthenticated(url + 'article', {
                 method: 'POST',
                 body: formData,
             })
@@ -160,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<ErrorResponse | {error: false} & Article[]>}
          */
         const findAllArticles = async function () {
-            const response = await fetch(url + 'article')
+            const response = await fetchIfAuthenticated(url + 'article')
             /** @type {ErrorResponse | { error: false } & Article[]} */
             return await response.json();
         }

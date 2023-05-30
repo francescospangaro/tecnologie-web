@@ -53,6 +53,11 @@
         <filter-class>it.polimi.webapp.filters.NotLoggedFilter</filter-class>
     </filter>
 
+    <filter>
+        <filter-name>NotLoggedApiFilter</filter-name>
+        <filter-class>it.polimi.webapp.filters.NotLoggedApiFilter</filter-class>
+    </filter>
+
     <!-- Buy -->
     <servlet>
         <servlet-name>SearchController</servlet-name>
@@ -117,14 +122,28 @@
     <filter-mapping>
         <filter-name>LoggedFilter</filter-name>
         <url-pattern>/login.html</url-pattern>
+        <url-pattern>/login</url-pattern>
         <url-pattern>/userLogin</url-pattern>
     </filter-mapping>
 
     <filter-mapping>
         <filter-name>NotLoggedFilter</filter-name>
         <url-pattern>/home.html</url-pattern>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/buy</url-pattern>
+        <url-pattern>/sell</url-pattern>
+        <url-pattern>/auctionDetails</url-pattern>
+        <url-pattern>/offers</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>NotLoggedApiFilter</filter-name>
         <url-pattern>/search</url-pattern>
+        <url-pattern>/offer</url-pattern>
+        <url-pattern>/article</url-pattern>
         <url-pattern>/auction</url-pattern>
+        <url-pattern>/closedAuction</url-pattern>
+        <url-pattern>/openAuction</url-pattern>
     </filter-mapping>
 
     <!-- Buy -->
@@ -135,7 +154,7 @@
 
     <servlet-mapping>
         <servlet-name>OffersController</servlet-name>
-        <url-pattern>/insertOffer</url-pattern>
+        <url-pattern>/offer</url-pattern>
     </servlet-mapping>
 
         <!-- Single articles -->

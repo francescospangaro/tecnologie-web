@@ -35,6 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        document.location="home.html"
+        document.location = "home"
     })
 });
