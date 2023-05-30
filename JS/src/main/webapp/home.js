@@ -355,41 +355,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             const promises = []
 
             const keyword = args.get('search')
-            if (keyword && keyword.trim() !== "") {
-                // Load from repo
-                promises.push(auctionRepository.searchAuction(keyword).then(auctions => {
-                    // Once loaded, we can clean up old cached data
-                    while (foundAuctionsTable.firstChild)
-                        foundAuctionsTable.removeChild(foundAuctionsTable.firstChild)
+            // Load from repo
+            promises.push((
+                keyword && keyword.trim() !== ""
+                    ? auctionRepository.searchAuction(keyword)
+                    : new Promise(resolve => resolve([])) // TODO: show previosuly visited content stored in localStorage
+            ).then(auctions => {
+                // Once loaded, we can clean up old cached data
+                while (foundAuctionsTable.firstChild)
+                    foundAuctionsTable.removeChild(foundAuctionsTable.firstChild)
 
-                    if (auctions.error) {
-                        errorSearchQuery.removeAttribute("hidden");
-                    } else {
-                        errorSearchQuery.setAttribute("hidden", "");
-                        auctions.forEach(auction => {
-                            const auctionEl = auctionTemplate.cloneNode(true)
-                            auctionEl.querySelector('.auction-id').textContent = auction.id
-                            auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
-                            // TODO: we need to use the login time, not a new date
-                            const dateDiffMillis = auction.expiry - new Date()
-                            const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
-                            const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
-                            auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
+                if (auctions.error) {
+                    errorSearchQuery.removeAttribute("hidden");
+                } else {
+                    errorSearchQuery.setAttribute("hidden", "");
+                    auctions.forEach(auction => {
+                        const auctionEl = auctionTemplate.cloneNode(true)
+                        auctionEl.querySelector('.auction-id').textContent = auction.id
+                        auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
+                        // TODO: we need to use the login time, not a new date
+                        const dateDiffMillis = auction.expiry - new Date()
+                        const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
+                        const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
+                        auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
 
-                            /** @type {HTMLElement} */
-                            const articleTable = auctionEl.querySelector('.article-table')
-                            auction.articles.forEach(article => {
-                                const articleEl = articleTemplate.cloneNode(true)
-                                articleEl.querySelector('.article-code').textContent = article.codArticle
-                                articleEl.querySelector('.article-name').textContent = article.name
-                                Array.from(articleEl.childNodes).forEach(node => articleTable.appendChild(node));
-                            })
-
-                            Array.from(auctionEl.childNodes).forEach(node => foundAuctionsTable.appendChild(node));
+                        /** @type {HTMLElement} */
+                        const articleTable = auctionEl.querySelector('.article-table')
+                        auction.articles.forEach(article => {
+                            const articleEl = articleTemplate.cloneNode(true)
+                            articleEl.querySelector('.article-code').textContent = article.codArticle
+                            articleEl.querySelector('.article-name').textContent = article.name
+                            Array.from(articleEl.childNodes).forEach(node => articleTable.appendChild(node));
                         })
-                    }
-                }))
-            }
+
+                        Array.from(auctionEl.childNodes).forEach(node => foundAuctionsTable.appendChild(node));
+                    })
+                }
+            }))
 
             promises.push(auctionRepository.getBoughtAuctions().then(wonAuctions => {
                 // Once loaded, we can clean up old cached data
