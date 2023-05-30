@@ -3,103 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const webappPathnamePrefix = "JS"
     const url = "http://localhost:8081/" + webappPathnamePrefix + "/"
 
-    /**
-     * @typedef {{ create: (HTMLElement) => Promise<any>, mount: (URLSearchParams) => Promise<any>, unmount: () => Promise<any> }} PageView
-     * @typedef {{ id: string, displayName?: string, div: HTMLElement, view?: PageView}} Page
-     */
-
-    /** @type {Page[]} */
-    const pages = await Promise.all((() => {
-        return [
-            {id: "home", displayName: "Home", div: document.getElementById("home-page")},
-            {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
-            {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
-            {id: "auctionDetails", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
-        ].map(async d => {
-            const view = d.view ? new d.view(d.div) : undefined
-            if (view)
-                try {
-                    await view.create()
-                } catch (e) {
-                    console.error("Failed to create page view", d, e)
-                }
-            d.view = view
-            return d
-        })
-    })());
-
-    const selectedPage = (() => {
-        let selectedPage = pages[0];
-        const obj = {
-            get: () => {
-                return selectedPage
-            },
-            /**
-             * @param {Page} newPage
-             * @param {URLSearchParams?} args
-             * @return {Promise<void>}
-             */
-            set: async (newPage, args) => {
-                history.pushState({}, '', newPage.id)
-
-                selectedPage.div.setAttribute("hidden", "");
-                if (selectedPage.view)
-                    try {
-                        await selectedPage.view.unmount()
-                    } catch (e) {
-                        console.error("Failed to unmount old page", selectedPage, e)
-                    }
-
-                newPage.div.removeAttribute("hidden");
-                if (newPage.view)
-                    try {
-                        await newPage.view.mount(args)
-                    } catch (e) {
-                        console.error("Failed to mount new page", newPage, e)
-                    }
-
-                selectedPage = newPage;
-            },
-        }
-        /**
-         * @param {string} id
-         * @param {URLSearchParams} args
-         * @return {Promise<void>}
-         */
-        obj.setById = async (id, args) => {
-            const newPage = pages.filter(p => p.id === id)[0]
-            if (!newPage)
-                throw "invalid page id " + id
-            await obj.set(newPage, args);
-        }
-        // Trigger the initial page mount
-        const fixedPathName = document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
-            ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
-            : document.location.pathname
-        if(fixedPathName === "/home" || fixedPathName === "/home.html") {
-            // TODO: we need to write the custom logic by saving client-sided what was visited
-            obj.set(selectedPage)
-        } else {
-            obj.setById(fixedPathName.substring('/'.length), new URLSearchParams(document.location.search))
-        }
-        return obj
-    })()
-
-    const pagesMenu = document.getElementById('pages-menu')
-    const pageLinkTemplate = document.getElementById('page-link-template')
-    pages.forEach(page => {
-        // If it doesn't have a display name, we are not supposed to show it
-        if (!page.displayName)
-            return
-
-        const pageLink = pageLinkTemplate.cloneNode(true)
-        /** @type HTMLElement */
-        const anchor = pageLink.querySelector('.link-anchor')
-        anchor.textContent = page.displayName
-        anchor.addEventListener('click', () => selectedPage.set(page));
-        Array.from(pageLink.childNodes).forEach(node => pagesMenu.appendChild(node))
-    });
-
     //repositories
     const auctionRepository = (() => {
 
@@ -268,7 +171,107 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     })();
 
-    //pages
+    // Router
+
+    /**
+     * @typedef {{ create: (HTMLElement) => Promise<any>, mount: (URLSearchParams) => Promise<any>, unmount: () => Promise<any> }} PageView
+     * @typedef {{ id: string, displayName?: string, div: HTMLElement, view?: PageView}} Page
+     */
+
+    /** @type {Page[]} */
+    const pages = await Promise.all((() => {
+        return [
+            {id: "home", displayName: "Home", div: document.getElementById("home-page")},
+            {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
+            {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
+            {id: "auctionDetails", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
+        ].map(async d => {
+            const view = d.view ? new d.view(d.div) : undefined
+            if (view)
+                try {
+                    await view.create()
+                } catch (e) {
+                    console.error("Failed to create page view", d, e)
+                }
+            d.view = view
+            return d
+        })
+    })());
+
+    const selectedPage = (() => {
+        let selectedPage = pages[0];
+        const obj = {
+            get: () => {
+                return selectedPage
+            },
+            /**
+             * @param {Page} newPage
+             * @param {URLSearchParams?} args
+             * @return {Promise<void>}
+             */
+            set: async (newPage, args) => {
+                history.pushState({}, '', newPage.id)
+
+                selectedPage.div.setAttribute("hidden", "");
+                if (selectedPage.view)
+                    try {
+                        await selectedPage.view.unmount()
+                    } catch (e) {
+                        console.error("Failed to unmount old page", selectedPage, e)
+                    }
+
+                newPage.div.removeAttribute("hidden");
+                if (newPage.view)
+                    try {
+                        await newPage.view.mount(args)
+                    } catch (e) {
+                        console.error("Failed to mount new page", newPage, e)
+                    }
+
+                selectedPage = newPage;
+            },
+        }
+        /**
+         * @param {string} id
+         * @param {URLSearchParams} args
+         * @return {Promise<void>}
+         */
+        obj.setById = async (id, args) => {
+            const newPage = pages.filter(p => p.id === id)[0]
+            if (!newPage)
+                throw "invalid page id " + id
+            await obj.set(newPage, args);
+        }
+        // Trigger the initial page mount
+        const fixedPathName = document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
+            ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
+            : document.location.pathname
+        if(fixedPathName === "/home" || fixedPathName === "/home.html") {
+            // TODO: we need to write the custom logic by saving client-sided what was visited
+            obj.set(selectedPage)
+        } else {
+            obj.setById(fixedPathName.substring('/'.length), new URLSearchParams(document.location.search))
+        }
+        return obj
+    })()
+
+    const pagesMenu = document.getElementById('pages-menu')
+    const pageLinkTemplate = document.getElementById('page-link-template')
+    pages.forEach(page => {
+        // If it doesn't have a display name, we are not supposed to show it
+        if (!page.displayName)
+            return
+
+        const pageLink = pageLinkTemplate.cloneNode(true)
+        /** @type HTMLElement */
+        const anchor = pageLink.querySelector('.link-anchor')
+        anchor.textContent = page.displayName
+        anchor.addEventListener('click', () => selectedPage.set(page));
+        Array.from(pageLink.childNodes).forEach(node => pagesMenu.appendChild(node))
+    });
+
+    // pages view
+
     function buyPage(containerDiv) {
 
         const auctionTemplate = document.getElementById('found-auction-template')
