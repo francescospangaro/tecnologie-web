@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     })());
 
-    const selectedPage = (() => {
+    const router = (() => {
         let selectedPage = pages[0];
         const obj = {
             get: () => {
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         /** @type HTMLElement */
         const anchor = pageLink.querySelector('.link-anchor')
         anchor.textContent = page.displayName
-        anchor.addEventListener('click', () => selectedPage.set(page));
+        anchor.addEventListener('click', () => router.set(page));
         Array.from(pageLink.childNodes).forEach(node => pagesMenu.appendChild(node))
     });
 
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     closedAuctionAnchor.textContent = closedAuction.id
                     closedAuctionAnchor.addEventListener('click', async e => {
                         e.preventDefault()
-                        await selectedPage.setById('auctionDetails', new URLSearchParams({
+                        await router.setById('auctionDetails', new URLSearchParams({
                             id: closedAuction.id
                         }))
                     })
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     openAuctionAnchor.textContent = openAuction.id
                     openAuctionAnchor.addEventListener('click', async e => {
                         e.preventDefault()
-                        await selectedPage.setById('auctionDetails', new URLSearchParams({
+                        await router.setById('auctionDetails', new URLSearchParams({
                             id: openAuction.id
                         }))
                     })
