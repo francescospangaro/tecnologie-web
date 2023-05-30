@@ -289,8 +289,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
                             // TODO: we need to use the login time, not a new date
                             const dateDiffMillis = auction.expiry - new Date()
-                            const days = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
-                            const hours = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
+                            const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
+                            const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
                             auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
 
                             /** @type {HTMLElement} */
@@ -483,8 +483,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     openAuctionEl.querySelector('.open-auction-max-offer').textContent = openAuction.maxOffer
                     // TODO: we need to use the login time, not a new date
                     const dateDiffMillis = openAuction.expiry - new Date()
-                    const days = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
-                    const hours = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
+                    const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
+                    const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
                     openAuctionEl.querySelector('.open-auction-remaining-time').textContent = `${days}d ${hours}h`
 
                     /** @type {HTMLElement} */
@@ -536,6 +536,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const openAuctionDetails = document.getElementById("open-auction-details")
         const openAuctionDetailsTemplate = document.getElementById("auction-details-offers-template")
         const openAuctionDetailsContainer = document.getElementById("auction-details-offers-table")
+        const openAuctionExpiryDays = document.getElementById("open-auction-expiry-days")
+        const openAuctionExpiryHours = document.getElementById("open-auction-expiry-hours")
 
         this.create = async () => {
             closeAuctionForm.addEventListener('submit', async e => {
@@ -588,13 +590,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (auction.kind === 'open') {
-                if (auction.base.expiry - new Date() <= 0) {
+                const now = new Date()
+                if (auction.base.expiry - now <= 0) {
                     auctionToCloseInput.value = id.toString();
                     auctionCloseButton.removeAttribute("hidden")
                     auctionDetailsExpiration.setAttribute("hidden", "")
                 } else {
-                    auctionCloseButton.setAttribute("hidden", "")
+                    // TODO: we need to use the login time, not a new date
+                    const dateDiffMillis = auction.base.expiry - now
+                    openAuctionExpiryDays.textContent = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24).toString()
+                    openAuctionExpiryHours.textContent = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24).toString()
                     auctionDetailsExpiration.removeAttribute("hidden")
+                    auctionCloseButton.setAttribute("hidden", "")
                 }
                 openAuctionDetails.removeAttribute("hidden")
                 closedAuctionDetails.setAttribute("hidden", "")
