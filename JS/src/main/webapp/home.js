@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return
             }
             auctionDetailsErrorQuery.setAttribute("hidden", "")
-            auctionDetailsContent.removeAttribute("hidden")
+            auctionDetailsContent.setAttribute("hidden", "")
 
             const auction = await auctionRepository.getAuctionByIds(id)
             if (auction.error) {
@@ -615,6 +615,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return
             }
 
+            // Wait until we loaded content to make the div visible
+            auctionDetailsContent.removeAttribute("hidden")
             auctionDetailsIdEl.textContent = auction.base.id.toString()
 
             while (articleDetailsContainer.firstChild)
