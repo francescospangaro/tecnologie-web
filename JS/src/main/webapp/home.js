@@ -210,7 +210,9 @@ document.addEventListener('DOMContentLoaded', async () => {
              * @return {Promise<void>}
              */
             set: async (newPage, args) => {
-                history.pushState({}, '', newPage.id)
+                history.pushState({}, '', args
+                    ? newPage.id + '?' + args.toString()
+                    : newPage.id)
 
                 selectedPage.div.setAttribute("hidden", "");
                 if (selectedPage.view)
