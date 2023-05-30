@@ -19,6 +19,23 @@
 
 
 <!-- Servlets and Filters-->
+    <!-- Single Pages -->
+    <servlet>
+        <servlet-name>SinglePage</servlet-name>
+        <servlet-class>it.polimi.webapp.SinglePageServlet</servlet-class>
+        <init-param>
+            <param-name>pagePath</param-name>
+            <param-value>/home.html</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginSinglePage</servlet-name>
+        <servlet-class>it.polimi.webapp.SinglePageServlet</servlet-class>
+        <init-param>
+            <param-name>pagePath</param-name>
+            <param-value>/login.html</param-value>
+        </init-param>
+    </servlet>
 
     <!-- Login -->
     <servlet>
@@ -77,6 +94,20 @@
     </servlet>
 
 <!-- Mappings -->
+    <!-- Single Pages -->
+    <servlet-mapping>
+        <servlet-name>SinglePage</servlet-name>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/buy</url-pattern>
+        <url-pattern>/sell</url-pattern>
+        <url-pattern>/auctionDetails</url-pattern>
+        <url-pattern>/offers</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginSinglePage</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+
     <!-- Login -->
     <servlet-mapping>
         <servlet-name>LoginController</servlet-name>

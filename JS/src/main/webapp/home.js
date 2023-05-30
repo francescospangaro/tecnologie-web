@@ -1,14 +1,28 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
+    const webappPathnamePrefix = "JS"
+    const url = "http://localhost:8081/" + webappPathnamePrefix + "/"
+
+    /**
+     * @typedef {{ create: (HTMLElement) => Promise<any>, mount: (URLSearchParams) => Promise<any>, unmount: () => Promise<any> }} PageView
+     * @typedef {{ id: string, displayName?: string, div: HTMLElement, view?: PageView}} Page
+     */
+
+    /** @type {Page[]} */
     const pages = await Promise.all((() => {
         return [
             {id: "home", displayName: "Home", div: document.getElementById("home-page")},
             {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
             {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
-            {id: "auction-details", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
+            {id: "auctionDetails", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
         ].map(async d => {
             const view = d.view ? new d.view(d.div) : undefined
             if (view)
-                await view.create()
+                try {
+                    await view.create()
+                } catch (e) {
+                    console.error("Failed to create page view", d, e)
+                }
             d.view = view
             return d
         })
@@ -20,7 +34,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             get: () => {
                 return selectedPage
             },
+            /**
+             * @param {Page} newPage
+             * @param {URLSearchParams?} args
+             * @return {Promise<void>}
+             */
             set: async (newPage, args) => {
+                history.pushState({}, '', newPage.id)
+
                 selectedPage.div.setAttribute("hidden", "");
                 if (selectedPage.view)
                     try {
@@ -28,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } catch (e) {
                         console.error("Failed to unmount old page", selectedPage, e)
                     }
+
                 newPage.div.removeAttribute("hidden");
                 if (newPage.view)
                     try {
@@ -35,9 +57,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } catch (e) {
                         console.error("Failed to mount new page", newPage, e)
                     }
+
                 selectedPage = newPage;
             },
         }
+        /**
+         * @param {string} id
+         * @param {URLSearchParams} args
+         * @return {Promise<void>}
+         */
         obj.setById = async (id, args) => {
             const newPage = pages.filter(p => p.id === id)[0]
             if (!newPage)
@@ -45,8 +73,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             await obj.set(newPage, args);
         }
         // Trigger the initial page mount
-        // TODO: we need to remove the home page and write the custom logic by saving client-sided what was visited
-        obj.set(selectedPage)
+        const fixedPathName = document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
+            ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
+            : document.location.pathname
+        if(fixedPathName === "/home" || fixedPathName === "/home.html") {
+            // TODO: we need to write the custom logic by saving client-sided what was visited
+            obj.set(selectedPage)
+        } else {
+            obj.setById(fixedPathName.substring('/'.length), new URLSearchParams(document.location.search))
+        }
         return obj
     })()
 
@@ -67,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     //repositories
     const auctionRepository = (() => {
-        const url = "http://localhost:8081/JS/"
 
         /**
          * @typedef {{ error: true, msg: string }} ErrorResponse
@@ -201,7 +235,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     })();
     const articleRepository = (() => {
-        const url = "http://localhost:8081/JS/"
 
         /**
          * @typedef {{ error: true, msg: string }} ErrorResponse
@@ -442,7 +475,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     closedAuctionAnchor.textContent = closedAuction.id
                     closedAuctionAnchor.addEventListener('click', async e => {
                         e.preventDefault()
-                        await selectedPage.setById('auction-details', closedAuction.id)
+                        await selectedPage.setById('auctionDetails', new URLSearchParams({
+                            id: closedAuction.id
+                        }))
                     })
                     closedAuctionEl.querySelector('.closed-auction-final-price').textContent = closedAuction.maxOffer
 
@@ -478,7 +513,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     openAuctionAnchor.textContent = openAuction.id
                     openAuctionAnchor.addEventListener('click', async e => {
                         e.preventDefault()
-                        await selectedPage.setById('auction-details', openAuction.id)
+                        await selectedPage.setById('auctionDetails', new URLSearchParams({
+                            id: openAuction.id
+                        }))
                     })
                     openAuctionEl.querySelector('.open-auction-max-offer').textContent = openAuction.maxOffer
                     // TODO: we need to use the login time, not a new date
@@ -553,10 +590,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         /**
-         * @param {number} id
+         * @param {URLSearchParams} params
          * @returns {Promise<void>}
          */
-        this.mount = async (id) => {
+        this.mount = async (params) => {
+            const id = parseInt(params.get('id'), 10)
             currentId = id
 
             if (!id) {
