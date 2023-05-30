@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
     const webappPathnamePrefix = "JS"
-    const url = "http://localhost:8081/" + webappPathnamePrefix + "/"
+    const url = ""
 
     //repositories
     const auctionRepository = (() => {
