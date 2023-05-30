@@ -341,18 +341,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return
                 }
 
-                await this.mutateState()
+                await router.setById('buy', new URLSearchParams({search: keyword.value}))
             })
         };
 
-        this.mount = async () => {
+        /**
+         * @param {URLSearchParams} args
+         * @return {Promise<void>}
+         */
+        this.mount = async (args) => {
             // Called when a page is shown
             // Refresh data we got from the repo
             const promises = []
 
-            if (keyword.value.trim() !== "") {
+            const keyword = args.get('search')
+            if (keyword && keyword.trim() !== "") {
                 // Load from repo
-                promises.push(auctionRepository.searchAuction(keyword.value).then(auctions => {
+                promises.push(auctionRepository.searchAuction(keyword).then(auctions => {
                     // Once loaded, we can clean up old cached data
                     while (foundAuctionsTable.firstChild)
                         foundAuctionsTable.removeChild(foundAuctionsTable.firstChild)
