@@ -198,22 +198,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     })());
 
-    const router = (() => {
-        let selectedPage = pages[0];
-        const obj = {
-            get: () => {
-                return selectedPage
-            },
-            /**
-             * @param {Page} newPage
-             * @param {URLSearchParams?} args
-             * @return {Promise<void>}
-             */
-            set: async (newPage, args) => {
-                history.pushState({}, '', args
-                    ? newPage.id + '?' + args.toString()
-                    : newPage.id)
+    /**
+     * @typedef {{
+     *      set: (Page, args?: URLSearchParams) => Promise<void>,
+     *      setById: (string, args?: URLSearchParams) => Promise<void>,
+     *      get: () => Page
+     * }} Router
+     */
 
+    /** @type Router */
+    const router = await (async () => {
+        /** @type {Page | undefined} */
+        let selectedPage = undefined;
+
+        const getFixedPathName = () => {
+            return document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
+                ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
+                : document.location.pathname
+        }
+
+        const triggerPageChange = async (newPage, args) => {
+            if(selectedPage) {
                 selectedPage.div.setAttribute("hidden", "");
                 if (selectedPage.view)
                     try {
@@ -221,38 +226,73 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } catch (e) {
                         console.error("Failed to unmount old page", selectedPage, e)
                     }
+            }
 
-                newPage.div.removeAttribute("hidden");
-                if (newPage.view)
-                    try {
-                        await newPage.view.mount(args)
-                    } catch (e) {
-                        console.error("Failed to mount new page", newPage, e)
-                    }
+            newPage.div.removeAttribute("hidden");
+            if (newPage.view)
+                try {
+                    await newPage.view.mount(args)
+                } catch (e) {
+                    console.error("Failed to mount new page", newPage, e)
+                }
 
-                selectedPage = newPage;
-            },
+            selectedPage = newPage;
         }
+
         /**
-         * @param {string} id
-         * @param {URLSearchParams} args
+         * @param {{pageId: string, args: URLSearchParams} | undefined} [state=undefined]
          * @return {Promise<void>}
          */
-        obj.setById = async (id, args) => {
-            const newPage = pages.filter(p => p.id === id)[0]
-            if (!newPage)
-                throw "invalid page id " + id
-            await obj.set(newPage, args);
+        const doRoute = async (state) => {
+            let fixedPathName = getFixedPathName();
+            if (fixedPathName === "/home" || fixedPathName === "/home.html") {
+                fixedPathName = "/home" // Remove .html suffix
+                // TODO: we need to write the custom logic by saving client-sided what was visited
+                // if(never visitedBefore)
+                //      fixedPathName = "/sell"
+                // else
+                //      fixedPathName = "/buy"
+            }
+
+            const pageId = state ? state.pageId : fixedPathName.substring('/'.length)
+            if(selectedPage && pageId === selectedPage.id)
+                return
+
+            const args = state ? state.args : new URLSearchParams(document.location.search)
+            const newPage = pages.filter(p => p.id === pageId)[0]
+            if(!newPage) {
+                console.error('Invalid page transition for id', pageId, ". Event", event)
+                return
+            }
+
+            await triggerPageChange(newPage, args)
         }
+
+        // Setup event listener for routing
+        addEventListener("popstate", async (event) => {
+            await doRoute(event.state && event.state.didIPushTheState ? event.state : undefined)
+        });
+
         // Trigger the initial page mount
-        const fixedPathName = document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
-            ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
-            : document.location.pathname
-        if(fixedPathName === "/home" || fixedPathName === "/home.html") {
-            // TODO: we need to write the custom logic by saving client-sided what was visited
-            obj.set(selectedPage)
-        } else {
-            obj.setById(fixedPathName.substring('/'.length), new URLSearchParams(document.location.search))
+        await doRoute()
+
+        /** @type {Router} */
+        const obj = {
+            get: () => {
+                return /** @type {Page} */selectedPage
+            },
+            set: async (newPage, args) => {
+                history.pushState({ didIPushTheState: true, pageId: newPage.id, args: args }, '', args
+                    ? newPage.id + '?' + args.toString()
+                    : newPage.id)
+                await triggerPageChange(newPage, args)
+            },
+            setById: async (id, args) => {
+                const newPage = pages.filter(p => p.id === id)[0]
+                if (!newPage)
+                    throw "invalid page id " + id
+                await obj.set(newPage, args);
+            }
         }
         return obj
     })()
@@ -588,6 +628,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     e.target.reportValidity()
                     return
                 }
+                //noinspection JSCheckFunctionSignatures
                 await auctionRepository.closeAuction(new URLSearchParams(new FormData(closeAuctionForm)))
                 e.target.reset()
                 await this.mutateState()
