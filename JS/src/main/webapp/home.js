@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
          * @returns {Promise<ErrorResponse | { error: false } & Auction[]>}
          */
         const searchAuction = async function (keyWord) {
-            //TODO: check for % that returns everything
             const response = await fetchIfAuthenticated(url + "search?" + new URLSearchParams({search: keyWord}).toString())
             /** @type {ErrorResponse | { error: false } & Auction[]} */
             const res = await response.json();
@@ -266,7 +265,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? savedInteractions[user.id]
                 : {
                     lastAction: "",
-                    visitedAuctions: []
+                    visitedAuctions: [],
+                    date: new Date()
                 }
             // Fix JSON parsed dates
             __interactions.date = new Date(__interactions.date)
@@ -309,15 +309,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     date: new Date(),
                 }
             }),
-            getVisitedAuctions: () => interactions.get().visitedAuctions,
+            getVisitedAuctions: () => interactions.get().visitedAuctions.map(a => a.id),
             /** @type {(number) => void} */
             addVisitedAuction: (id) => interactions.update(i => {
                 return /** @type UserInteractions */ {
                     ...i,
-                    visitedAuctions: [...i.visitedAuctions, {
-                        id: id,
-                        date: new Date()
-                    }],
+                    visitedAuctions: [
+                        // Remove the old one if already present to avoid dupes
+                        ...i.visitedAuctions.filter(a => a.id !== id),
+                        {
+                            id: id,
+                            date: new Date()
+                        }
+                    ],
                     date: new Date(),
                 }
             }),
@@ -408,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (userInteractions.isFirstTime())
                     fixedPathName = "/buy"
-                else if(userInteractions.getLastAction() === "inserted-auction")
+                else if (userInteractions.getLastAction() === "inserted-auction")
                     fixedPathName = "/sell"
                 else
                     fixedPathName = "/buy"
@@ -434,8 +438,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Trigger the initial page mount
-        // Do it in a microtask, so that it will be executed after the router object is created
-        queueMicrotask(doRoute)
+        // Do it in a task, so that it will be executed after the router object is created
+        setTimeout(doRoute)
 
         /** @type {Router} */
         const obj = {
@@ -455,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await obj.set(newPage, args);
             },
             isHomePage() {
-              return isHomePathname(getFixedPathName())
+                return isHomePathname(getFixedPathName())
             },
         }
         return obj
@@ -528,19 +532,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ? Promise.all(userInteractions.getVisitedAuctions()
                             .map(async id => {
                                 const res = await auctionRepository.getOpenAuctionById(id)
-                                if(res.error) {
+                                if (res.error) {
                                     console.error("Failed to load already visited auction ", id, res);
                                     return undefined
                                 }
 
                                 return res
-                            })
-                            // Remove undefined ones from the list
-                            // We need to await it as the map() call returns a Promise<OpenAuction | undefined>[]
-                            // because we pass it an async mapping function
-                            .filter(async auction => await auction)
-                            // we need to wait for the promise response at every step
-                            .map(async auction => (await auction).base))
+                            }))
+                            .then(openAuctions => openAuctions
+                                .filter(a => a) // Remove undefined ones from the list
+                                .map(auction => auction.base))
                         : new Promise(resolve => resolve([]))
             ).then(auctions => {
                 // Once loaded, we can clean up old cached data
