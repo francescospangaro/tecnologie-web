@@ -69,8 +69,7 @@ public class ArticleController extends BaseController {
             var result = new ArticleDao(connection).findAllArticles(session.id());
             resp.setContentType("application/json");
             //print articles
-            gson.toJson(Objects.requireNonNullElseGet(result,
-                    () -> new ParsingError("errorArticlesQuery")), resp.getWriter());
+            gson.toJson(result, resp.getWriter());
         } catch (SQLException e) {
             LOGGER.error("Failed to findAllArticles({})", session.id(), e);
 

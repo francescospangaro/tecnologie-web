@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         /**
          * @param {URLSearchParams} formData
-         * @returns {Promise<any>}
+         * @returns {Promise<ErrorResponse | any>}
          */
         const insertAuction = async function (formData) {
             const response = await fetchIfAuthenticated(url + 'auction', {
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         /**
          * @param {FormData} formData
-         * @returns {Promise<any>}
+         * @returns {Promise<ErrorResponse | any>}
          */
         const insertArticle = async function (formData) {
             const response = await fetchIfAuthenticated(url + 'article', {
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         /**
          * @param {FormData} formData
-         * @returns {Promise<any>}
+         * @returns {Promise<ErrorResponse | any>}
          */
         const insertOffer = async function (formData) {
             const response = await fetchIfAuthenticated(url + 'offer', {
@@ -224,6 +224,101 @@ document.addEventListener('DOMContentLoaded', async () => {
             insertOffer: insertOffer
         }
     })();
+
+    // Get session data
+    /**
+     * @typedef {{ id: number, name: string, loginTime: Date }} UserSession
+     */
+
+    /** @type {UserSession | undefined} */
+    const user = !localStorage.getItem('user')
+        ? undefined
+        : /** @type {UserSession} */ JSON.parse(localStorage.getItem('user'))
+    if(!user) {
+        document.location = "login"
+        return
+    }
+
+    user.loginTime = new Date(user.loginTime)
+
+    // Handle interactions state
+
+    /**
+     * @typedef {"inserted-auction" | "inserted-article" | "placed-offer" | "searched-auctions" | ""} UserAction
+     * @typedef {{ date: Date, lastAction: UserAction, visitedAuctions: { id: number, date: Date }[] }} UserInteractions
+     * @typedef {{ [id: string]: UserInteractions }} SavedInteractions
+     */
+
+    const userInteractions = (() => {
+        const oneMonthInMillis = 1000 * 60 * 60 * 24 * 30
+
+        const savedInteractionsStr = localStorage.getItem('interactions')
+        /** @type SavedInteractions */
+        const savedInteractions = savedInteractionsStr ? /** @type SavedInteractions */ JSON.parse(savedInteractionsStr) : {}
+
+        const isFirstTime = !savedInteractions
+            || !savedInteractions[user.id]
+            // If the last saved interaction is older than 1 month, discard it
+            || new Date() - new Date(savedInteractions[user.id].date) > oneMonthInMillis;
+        const interactions = (() => {
+            /** @type UserInteractions */
+            let __interactions = !isFirstTime
+                ? savedInteractions[user.id]
+                : {
+                    lastAction: "",
+                    visitedAuctions: []
+                }
+            // Fix JSON parsed dates
+            __interactions.date = new Date(__interactions.date)
+            __interactions.visitedAuctions.map(a => {
+                a.date = new Date(a.date)
+                return a
+            })
+            const obj = {
+                /** @return {UserInteractions} */
+                get: () => __interactions,
+                /** @param {UserInteractions} newInteractions */
+                set: (newInteractions) => {
+                    __interactions = newInteractions
+                    savedInteractions[user.id] = newInteractions
+                    localStorage.setItem('interactions', JSON.stringify(savedInteractions))
+                },
+                /** @param {(UserInteractions) => UserInteractions} fn */
+                update: (fn) => {
+                    obj.set(fn(obj.get()))
+                }
+            }
+            return obj
+        })()
+        // Save either the new or the filtered interactions to localStorage
+        interactions.update(i => { return /** @type UserInteractions */ {
+            ...i,
+            visitedAuctions: i.visitedAuctions.filter(a => new Date() - new Date(a.date) <= oneMonthInMillis)
+        }})
+
+        const getLastAction = () => {
+
+        }
+
+        const setLastAction = () => {
+
+        }
+
+        const getVisitedAuctions = () => {
+            return interactions.visitedAuctions
+        }
+
+        const setVisitedAuction = () => {
+
+        }
+        return {
+            getLastAction: getLastAction,
+            setLastAction: setLastAction,
+            getVisitedAuctions: getVisitedAuctions,
+            setVisitedAuction: setVisitedAuction,
+        };
+    })()
+
     // Router
 
     /**
@@ -315,7 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const args = state ? state.args : new URLSearchParams(document.location.search)
             const newPage = pages.filter(p => p.id === pageId)[0]
             if (!newPage) {
-                console.error('Invalid page transition for id', pageId, ". Event", event)
+                console.error('Invalid page transition for id', pageId, ". State", state)
                 return
             }
 
@@ -435,8 +530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }))
                         })
                         auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
-                        // TODO: we need to use the login time, not a new date
-                        const dateDiffMillis = auction.expiry - new Date()
+                        const dateDiffMillis = auction.expiry - user.loginTime
                         const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
                         const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
                         auctionEl.querySelector('.auction-remaining-time').textContent = `${days}d ${hours}h`
@@ -505,6 +599,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const articlesNotFound = document.getElementById("articles-not-found")
         const selectArticles = document.getElementById("selectedArticles")
 
+        const errorAuctionData = document.getElementById("auctionDataError")
+        const errorAuctionQuery = document.getElementById("errorAuctionQuery")
+
+        const errorArticleInsertion = document.getElementById("errorArticleInsertion")
+        const errorArticleQuery = document.getElementById("errorArticleQuery")
+
         const closedAuctionTemplate = document.getElementById("closed-auction-template")
         const closedAuctionTable = document.getElementById("closed-auction-table")
         const closedArticleTemplate = document.getElementById("closed-article-template")
@@ -518,25 +618,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.create = async () => {
             articleForm.addEventListener('submit', async e => {
                 e.preventDefault()
+                errorArticleInsertion.setAttribute("hidden", "")
+                errorArticleQuery.setAttribute("hidden", "")
                 if (!e.target.checkValidity()) {
                     e.target.reportValidity()
                     return
                 }
-                await articleRepository.insertArticle(new FormData(articleForm))
-                // TODO: check errors
+                //noinspection JSCheckFunctionSignatures
+                const res = await articleRepository.insertArticle(new FormData(articleForm))
+                if (res.error) {
+                    if (res.msg === "errorArticleDataInserted") {
+                        errorArticleInsertion.removeAttribute("hidden")
+                    } else {
+                        errorArticleQuery.removeAttribute("hidden")
+                    }
+                    return
+                }
                 e.target.reset()
                 await this.mutateState()
             })
 
             auctionForm.addEventListener('submit', async e => {
                 e.preventDefault()
+                errorAuctionData.setAttribute("hidden", "")
+                errorAuctionQuery.setAttribute("hidden", "")
                 if (!e.target.checkValidity()) {
                     e.target.reportValidity()
                     return
                 }
                 //noinspection JSCheckFunctionSignatures
-                await auctionRepository.insertAuction(new URLSearchParams(new FormData(auctionForm)))
-                // TODO: check errors
+                const res = await auctionRepository.insertAuction(new URLSearchParams(new FormData(auctionForm)))
+                if (res.error) {
+                    if (res.msg === 'errorAuctionDataInserted') {
+                        errorAuctionData.removeAttribute("hidden")
+                    } else {
+                        errorAuctionQuery.removeAttribute("hidden")
+                    }
+                    return
+                }
                 e.target.reset()
                 await this.mutateState()
             })
@@ -552,17 +671,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 while (selectArticles.firstChild)
                     selectArticles.removeChild(selectArticles.firstChild)
 
+                articlesNotFound.setAttribute("hidden", "")
+                articlesErrorQuery.setAttribute("hidden", "")
+
                 if (articles.error) {
                     articlesErrorQuery.removeAttribute("hidden")
                     return
                 }
-                articlesErrorQuery.setAttribute("hidden", "")
 
                 if (articles.length === 0) {
                     articlesNotFound.removeAttribute("hidden")
                     return
                 }
-                articlesNotFound.setAttribute("hidden", "")
 
                 articles.forEach(article => {
                     const articleOptionEl = document.createElement("option")
@@ -634,8 +754,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }))
                     })
                     openAuctionEl.querySelector('.open-auction-max-offer').textContent = openAuction.maxOffer
-                    // TODO: we need to use the login time, not a new date
-                    const dateDiffMillis = openAuction.expiry - new Date()
+                    const dateDiffMillis = openAuction.expiry - user.loginTime
                     const days = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24);
                     const hours = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24);
                     openAuctionEl.querySelector('.open-auction-remaining-time').textContent = `${days}d ${hours}h`
@@ -753,8 +872,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     auctionCloseButton.removeAttribute("hidden")
                     auctionDetailsExpiration.setAttribute("hidden", "")
                 } else {
-                    // TODO: we need to use the login time, not a new date
-                    const dateDiffMillis = auction.base.expiry - now
+                    const dateDiffMillis = auction.base.expiry - user.loginTime
                     openAuctionExpiryDays.textContent = Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24).toString()
                     openAuctionExpiryHours.textContent = Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24).toString()
                     auctionDetailsExpiration.removeAttribute("hidden")
@@ -832,14 +950,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             placeOfferForm.addEventListener('submit', async e => {
                 e.preventDefault()
 
+                offerErrorQuery.setAttribute("hidden", "")
+                offerErrorMax.setAttribute("hidden", "")
+                offerLowPrice.setAttribute("hidden", "")
+
                 if (!e.target.checkValidity()) {
                     e.target.reportValidity()
                     return
                 }
 
                 //noinspection JSCheckFunctionSignatures
-                await offerRepository.insertOffer(new URLSearchParams(new FormData(placeOfferForm)))
-                // TODO: check errors
+                const res = await offerRepository.insertOffer(new URLSearchParams(new FormData(placeOfferForm)))
+                if (res.error) {
+                    if (res.msg === 'errorLowPrice') {
+                        offerLowPrice.removeAttribute("hidden")
+                    } else if (res.msg === 'errorMaxOffer') {
+                        offerErrorMax.removeAttribute("hidden")
+                    } else {
+                        offerErrorQuery.removeAttribute("hidden")
+
+                    }
+                    return
+                }
+
                 e.target.reset()
                 await this.mutateState()
             })
@@ -855,8 +988,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             offersContent.setAttribute("hidden", "")
             offerErrorQuery.setAttribute("hidden", "")
-            offerErrorMax.setAttribute("hidden", "")
-            offerLowPrice.setAttribute("hidden", "")
 
             if (!id) {
                 offerErrorQuery.removeAttribute("hidden")
@@ -875,8 +1006,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             auctionIdEl.textContent = auction.base.id.toString()
             auctionIdInputEl.value = auction.base.id.toString()
 
-            // TODO: we need to use the login time, not a new date
-            const dateDiffMillis = auction.base.expiry - new Date()
+            const dateDiffMillis = auction.base.expiry - user.loginTime
             auctionExpiryDaysEl.textContent = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24).toString()
             auctionExpiryHoursEl.textContent = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24).toString()
 

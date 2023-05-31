@@ -146,10 +146,6 @@
 
     <div class="row mb-3">
         <div class="col shadow">
-            <div class="text-center" id="correctArticleInsertion" hidden>
-                <span>Article inserted correctly!</span>
-            </div>
-
             <form enctype='multipart/form-data' id="article-insertion-form">
                 <div class="row text-center" id="errorArticleInsertion" hidden>
                     <span>Missing or wrong data format inserted</span>
@@ -191,10 +187,6 @@
         </div>
 
         <div class="col shadow">
-            <div class="text-center" id="correctAuctionInsertion" hidden>
-                <span>Auction inserted correctly!</span>
-            </div>
-
             <form id="auction-insertion-form">
                 <div class="text-center" id="auctionDataError" hidden>
                     <span>Missing or wrong data format inserted</span>
@@ -377,7 +369,8 @@
             <div class="col">
                 <!-- isOpen && !isExpired -->
                 <div id="auction-details-expiry-div">
-                    Expires in <span id="open-auction-expiry-days">0</span>d, <span id="open-auction-expiry-hours">1</span>h
+                    Expires in <span id="open-auction-expiry-days">0</span>d, <span
+                        id="open-auction-expiry-hours">1</span>h
                 </div>
 
                 <!-- isOpen && isExpired -->
@@ -427,15 +420,15 @@
 
 <!-- Offers page template -->
 <div class="container mt-4" id="offers-page" hidden>
-    <div id="offers-error-query" class="text-center shadow row">
+    <div id="offers-error-query" class="text-center shadow row" hidden>
         <span>There was an error resolving your request</span>
     </div>
 
-    <div id="offers-error-max-offer" class="text-center shadow row">
+    <div id="offers-error-max-offer" class="text-center shadow row" hidden>
         <span>Offer is lower than actual max offer</span>
     </div>
 
-    <div id="offers-error-low-price" class="text-center shadow row">
+    <div id="offers-error-low-price" class="text-center shadow row" hidden>
         <span>Offer is lower than sum of articles' value</span>
     </div>
 
@@ -469,7 +462,8 @@
             <div class="col">
                 <div>Expires in
                     <span id="offers-auction-expiry-days">0</span>d,
-                    <span id="offers-auction-expiry-hours">1</span>h</div>
+                    <span id="offers-auction-expiry-hours">1</span>h
+                </div>
                 <div>Max price: <span id="offers-auction-max-price">12</span>€</div>
                 <div>Min offer difference: <span id="offers-auction-minimum-diff">1</span>€</div>
 

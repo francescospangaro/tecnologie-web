@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const errorCred = document.getElementById('errorCred')
     const errorNotFound = document.getElementById('errorNotFound')
 
-    const url = "http://localhost:8081/JS/"
+    const url = ""
     form.addEventListener('submit', async e => {
         e.preventDefault()
 
@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await response.json()
 
         if (res.error) {
-            if(res.msg==="errorCred"){
+            if (res.msg === "errorCred") {
                 errorCred.removeAttribute("hidden")
                 return;
             }
-            if(res.msg==="errorNotFound"){
+            if (res.msg === "errorNotFound") {
                 errorNotFound.removeAttribute("hidden")
                 return;
             }
@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        localStorage.setItem('user', JSON.stringify(res))
         document.location = "home"
     })
 });

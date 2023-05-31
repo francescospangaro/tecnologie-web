@@ -19,7 +19,7 @@ public class ArticleDao {
         this.connection = connection;
     }
 
-    public @Nullable List<Article> findAllArticles(int userId) throws SQLException {
+    public List<Article> findAllArticles(int userId) throws SQLException {
         try (var query = connection.prepareStatement("""
             SELECT a.codArticolo, a.nome, a.descrizione, a.immagine, a.prezzo, a.utente_idUtente
             FROM articolo as a
@@ -44,12 +44,7 @@ public class ArticleDao {
                             Base64.getEncoder().encodeToString(res.getBytes(4)),
                             res.getDouble(5),
                             res.getInt(6)));
-
-                if (result.size() > 0) {
-                    return result;
-                } else {
-                    return null;
-                }
+                return result;
             }
         }
     }

@@ -18,7 +18,7 @@
     </context-param>
 
 
-<!-- Servlets and Filters-->
+    <!-- Servlets and Filters-->
     <!-- Single Pages -->
     <servlet>
         <servlet-name>SinglePage</servlet-name>
@@ -98,7 +98,7 @@
         <servlet-class>it.polimi.webapp.controllers.LogoutController</servlet-class>
     </servlet>
 
-<!-- Mappings -->
+    <!-- Mappings -->
     <!-- Single Pages -->
     <servlet-mapping>
         <servlet-name>SinglePage</servlet-name>
@@ -157,13 +157,13 @@
         <url-pattern>/offer</url-pattern>
     </servlet-mapping>
 
-        <!-- Single articles -->
+    <!-- Single articles -->
     <servlet-mapping>
         <servlet-name>ArticleController</servlet-name>
         <url-pattern>/article</url-pattern>
     </servlet-mapping>
 
-        <!-- Single auctions -->
+    <!-- Single auctions -->
     <servlet-mapping>
         <servlet-name>AuctionController</servlet-name>
         <url-pattern>/auction</url-pattern>

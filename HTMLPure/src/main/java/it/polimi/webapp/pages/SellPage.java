@@ -57,7 +57,7 @@ public class SellPage extends ThymeleafServlet {
 
             try {
                 var result = new ArticleDao(connection).findAllArticles(session.id());
-                if (result != null) {
+                if (!result.isEmpty()) {
                     ctx.setVariable("articles", result);
                 } else {
                     ctx.setVariable("errorArticlesQuery", true);

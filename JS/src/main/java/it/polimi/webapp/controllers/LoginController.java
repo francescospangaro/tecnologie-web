@@ -47,10 +47,11 @@ public class LoginController extends BaseController {
             }
 
             var session = req.getSession(true);
-            session.setAttribute("user", new UserSession(user.id(), user.name(), LocalDateTime.now()));
+            var sessionObj = new UserSession(user.id(), user.name(), LocalDateTime.now());
+            session.setAttribute("user", sessionObj);
 
             resp.setContentType("application/json");
-            gson.toJson(user, resp.getWriter());
+            gson.toJson(sessionObj, resp.getWriter());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

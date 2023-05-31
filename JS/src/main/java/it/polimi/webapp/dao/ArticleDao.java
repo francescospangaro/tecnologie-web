@@ -45,12 +45,7 @@ public class ArticleDao {
                             Base64.getEncoder().encodeToString(res.getBytes(4)),
                             res.getDouble(5),
                             res.getInt(6)));
-
-                if (result.size() > 0) {
-                    return result;
-                } else {
-                    return null;
-                }
+                return result;
             }
         }
     }
