@@ -24,7 +24,7 @@ public class OffersController extends BaseController {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var session = HttpServlets.requireSession(req);
         var auctionId = HttpServlets.getParameterOr(req, "id", (Integer) null);
-        var offerPrice = HttpServlets.getParameterOr(req, "offerValue", (Integer) null);
+        var offerPrice = HttpServlets.getParameterOr(req, "offerValue", (Double) null);
 
         if (auctionId == null || offerPrice == null || offerPrice <= 0) {
             resp.setContentType("application/json");

@@ -144,8 +144,6 @@ public class OffersDao {
             int res = insertOffer.executeUpdate();
             if (res == 0)
                 throw new InsertionException(InsertionResult.DB_ERROR);
-
-            throw new InsertionException(InsertionResult.DONE);
         }
     }
 
