@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const obj = await response.json();
             if (!obj.error) {
                 obj.base.expiry = new Date(obj.base.expiry)
-                if(obj.kind === 'open')
+                if (obj.kind === 'open')
                     obj.offers = obj.offers.map(o => {
                         o.date = new Date(o.date)
                         return o;
@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         return {
+            getOpenAuctionById: getOpenAuctionById,
             closeAuction: closeAuction,
             getClosedAuction: getClosedAuction,
             getOpenAuction: getOpenAuction,
@@ -182,7 +183,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             findAllArticles: findAllArticles,
         }
     })();
+    const offerRepository = (() => {
+        /**
+         * @typedef {{ error: true, msg: string }} ErrorResponse
+         * @typedef {{error: false, offerId: number, userId: number, auctionId: number, price: number, name: string, date: Date }} Offer
+         */
 
+        /**
+         * @param {FormData} formData
+         * @returns {Promise<any>}
+         */
+        const insertOffer = async function (formData) {
+            const response = await fetchIfAuthenticated(url + 'offer', {
+                method: 'POST',
+                body: formData,
+            })
+            return await response.json();
+        }
+
+        return {
+            insertOffer: insertOffer
+        }
+    })();
     // Router
 
     /**
@@ -230,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const triggerPageChange = async (newPage, args) => {
-            if(selectedPage) {
+            if (selectedPage) {
                 selectedPage.div.setAttribute("hidden", "");
                 if (selectedPage.view)
                     try {
@@ -267,12 +289,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const pageId = state ? state.pageId : fixedPathName.substring('/'.length)
-            if(selectedPage && pageId === selectedPage.id)
+            if (selectedPage && pageId === selectedPage.id)
                 return
 
             const args = state ? state.args : new URLSearchParams(document.location.search)
             const newPage = pages.filter(p => p.id === pageId)[0]
-            if(!newPage) {
+            if (!newPage) {
                 console.error('Invalid page transition for id', pageId, ". Event", event)
                 return
             }
@@ -294,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return /** @type {Page} */selectedPage
             },
             set: async (newPage, args) => {
-                history.pushState({ didIPushTheState: true, pageId: newPage.id, args: args }, '', args
+                history.pushState({didIPushTheState: true, pageId: newPage.id, args: args}, '', args
                     ? newPage.id + '?' + args.toString()
                     : newPage.id)
                 await triggerPageChange(newPage, args)
@@ -326,7 +348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // pages view
 
-    function buyPage(containerDiv) {
+    function buyPage() {
 
         const auctionTemplate = document.getElementById('found-auction-template')
         const articleTemplate = document.getElementById('article-template')
@@ -371,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             promises.push((
                 keyword && keyword.trim() !== ""
                     ? auctionRepository.searchAuction(keyword)
-                    : new Promise(resolve => resolve([])) // TODO: show previosuly visited content stored in localStorage
+                    : new Promise(resolve => resolve([])) // TODO: show previously visited content stored in localStorage
             ).then(auctions => {
                 // Once loaded, we can clean up old cached data
                 while (foundAuctionsTable.firstChild)
@@ -448,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function sellPage(containerDiv) {
+    function sellPage() {
         const articleForm = document.getElementById("article-insertion-form")
         const auctionForm = document.getElementById("auction-insertion-form")
         const articlesErrorQuery = document.getElementById("articles-error-query")
@@ -616,7 +638,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function auctionDetailsPage(containerDiv) {
+    function auctionDetailsPage() {
         let currentId = undefined
 
         const auctionToCloseInput = document.getElementById("auction-to-close-id")
@@ -749,6 +771,127 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Easiest way to mutate is to just unmount and remount
             await this.unmount()
             await this.mount(id || currentId)
+        }
+    }
+
+    function offersPage() {
+        let currentId = undefined
+
+        const offerErrorQuery = document.getElementById("offers-error-query")
+        const offerErrorMax = document.getElementById("offers-error-max-offer")
+        const offerLowPrice = document.getElementById("offers-error-low-price")
+        const offersContent = document.getElementById("offers-content")
+        const placeOfferForm = document.getElementById("offers-place-offer-form")
+
+        const auctionIdEl = document.getElementById("offers-auction-id")
+        const auctionIdInputEl = document.getElementById("offers-auction-id-input")
+        const auctionExpiryDaysEl = document.getElementById("offers-auction-expiry-days")
+        const auctionExpiryHoursEl = document.getElementById("offers-auction-expiry-hours")
+        const auctionMaxPriceEl = document.getElementById("offers-auction-max-price")
+        const auctionMinDiffEl = document.getElementById("offers-auction-minimum-diff")
+
+        const offersTable = document.getElementById("offers-offers-table")
+        const offerTemplate = document.getElementById("offers-offer-template")
+
+        const articleContainer = document.getElementById("offers-article-container")
+        const articleTemplate = document.getElementById("offers-article-template")
+
+        this.create = async function () {
+            placeOfferForm.addEventListener('submit', async e => {
+                e.preventDefault()
+
+                if (!e.target.checkValidity()) {
+                    e.target.reportValidity()
+                    return
+                }
+
+                //noinspection JSCheckFunctionSignatures
+                await offerRepository.insertOffer(new URLSearchParams(new FormData(placeOfferForm)))
+                // TODO: check errors
+                e.target.reset()
+                await this.mutateState()
+            })
+        }
+
+        /**
+         * @param {URLSearchParams} params
+         * @returns {Promise<void>}
+         */
+        this.mount = async (params) => {
+            const id = parseInt(params.get('id'), 10)
+            currentId = id
+
+            offersContent.setAttribute("hidden", "")
+            offerErrorQuery.setAttribute("hidden", "")
+            offerErrorMax.setAttribute("hidden", "")
+            offerLowPrice.setAttribute("hidden", "")
+
+            if (!id) {
+                offerErrorQuery.removeAttribute("hidden")
+                return
+            }
+
+            const auction = await auctionRepository.getOpenAuctionById(id)
+            if (auction.error) {
+                offerErrorQuery.removeAttribute("hidden")
+                return
+            }
+
+            // Wait until we loaded content to make the div visible
+            offersContent.removeAttribute("hidden")
+
+            auctionIdEl.textContent = auction.base.id.toString()
+            auctionIdInputEl.value = auction.base.id.toString()
+
+            // TODO: we need to use the login time, not a new date
+            const dateDiffMillis = auction.base.expiry - new Date()
+            auctionExpiryDaysEl.textContent = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) / 24).toString()
+            auctionExpiryHoursEl.textContent = dateDiffMillis < 0 ? 0 : Math.trunc(dateDiffMillis / (1000 * 60 * 60) % 24).toString()
+
+            auctionMaxPriceEl.textContent = auction.base.maxOffer.toFixed(2)
+            auctionMinDiffEl.textContent = auction.base.minimumOfferDifference.toFixed(2)
+
+            // empties table from old data
+            while (offersTable.firstChild)
+                offersTable.removeChild(offersTable.firstChild)
+
+            auction.offers.forEach(offer => {
+                const offerEl = offerTemplate.cloneNode(true)
+                offerEl.querySelector('.offers-offer-date').textContent = offer.date.toLocaleString()
+                offerEl.querySelector('.offers-offer-user').textContent = offer.name
+                offerEl.querySelector('.offers-offer-price').textContent = offer.price
+
+                Array.from(offerEl.childNodes).forEach(node => offersTable.appendChild(node));
+            })
+
+            // empties table from old data
+            while (articleContainer.firstChild)
+                articleContainer.removeChild(articleContainer.firstChild)
+
+            auction.base.articles.forEach(article => {
+                const articleEl = articleTemplate.cloneNode(true)
+                articleEl.querySelector('.offers-article-image').src = "data:image/jpeg;base64," + article.immagine
+                articleEl.querySelector('.offers-article-name').textContent = article.name
+                articleEl.querySelector('.offers-article-desc').textContent = article.description
+                articleEl.querySelector('.offers-article-code').textContent = article.codArticle
+
+                Array.from(articleEl.childNodes).forEach(node => articleContainer.appendChild(node));
+            })
+        }
+
+        this.unmount = async () => {
+            // hides everything that is being unloaded
+            offerErrorQuery.setAttribute("hidden", "")
+            offerErrorMax.setAttribute("hidden", "")
+            offerLowPrice.setAttribute("hidden", "")
+            offersContent.setAttribute("hidden", "")
+        }
+
+        this.mutateState = async (id) => {
+            await this.unmount()
+            await this.mount(new URLSearchParams({
+                id: id || currentId
+            }))
         }
     }
 });
