@@ -7,6 +7,8 @@ import it.polimi.webapp.beans.ParsingError;
 import it.polimi.webapp.dao.LoginDao;
 import jakarta.security.enterprise.identitystore.PasswordHash;
 import org.glassfish.soteria.identitystores.hash.Pbkdf2PasswordHashImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +18,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class LoginController extends BaseController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
 
     private PasswordHash passwordHash;
 
@@ -53,7 +57,10 @@ public class LoginController extends BaseController {
             resp.setContentType("application/json");
             gson.toJson(sessionObj, resp.getWriter());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to login", e);
+
+            resp.setContentType("application/json");
+            gson.toJson(new ParsingError("errorQueryError"), resp.getWriter());
         }
     }
 }

@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('login-form')
     const errorCred = document.getElementById('errorCred')
     const errorNotFound = document.getElementById('errorNotFound')
+    const errorQueryError = document.getElementById('errorQueryError')
 
     const url = ""
     form.addEventListener('submit', async e => {
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         errorCred.setAttribute("hidden", "")
         errorNotFound.setAttribute("hidden", "")
+        errorQueryError.setAttribute("hidden", "")
 
         const response = await fetch(url + "userLogin", {
             body: new URLSearchParams(new FormData(e.target)),
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 errorNotFound.removeAttribute("hidden")
                 return;
             }
+            errorQueryError.removeAttribute("hidden")
             console.error("Unexpected error", res)
             return;
         }

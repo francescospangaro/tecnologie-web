@@ -15,6 +15,9 @@
 <form th:action="@{/userLogin}" th:method="post">
     <div class="container mt-4">
         <div class="text-center">
+            <span th:if="${loginArgs.queryError}" th:utext="#{login.queryError}">Couldn't resolve your request</span>
+        </div>
+        <div class="text-center">
             <span th:if="${loginArgs.errorCred}" th:utext="#{login.errorCred}">Null username or password</span>
         </div>
         <div class="text-center">
