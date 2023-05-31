@@ -144,6 +144,7 @@ public class FillDatabaseTest {
                                 ? loginTime.minus(rnd.nextInt(100), ChronoUnit.DAYS)
                                 : loginTime.plus(rnd.nextInt(100), ChronoUnit.DAYS);
                         var auction = auctionDao.insertAuction(
+                                userId,
                                 expiry,
                                 IntStream.range(0, rnd.nextInt(1, 20))
                                         .map(ignored -> articles.get(rnd.nextInt(articles.size())))

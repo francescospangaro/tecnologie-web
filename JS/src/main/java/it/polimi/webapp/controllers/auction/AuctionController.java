@@ -24,6 +24,8 @@ public class AuctionController extends BaseController {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
+        var session = HttpServlets.requireSession(req);
+
         List<Integer> articleIds = List.of();
         try {
             var stringArticleIds = req.getParameterValues("selectedArticles");
@@ -47,6 +49,7 @@ public class AuctionController extends BaseController {
         Integer inserted = -1;
         try (var connection = dataSource.getConnection()) {
             inserted = new AuctionDao(connection).insertAuction(
+                    session.id(),
                     expiryDate,
                     articleIds,
                     minimumOfferDifference);

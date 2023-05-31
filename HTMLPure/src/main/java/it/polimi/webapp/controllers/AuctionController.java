@@ -25,6 +25,8 @@ public class AuctionController extends BaseController {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
+        var session = HttpServlets.requireSession(req);
+
         List<Integer> articleIds = List.of();
         try {
             var stringArticleIds = req.getParameterValues("selectedArticles");
@@ -47,7 +49,7 @@ public class AuctionController extends BaseController {
 
         boolean queryError;
         try (var connection = dataSource.getConnection()) {
-            int result = new AuctionDao(connection).insertAuction(expiryDate, articleIds, minimumOfferDifference);
+            int result = new AuctionDao(connection).insertAuction(session.id(), expiryDate, articleIds, minimumOfferDifference);
             queryError = result == 0;
         } catch (SQLException e) {
             LOGGER.error("Failed to insert auction", e);

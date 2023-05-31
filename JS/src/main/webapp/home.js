@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = !localStorage.getItem('user')
         ? undefined
         : /** @type {UserSession} */ JSON.parse(localStorage.getItem('user'))
-    if(!user) {
+    if (!user) {
         document.location = "login"
         return
     }
@@ -256,13 +256,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         /** @type SavedInteractions */
         const savedInteractions = savedInteractionsStr ? /** @type SavedInteractions */ JSON.parse(savedInteractionsStr) : {}
 
-        const isFirstTime = !savedInteractions
+        const firstTime = !savedInteractions
             || !savedInteractions[user.id]
             // If the last saved interaction is older than 1 month, discard it
             || new Date() - new Date(savedInteractions[user.id].date) > oneMonthInMillis;
         const interactions = (() => {
             /** @type UserInteractions */
-            let __interactions = !isFirstTime
+            let __interactions = !firstTime
                 ? savedInteractions[user.id]
                 : {
                     lastAction: "",
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             // Fix JSON parsed dates
             __interactions.date = new Date(__interactions.date)
-            __interactions.visitedAuctions.map(a => {
+            __interactions.visitedAuctions = __interactions.visitedAuctions.map(a => {
                 a.date = new Date(a.date)
                 return a
             })
@@ -291,31 +291,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             return obj
         })()
         // Save either the new or the filtered interactions to localStorage
-        interactions.update(i => { return /** @type UserInteractions */ {
-            ...i,
-            visitedAuctions: i.visitedAuctions.filter(a => new Date() - new Date(a.date) <= oneMonthInMillis)
-        }})
+        interactions.update(i => {
+            return /** @type UserInteractions */ {
+                ...i,
+                visitedAuctions: i.visitedAuctions.filter(a => new Date() - new Date(a.date) <= oneMonthInMillis)
+            }
+        })
 
-        const getLastAction = () => {
-
-        }
-
-        const setLastAction = () => {
-
-        }
-
-        const getVisitedAuctions = () => {
-            return interactions.visitedAuctions
-        }
-
-        const setVisitedAuction = () => {
-
-        }
         return {
-            getLastAction: getLastAction,
-            setLastAction: setLastAction,
-            getVisitedAuctions: getVisitedAuctions,
-            setVisitedAuction: setVisitedAuction,
+            isFirstTime: () => firstTime,
+            getLastAction: () => interactions.get().lastAction,
+            /** @type {(UserAction) => void} */
+            setLastAction: (action) => interactions.update(i => {
+                return /** @type UserInteractions */ {
+                    ...i,
+                    lastAction: action,
+                    date: new Date(),
+                }
+            }),
+            getVisitedAuctions: () => interactions.get().visitedAuctions,
+            /** @type {(number) => void} */
+            addVisitedAuction: (id) => interactions.update(i => {
+                return /** @type UserInteractions */ {
+                    ...i,
+                    visitedAuctions: [...i.visitedAuctions, {
+                        id: id,
+                        date: new Date()
+                    }],
+                    date: new Date(),
+                }
+            }),
         };
     })()
 
@@ -329,21 +334,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     /** @type {Page[]} */
     const pages = await Promise.all((() => {
         return [
-            {id: "home", displayName: "Home", div: document.getElementById("home-page")},
             {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
             {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
             {id: "auctionDetails", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
             {id: "offers", div: document.getElementById("offers-page"), view: offersPage},
-        ].map(async d => {
-            const view = d.view ? new d.view(d.div) : undefined
+        ].map(async page => {
+            const view = page.view ? new page.view(page.div) : undefined
             if (view)
                 try {
                     await view.create()
                 } catch (e) {
-                    console.error("Failed to create page view", d, e)
+                    console.error("Failed to create page view", page, e)
                 }
-            d.view = view
-            return d
+            page.view = view
+            return /** @type {Page} */ page
         })
     })());
 
@@ -351,7 +355,8 @@ document.addEventListener('DOMContentLoaded', async () => {
      * @typedef {{
      *      set: (Page, args?: URLSearchParams) => Promise<void>,
      *      setById: (string, args?: URLSearchParams) => Promise<void>,
-     *      get: () => Page
+     *      get: () => Page,
+     *      isHomePage: () => boolean
      * }} Router
      */
 
@@ -364,6 +369,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return document.location.pathname.startsWith(`/${webappPathnamePrefix}`)
                 ? document.location.pathname.substring(`/${webappPathnamePrefix}`.length)
                 : document.location.pathname
+        }
+
+        const isHomePathname = (pathname) => {
+            return pathname === "/home" || pathname === "/home.html"
         }
 
         const triggerPageChange = async (newPage, args) => {
@@ -394,13 +403,15 @@ document.addEventListener('DOMContentLoaded', async () => {
          */
         const doRoute = async (state) => {
             let fixedPathName = getFixedPathName();
-            if (fixedPathName === "/home" || fixedPathName === "/home.html") {
+            if (isHomePathname(fixedPathName)) {
                 fixedPathName = "/home" // Remove .html suffix
-                // TODO: we need to write the custom logic by saving client-sided what was visited
-                // if(never visitedBefore)
-                //      fixedPathName = "/sell"
-                // else
-                //      fixedPathName = "/buy"
+
+                if (userInteractions.isFirstTime())
+                    fixedPathName = "/buy"
+                else if(userInteractions.getLastAction() === "inserted-auction")
+                    fixedPathName = "/sell"
+                else
+                    fixedPathName = "/buy"
             }
 
             const pageId = state ? state.pageId : fixedPathName.substring('/'.length)
@@ -423,7 +434,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Trigger the initial page mount
-        await doRoute()
+        // Do it in a microtask, so that it will be executed after the router object is created
+        queueMicrotask(doRoute)
 
         /** @type {Router} */
         const obj = {
@@ -441,7 +453,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!newPage)
                     throw "invalid page id " + id
                 await obj.set(newPage, args);
-            }
+            },
+            isHomePage() {
+              return isHomePathname(getFixedPathName())
+            },
         }
         return obj
     })()
@@ -490,6 +505,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return
                 }
 
+                userInteractions.setLastAction("searched-auctions")
                 await router.setById('buy', new URLSearchParams({search: keyword.value}))
             })
         };
@@ -508,7 +524,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             promises.push((
                 keyword && keyword.trim() !== ""
                     ? auctionRepository.searchAuction(keyword)
-                    : new Promise(resolve => resolve([])) // TODO: show previously visited content stored in localStorage
+                    : router.isHomePage()
+                        ? Promise.all(userInteractions.getVisitedAuctions()
+                            .map(async id => {
+                                const res = await auctionRepository.getOpenAuctionById(id)
+                                if(res.error) {
+                                    console.error("Failed to load already visited auction ", id, res);
+                                    return undefined
+                                }
+
+                                return res
+                            })
+                            // Remove undefined ones from the list
+                            // We need to await it as the map() call returns a Promise<OpenAuction | undefined>[]
+                            // because we pass it an async mapping function
+                            .filter(async auction => await auction)
+                            // we need to wait for the promise response at every step
+                            .map(async auction => (await auction).base))
+                        : new Promise(resolve => resolve([]))
             ).then(auctions => {
                 // Once loaded, we can clean up old cached data
                 while (foundAuctionsTable.firstChild)
@@ -554,9 +587,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 while (wonAuctionTable.firstChild)
                     wonAuctionTable.removeChild(wonAuctionTable.firstChild)
 
-                //TODO: error message
                 if (wonAuctions.error) {
-                    console.error("nothing found")
+                    console.error("Failed to load bought auctions", wonAuctions)
                 } else {
                     wonAuctions.forEach(wonAuction => {
                         const wonAuctionEl = wonAuctionTemplate.cloneNode(true)
@@ -634,6 +666,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     return
                 }
+                userInteractions.setLastAction("inserted-article")
                 e.target.reset()
                 await this.mutateState()
             })
@@ -656,6 +689,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     return
                 }
+                userInteractions.setLastAction("inserted-auction")
                 e.target.reset()
                 await this.mutateState()
             })
@@ -968,11 +1002,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         offerErrorMax.removeAttribute("hidden")
                     } else {
                         offerErrorQuery.removeAttribute("hidden")
-
                     }
                     return
                 }
 
+                userInteractions.setLastAction("placed-offer")
                 e.target.reset()
                 await this.mutateState()
             })
@@ -1002,6 +1036,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Wait until we loaded content to make the div visible
             offersContent.removeAttribute("hidden")
+            // No errors found, we can consider this as visited
+            userInteractions.addVisitedAuction(id)
 
             auctionIdEl.textContent = auction.base.id.toString()
             auctionIdInputEl.value = auction.base.id.toString()

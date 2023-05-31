@@ -171,7 +171,7 @@ public class AuctionDao {
         }
     }
 
-    private @Nullable ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
+    private ClosedAuction doPopulateClosedAuction(Auction base) throws SQLException {
         try (var query = connection.prepareStatement("""
                 SELECT offerta.prezzoOfferto, utente.nome, utente.indirizzo
                 FROM utente
@@ -194,7 +194,7 @@ public class AuctionDao {
         }
     }
 
-    private @Nullable OpenAuction doPopulateOpenAuction(Auction base) throws SQLException {
+    private OpenAuction doPopulateOpenAuction(Auction base) throws SQLException {
         // NB: also sort by price as two offers can be placed in the 'same instant'
         // (not a high enough datetime precision on the db field),
         // so to be sorted correctly we also rely on the price (which is only supposed to grow)
@@ -291,7 +291,8 @@ public class AuctionDao {
      * Inserts an auction in the DB, also connects the auction to its articles
      * with the table astearticoli
      */
-    public @Nullable Integer insertAuction(LocalDateTime expiry,
+    public @Nullable Integer insertAuction(int userId,
+                                           LocalDateTime expiry,
                                            List<Integer> articleIds,
                                            int minimumOfferDifference) throws SQLException {
         return Transactions.startNullable(connection, Transactions.Type.NESTED, tx -> {
@@ -318,20 +319,20 @@ public class AuctionDao {
                     FROM articolo
                           JOIN astearticoli ON articolo.codArticolo = astearticoli.articolo_codArticolo
                           JOIN asta ON astearticoli.asta_idAsta = asta.idAsta
-                    WHERE articolo.codArticolo IN %s AND asta.chiusa = true
+                    WHERE (asta.chiusa = true OR articolo.utente_idUtente <> ?) AND articolo.codArticolo IN %s
                     """,
                     articleIds.stream()
                             .map(ignored -> "?")
                             .collect(Collectors.joining(", ", "(", ")")))
             )) {
+                query.setInt(1, userId);
+
                 for(int idx = 0; idx < articleIds.size(); idx++)
-                    query.setInt(idx + 1, articleIds.get(idx));
+                    query.setInt(idx + 2, articleIds.get(idx));
 
                 try (var res = query.executeQuery()) {
-                    if (res.next()) {
-                        connection.rollback();
-                        return 0;
-                    }
+                    if (res.next())
+                        throw new SQLException("Article is in a closed auction or the user does not own it");
                 }
             }
 
