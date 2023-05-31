@@ -77,6 +77,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         /**
+         * @return {Promise<ErrorResponse | OpenAuction>} result
+         */
+        const getOpenAuctionById = async function (id) {
+            const response = await fetchIfAuthenticated(url + 'offer?' + new URLSearchParams({
+                id: id
+            }).toString())
+            /** @type {ErrorResponse | OpenAuction} */
+            const obj = await response.json();
+            if (!obj.error) {
+                obj.base.expiry = new Date(obj.base.expiry)
+                obj.offers = obj.offers.map(o => {
+                    o.date = new Date(o.date)
+                    return o
+                })
+            }
+            return obj
+        }
+
+        /**
          * @param {URLSearchParams} formData
          * @returns {Promise<any>}
          */
@@ -219,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             {id: "buy", displayName: "Buy", div: document.getElementById("buy-page"), view: buyPage},
             {id: "sell", displayName: "Sell", div: document.getElementById("sell-page"), view: sellPage},
             {id: "auctionDetails", div: document.getElementById("auction-details-page"), view: auctionDetailsPage},
+            {id: "offers", div: document.getElementById("offers-page"), view: offersPage},
         ].map(async d => {
             const view = d.view ? new d.view(d.div) : undefined
             if (view)
@@ -405,7 +425,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     errorSearchQuery.setAttribute("hidden", "");
                     auctions.forEach(auction => {
                         const auctionEl = auctionTemplate.cloneNode(true)
-                        auctionEl.querySelector('.auction-id').textContent = auction.id
+                        /** @type {HTMLElement} */
+                        const auctionAnchor = auctionEl.querySelector('.auction-id')
+                        auctionAnchor.textContent = auction.id
+                        auctionAnchor.addEventListener('click', async e => {
+                            e.preventDefault()
+                            await router.setById('offers', new URLSearchParams({
+                                id: auction.id
+                            }))
+                        })
                         auctionEl.querySelector('.auction-maxOffer').textContent = auction.maxOffer
                         // TODO: we need to use the login time, not a new date
                         const dateDiffMillis = auction.expiry - new Date()
@@ -466,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.mutateState = async () => {
             // Easiest way to mutate is to just unmount and remount
             await this.unmount()
-            await this.mount()
+            await this.mount(new URLSearchParams())
         }
     }
 
@@ -495,6 +523,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return
                 }
                 await articleRepository.insertArticle(new FormData(articleForm))
+                // TODO: check errors
                 e.target.reset()
                 await this.mutateState()
             })
@@ -507,6 +536,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 //noinspection JSCheckFunctionSignatures
                 await auctionRepository.insertAuction(new URLSearchParams(new FormData(auctionForm)))
+                // TODO: check errors
                 e.target.reset()
                 await this.mutateState()
             })
@@ -770,7 +800,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         this.mutateState = async (id) => {
             // Easiest way to mutate is to just unmount and remount
             await this.unmount()
-            await this.mount(id || currentId)
+            await this.mount(new URLSearchParams({
+                id: id || currentId
+            }))
         }
     }
 
