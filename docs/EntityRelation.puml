@@ -1,5 +1,8 @@
 @startuml
 ' https://plantuml.com/ie-diagram
+skinparam linetype polyline
+skinparam nodesep 300
+skinparam ranksep 1
 
 entity Articolo {
   * **codArticolo**
@@ -34,10 +37,10 @@ entity Asta {
     * scadenza
 }
 
-Articolo "0...N" ||-d-|{ "1...1  " Utente : possiede <
-Articolo "1...N  " ||-d-|{ "0...N " Asta : comprende <
-Utente "1...1" ||-l-|{ "0...N" Asta : possiede >
-Utente "1...1  " ||-d-|{ "0...N " Offerta : piazza >
-Asta "1...1" ||-d-|{ "1...N  " Offerta : riceve >
+Articolo "0...N" }o-d-|| "1...1     " Utente : possiede <
+Articolo "1...N  " }|--d--o{ "    0...N" Asta : comprende <
+Utente "1...1" ||-l-o{ "0...N" Asta : crea >
+Utente "1...1  " ||-d-o{ "     0...N" Offerta : piazza >
+Asta "1...1" ||--d--|{ "1...N     " Offerta : riceve >
 
 @enduml
