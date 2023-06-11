@@ -1,6 +1,6 @@
 @startuml
-participant CloseAuctionController as servlet
-participant AuctionDao
+participant ArticleController as servlet
+participant ArticleDAO as dao
 participant HttpServletRequest as req
 participant HttpServletResponse as resp
 participant SellPage
@@ -19,12 +19,16 @@ servlet -> req ++ : getSession().getAttribute("user")
 req -> servlet -- : session
 
 alt any of the params are wrong or missing
-    servlet -> resp : sendError(404)
+    servlet -> req : setAttribute("$$__args__$$", new SellPageArgs(ERROR_DATA_FORMAT, new ArticleData(valid params)))
+    servlet -> resp : forward to /sell
 else
-    servlet -> AuctionDao ++ : closeAuction(auctionId, session.loginTime(), session.id())
-    servlet <- AuctionDao --
-
-    servlet -> SellPage --++ : REDIRECT /sell
+    servlet -> dao : insertArticle(articleName, articleDesc, imageStream, articlePrice, session.id())
+    alt query error
+        servlet -> req : setAttribute("$$__args__$$", new SellPageArgs(ERROR_QUERY, new ArticleData(articleName, articleDesc, articlePrice)))
+        servlet -> resp : forward to /sell
+    else insertion successful
+        servlet -> SellPage --++ : REDIRECT /sell
+    end
 end
 
 @enduml

@@ -1,5 +1,5 @@
 @startuml
-participant BuyPage as servlet
+participant SellPage as servlet
 participant AuctionDao
 participant ArticleDao
 participant WebContext as ctx
