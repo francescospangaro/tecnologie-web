@@ -1,9 +1,10 @@
 @startuml
-participant "home.html + home.js" as js
+participant "home.html + home.js" as js #powderblue
 participant NotLoggedApiFilter as filter
 participant ServletRequest as req
 participant ServletResponse as resp
 participant FilterChain as chain
+participant login.html #powderblue
 
 -> js : load
 

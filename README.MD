@@ -1,3 +1,8 @@
+Computer engineering project for the course "TIW" 
+at Politecnico di Milano, Academic Year 2022/2023
+
+See our final project report [here](./docs/TIWProjectSpangaroFerlin.pdf)
+
 ## Running
 Use the IntelliJ `Cargo Run HTML`/`Cargo Run JS` configuration or from the console:
 ```bash

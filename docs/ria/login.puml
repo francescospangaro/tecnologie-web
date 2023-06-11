@@ -28,7 +28,7 @@ else
     alt user == null
         servlet -> js : { error: true, msg: "errorNotFound" }
     else
-        servlet -> js : { id: user.id(), name: user.name(), loginTime: LocalDateTime.now() }
+        servlet -> js -- : { id: user.id(), name: user.name(), loginTime: LocalDateTime.now() }
 
         js -> localStorage: setItem('user', JSON.stringify(response))
         js -> home : document.location = "home"
