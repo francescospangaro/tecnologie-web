@@ -1,0 +1,38 @@
+@startuml
+participant "login.html + login.js" as js #powderblue
+participant CloseAuctionController as servlet
+participant LoginDao as dao
+participant HttpServletRequest as req
+participant HttpServletResponse as resp
+participant LocalStorage as localStorage #powderblue
+participant "home.html + home.js" as home #powderblue
+
+-> js : load
+
+note over servlet
+    POST /userLogin
+    username -> username
+    password -> password
+end note
+
+js -> servlet ++ : doPost
+
+servlet -> req ++ : getSession().getAttribute("user")
+req -> servlet -- : session
+
+alt any of the params are wrong or missing
+    servlet -> js : { error: true, msg: "errorCred" }
+else
+    servlet -> dao ++ : findUser(username, password.toCharArray())
+    servlet <- dao -- : user
+    alt user == null
+        servlet -> js : { error: true, msg: "errorNotFound" }
+    else
+        servlet -> js : { id: user.id(), name: user.name(), loginTime: LocalDateTime.now() }
+
+        js -> localStorage: setItem('user', JSON.stringify(response))
+        js -> home : document.location = "home"
+    end
+end
+
+@enduml

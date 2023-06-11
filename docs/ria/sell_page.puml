@@ -1,0 +1,131 @@
+@startuml
+participant "home.html + home.js" as js #powderblue
+participant Router as router #powderblue
+participant buyPage as page #powderblue
+participant ArticleRepository as articlesRepo #powderblue
+participant ArticleController as articlesServlet
+participant HttpServletRequest as articlesReq
+participant ArticleDao
+participant AuctionRepository as auctionsRepo #powderblue
+participant ClosedAuctionController as closedAuctionsServlet
+participant HttpServletRequest as closedAuctionsReq
+participant OpenAuctionController as openAuctionsServlet
+participant HttpServletRequest as openAuctionsReq
+participant AuctionDao
+
+-> js ++ : load
+note over router
+    for all the pages, the router
+    calls their create() methods
+end note
+router -> page : create()
+
+js -> router ++ : doRoute()
+note over router
+    document.location.pathname = "/sell"
+end note
+
+router -> page ++ : mount()
+
+par
+    page -> articlesRepo ++ : findAllArticles()
+    articlesRepo -> articlesServlet ++ : fetch('article')
+
+    note over articlesServlet
+        GET /article
+    end note
+
+    articlesServlet -> articlesReq ++ : getSession().getAttributeValue("user")
+    articlesReq -> articlesServlet -- : session
+
+    articlesServlet -> ArticleDao ++ : findAllArticles(session.id())
+    articlesServlet <- ArticleDao -- : articles
+    alt articles query error
+        articlesServlet -> articlesRepo : { error: true, msg: "errorArticlesQuery" }
+    else
+        articlesServlet -> articlesRepo : [...articles]
+    end
+
+    articlesServlet -> articlesRepo --
+    articlesRepo -> page --
+else
+    page -> auctionsRepo ++ : getClosedAuction()
+    auctionsRepo -> closedAuctionsServlet ++ : fetch('closedAuction')
+
+    note over closedAuctionsServlet
+        GET /closedAuction
+    end note
+
+    closedAuctionsServlet -> closedAuctionsReq ++ : getSession().getAttributeValue("user")
+    closedAuctionsReq -> closedAuctionsServlet -- : session
+
+    closedAuctionsServlet -> AuctionDao ++ : findAuctions(session.id(), closed: true)
+    closedAuctionsServlet <- AuctionDao -- : closedAuctions
+    alt closed auctions query error
+        closedAuctionsServlet -> auctionsRepo : { error: true, msg: "errorClosedQuery" }
+    else
+        closedAuctionsServlet -> auctionsRepo : [...closedAuctions]
+    end
+
+    closedAuctionsServlet -> auctionsRepo --
+    auctionsRepo -> page --
+else
+    page -> auctionsRepo ++ : getOpenAuction()
+    auctionsRepo -> openAuctionsServlet ++ : fetch('openAuction')
+
+    note over openAuctionsServlet
+        GET /openAuction
+    end note
+
+    openAuctionsServlet -> openAuctionsReq ++ : getSession().getAttributeValue("user")
+    openAuctionsReq -> openAuctionsServlet -- : session
+
+    openAuctionsServlet -> AuctionDao ++ : findAuctions(session.id(), closed: false)
+    openAuctionsServlet <- AuctionDao -- : openAuctions
+    alt open auctions query error
+        openAuctionsServlet -> auctionsRepo : { error: true, msg: "errorOpenQuery" }
+    else
+        openAuctionsServlet -> auctionsRepo : [...openAuctions]
+    end
+
+    openAuctionsServlet -> auctionsRepo --
+    auctionsRepo -> page --
+end
+
+router <- page --
+js <- router --
+<- js --
+
+-> js ++ : submit articleForm
+js -> page ++ : 'submit' event
+page -> articlesRepo ++ : insertArticle(new FormData(articleForm))
+
+articlesRepo -> articlesServlet ++ :  fetch('article', { method: 'POST', body: formData, })
+
+note over articlesServlet
+    POST /article
+    articleName -> articleName
+    articleDesc -> articleDesc
+    articlePrice -> articlePrice
+    articleImage -> articleImage
+end note
+
+articlesServlet -> articlesReq ++ : getSession().getAttribute("user")
+articlesReq -> articlesServlet -- : session
+
+alt any of the params are wrong or missing
+    articlesServlet -> articlesRepo : { error: true, msg: "errorArticleDataInserted" }
+else
+    articlesServlet -> ArticleDao : insertArticle(articleName, articleDesc, imageStream, articlePrice, session.id())
+    alt query error
+        articlesServlet -> articlesRepo : { error: true, msg: "errorArticleQuery" }
+    else insertion successful
+        articlesServlet -> articlesRepo -- : { id: generatedId }
+    end
+end
+
+articlesRepo -> page --
+page -> js --
+<- js --
+
+@enduml

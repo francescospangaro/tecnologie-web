@@ -1,0 +1,79 @@
+@startuml
+participant "home.html + home.js" as js #powderblue
+participant Router as router #powderblue
+participant buyPage as page #powderblue
+participant AuctionRepository as repo #powderblue
+participant AuctionController as servlet
+participant HttpServletRequest as req
+participant SearchController as searchServlet
+participant HttpServletRequest as searchReq
+participant AuctionDao
+
+-> js ++ : load
+note over router
+    for all the pages, the router
+    calls their create() methods
+end note
+router -> page : create()
+
+js -> router ++ : doRoute()
+note over router
+    document.location.pathname = "/buy"
+end note
+router -> page ++ : mount()
+page -> repo ++ : getBoughtAuctions()
+repo -> servlet : fetch('auction')
+
+note over servlet
+    GET /auction
+end note
+
+servlet -> req ++ : getSession().getAttributeValue("user")
+req -> servlet -- : session
+
+servlet -> AuctionDao ++ : findUserBoughtAuctions(session.id())
+servlet <- AuctionDao -- : boughtAuctions
+
+alt auctions query error
+    servlet -> repo : { error: true, msg: "errorQuery" }
+else
+    servlet -> repo : gson.toJson(boughtAuctions)
+end
+repo -> page --
+
+page -> router --
+router -> js --
+<- js -- :
+
+-> js ++ : submit search form
+js -> page ++ : 'submit' event
+page -> router -- : setById('buy', new URLSearchParams({search: keyword.value}))
+router -> page : unmount()
+router -> page ++ : mount(new URLSearchParams({search: keyword.value}))
+page -> repo : searchAuction(keyword)
+repo -> searchServlet : "search?" + new URLSearchParams({search: keyWord})
+
+note over searchServlet
+    GET /buy?search=keyword
+end note
+
+searchServlet -> searchReq ++ : getSession().getAttributeValue("user")
+searchReq -> searchServlet -- : session
+
+alt search term missing or wrong
+    searchServlet -> repo : []
+else
+    searchServlet -> AuctionDao ++ : findAuctionByWord(keyword);
+    searchServlet <- AuctionDao -- : auctions
+    alt search query error
+        searchServlet -> repo : { error: true, msg: "errorSearchQuery"}
+    else
+        searchServlet -> repo : [...auctions]
+    end
+end
+
+repo -> page
+page -> js --
+<- js -- :
+
+@enduml

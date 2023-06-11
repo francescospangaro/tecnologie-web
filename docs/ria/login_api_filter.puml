@@ -1,0 +1,26 @@
+@startuml
+participant "home.html + home.js" as js
+participant NotLoggedApiFilter as filter
+participant ServletRequest as req
+participant ServletResponse as resp
+participant FilterChain as chain
+
+-> js : load
+
+note over js
+    for any API fetch request
+end note
+js -> filter ++ : doFilter(req, res)
+
+filter -> req ++ : getSession(false)
+req -> filter -- : session
+
+alt session == null
+    filter -> resp -- : setStatus(401)
+    resp -> js -- : response with statusCode 401
+    js -> login.html : document.location = "login"
+else
+    filter -> chain -- : doFilter(req, res)
+end
+
+@enduml

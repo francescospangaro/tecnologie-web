@@ -1,0 +1,19 @@
+@startuml
+participant NotLoggedFilter as filter
+participant ServletRequest as req
+participant ServletResponse as resp
+participant FilterChain as chain
+
+
+-> filter ++ : doFilter(req, res)
+
+filter -> req ++ : getSession(false)
+req -> filter -- : session
+
+alt session == null
+    filter -> LoginPage ++ : REDIRECT /login
+else
+    filter -> chain -- : doFilter(req, res)
+end
+
+@enduml

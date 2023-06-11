@@ -1,0 +1,35 @@
+@startuml
+participant LoginController as servlet
+participant LoginDao as dao
+participant HttpServletRequest as req
+participant HttpServletResponse as resp
+participant SellPage
+
+note over servlet
+    POST /userLogin
+    username -> username
+    password -> password
+end note
+
+-> servlet ++ : doPost
+
+servlet -> req ++ : getSession().getAttribute("user")
+req -> servlet -- : session
+
+alt any of the params are wrong or missing
+    servlet -> req : setAttribute("$$__args__$$", LoginPageArgs.parseError(username))
+    servlet -> resp : forward to /login
+else
+    servlet -> dao ++ : findUser(username, password.toCharArray())
+    servlet <- dao -- : user
+    alt user == null
+        servlet -> req : setAttribute("$$__args__$$", LoginPageArgs.notFound(username))
+        servlet -> resp : forward to /login
+    else
+        servlet -> req : req.getSession(true).setAttribute("user", new UserSession(user.id(), user.name(), LocalDateTime.now()));
+
+        servlet -> SellPage --++ : REDIRECT /home
+    end
+end
+
+@enduml
