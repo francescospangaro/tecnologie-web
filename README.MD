@@ -1,6 +1,8 @@
 Computer engineering project for the course "TIW" 
 at Politecnico di Milano, Academic Year 2022/2023
 
+Grade: 30/30 
+  
 See our final project report [here](./docs/TIWProjectSpangaroFerlin.pdf)
 
 ## Running
